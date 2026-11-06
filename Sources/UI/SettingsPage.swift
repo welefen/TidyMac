@@ -142,11 +142,11 @@ struct SettingsPage: View {
                 toggleRow("自动检查更新",
                           "启动时检查 GitHub 上的新版本。",
                           isOn: $settings.autoCheckUpdates,
-                          tone: .blue)
+                          tone: .mint)
                 toggleRow("下载后自动安装",
                           "发现新版本时自动下载并安装，然后重新启动 TidyMac。",
                           isOn: $settings.autoInstallUpdates,
-                          tone: .blue)
+                          tone: .mint)
             }
         }
     }
