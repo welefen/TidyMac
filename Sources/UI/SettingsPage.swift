@@ -50,7 +50,8 @@ struct SettingsPage: View {
                     ForEach(AppAppearance.allCases) { option in
                         FilterPill(title: option.title,
                                    isSelected: settings.appearance == option,
-                                   tone: .blue) {
+                                   tone: .blue,
+                                   softSelection: true) {
                             settings.appearance = option
                         }
                     }

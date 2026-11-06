@@ -312,23 +312,34 @@ struct FilterPill: View {
     let title: String
     var isSelected: Bool
     var tone: AccentTone = .mint
+    /// A softer selected state: tinted fill + tinted text instead of a saturated
+    /// gradient. Used by low-density controls such as the appearance picker.
+    var softSelection = false
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
-                .foregroundStyle(isSelected ? Theme.textOnAccent : Theme.textSecondary)
+                .foregroundStyle(isSelected
+                                 ? (softSelection ? Theme.tint(tone) : Theme.textOnAccent)
+                                 : Theme.textSecondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
                 .background(
                     Capsule(style: .continuous)
-                        .fill(isSelected ? AnyShapeStyle(Theme.gradient(tone))
-                                         : AnyShapeStyle(Theme.cardElevated))
+                        .fill(isSelected
+                              ? (softSelection
+                                 ? AnyShapeStyle(Theme.tint(tone).opacity(0.13))
+                                 : AnyShapeStyle(Theme.gradient(tone)))
+                              : AnyShapeStyle(Theme.cardElevated))
                 )
                 .overlay(
                     Capsule(style: .continuous)
-                        .strokeBorder(isSelected ? Color.clear : Theme.stroke, lineWidth: 1)
+                        .strokeBorder(isSelected
+                                      ? (softSelection ? Theme.tint(tone).opacity(0.30) : Color.clear)
+                                      : Theme.stroke,
+                                      lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
