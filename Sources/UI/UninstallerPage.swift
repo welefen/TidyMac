@@ -219,8 +219,17 @@ final class UninstallerViewModel: ObservableObject {
             return
         }
 
+        let needsAdmin = ToolsSupport.requiresAdministrator(for: app.url)
+
         uninstallTask = Task { [weak self] in
             guard let self else { return }
+            if needsAdmin {
+                // Let the SwiftUI confirmation alert finish dismissing first;
+                // otherwise the app can re-activate itself over the system
+                // authorization dialog and hide it behind the main window.
+                try? await Task.sleep(nanoseconds: 450_000_000)
+                NSApp.hide(nil)
+            }
             let report = await UninstallerEngine.uninstall(app: app,
                                                           leftovers: chosen,
                                                           moveToTrash: moveToTrash) { progress, status in
@@ -229,6 +238,10 @@ final class UninstallerViewModel: ObservableObject {
                     self.uninstallProgress = progress
                     self.uninstallStatus = status
                 }
+            }
+            if needsAdmin {
+                NSApp.unhide(nil)
+                NSApp.activate(ignoringOtherApps: true)
             }
             self.finishUninstall(report, appID: app.id)
         }

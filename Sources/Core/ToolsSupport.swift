@@ -44,6 +44,13 @@ enum ToolsSupport {
     }
 
     static func removeItem(at url: URL, moveToTrash: Bool) throws {
+        // Never let FileManager start its own authorization UI for root-owned
+        // app bundles. Doing so and then falling back to our helper can create
+        // two competing prompts and leave the UI stuck at 2%.
+        if requiresAdministrator(for: url) {
+            try removeRootOwnedAppWithFinder(url)
+            return
+        }
         do {
             if moveToTrash {
                 try fileManager.trashItem(at: url, resultingItemURL: nil)
@@ -88,6 +95,52 @@ enum ToolsSupport {
 
     private static func pathExtensionIsApp(_ path: String) -> Bool {
         (path as NSString).pathExtension.lowercased() == "app"
+    }
+
+    /// Finder owns the privileged move-to-Trash flow for root-owned App Store
+    /// applications and presents the administrator dialog reliably. Driving
+    /// Finder avoids the invisible `do shell script ... with administrator
+    /// privileges` prompt that left the uninstall progress stuck.
+    private static func removeRootOwnedAppWithFinder(_ url: URL) throws {
+        let path = standardizedURL(url).path
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        let script = """
+        tell application "Finder"
+            activate
+            delete POSIX file "\(path)"
+        end tell
+        """
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-e", script]
+        let stderr = Pipe()
+        process.standardError = stderr
+        do {
+            try process.run()
+            let deadline = Date().addingTimeInterval(180)
+            while process.isRunning && Date() < deadline {
+                Thread.sleep(forTimeInterval: 0.1)
+            }
+            if process.isRunning {
+                process.terminate()
+                throw PrivilegedRemovalError.failed(L("等待 Finder 授权超时"))
+            }
+        } catch let error as PrivilegedRemovalError {
+            throw error
+        } catch {
+            throw PrivilegedRemovalError.failed(error.localizedDescription)
+        }
+        guard process.terminationStatus == 0 else {
+            let message = String(data: stderr.fileHandleForReading.readDataToEndOfFile(),
+                                 encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if !fileManager.fileExists(atPath: path) { return }
+            if message.localizedCaseInsensitiveContains("cancel")
+                || message.contains("-128") {
+                throw PrivilegedRemovalError.cancelled
+            }
+            throw PrivilegedRemovalError.failed(message.isEmpty ? L("Finder 未能移动应用") : message)
+        }
     }
 
     private static func removeWithAdministrator(_ url: URL, moveToTrash: Bool) throws {
