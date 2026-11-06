@@ -32,9 +32,12 @@ struct TidyMacApp: App {
             }
             CommandGroup(after: .appInfo) {
                 Button("检查更新…") {
-                    Task { await UpdateManager.shared.check(manual: true) }
+                    appState.navigate(to: .settings)
+                    NSApp.activate(ignoringOtherApps: true)
+                    if case .ready = updater.phase { return }
+                    Task { await updater.check(manual: true) }
                 }
-                .disabled(UpdateManager.shared.phase.isBusy)
+                .disabled(updateCheckDisabled)
             }
             CommandGroup(replacing: .appSettings) {
                 Button("设置…") {
@@ -51,6 +54,15 @@ struct TidyMacApp: App {
                     .keyboardShortcut(".", modifiers: .command)
                     .disabled(!appState.isScanning)
             }
+        }
+    }
+
+    private var updateCheckDisabled: Bool {
+        switch updater.phase {
+        case .checking, .available, .downloading, .installing:
+            return true
+        default:
+            return false
         }
     }
 }
