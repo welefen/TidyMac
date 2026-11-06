@@ -34,8 +34,11 @@ ditto -c -k --sequesterRsrc --keepParent "$ROOT/build/Qingyu.app" "$DIST/Qingyu-
 
 echo "▸ Checksums"
 rm -f "$DIST/SHA256SUMS.txt"
-for file in "$DIST"/Qingyu-"$VERSION".dmg "$DIST"/Qingyu-"$VERSION".zip; do
-  [[ -f "$file" ]] && shasum -a 256 "$file"
-done | tee "$DIST/SHA256SUMS.txt"
+(
+  cd "$DIST"
+  for file in Qingyu-"$VERSION".dmg Qingyu-"$VERSION".zip; do
+    [[ -f "$file" ]] && shasum -a 256 "$file"
+  done
+) | tee "$DIST/SHA256SUMS.txt"
 rm -rf "$DIST/stage"
 echo "▸ Done: $DIST"
