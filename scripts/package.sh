@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="1.0.7"
+VERSION="1.0.8"
 DIST="$ROOT/dist"
 
 ./build.sh

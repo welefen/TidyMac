@@ -455,3 +455,6 @@
 "有新版本 v%@，点击安装" = "v%@ available — click to install";
 "启动 TidyMac 时会自动检查并下载更新。下载完成后，点击左上角版本号即可安装。" = "TidyMac checks for and downloads updates automatically at launch. When ready, click the version number at the top-left to install.";
 "v%@ 已下载，点击左上角版本号安装" = "v%@ downloaded — click the version number at the top-left to install";
+"下载中…" = "Downloading…";
+"立即安装" = "Install Now";
+"正在安装…" = "Installing…";

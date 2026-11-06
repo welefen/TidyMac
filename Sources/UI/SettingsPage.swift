@@ -125,25 +125,43 @@ struct SettingsPage: View {
                     }
                     Spacer(minLength: 12)
                     if case .ready = updates.phase {
-                        Button(L("安装并重启")) {
+                        Button(updateActionTitle) {
                             updates.installDownloadedUpdate()
                         }
                         .buttonStyle(PrimaryButtonStyle(tone: .mint, compact: true))
+                    } else {
+                        Button(updateActionTitle) {
+                            Task { await updates.check(manual: true) }
+                        }
+                        .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
+                        .disabled(updateActionDisabled)
                     }
-                    Button(L("检查更新")) {
-                        Task { await updates.check(manual: true) }
-                    }
-                    .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
-                    .disabled(updates.phase.isBusy)
                 }
-
-                DividerLine()
-
-                Text(L("启动 TidyMac 时会自动检查并下载更新。下载完成后，点击左上角版本号即可安装。"))
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(Theme.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    private var updateActionTitle: String {
+        switch updates.phase {
+        case .checking:
+            return L("检查中…")
+        case .available, .downloading:
+            return L("下载中…")
+        case .ready:
+            return L("立即安装")
+        case .installing:
+            return L("正在安装…")
+        default:
+            return L("检查更新")
+        }
+    }
+
+    private var updateActionDisabled: Bool {
+        switch updates.phase {
+        case .checking, .available, .downloading, .installing:
+            return true
+        default:
+            return false
         }
     }
 
