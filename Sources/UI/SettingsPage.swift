@@ -76,7 +76,7 @@ struct SettingsPage: View {
                 toggleRow("清理前再次确认",
                           "在执行清理前显示确认弹窗，并列出将删除的内容大小。",
                           isOn: $settings.confirmBeforeClean,
-                          tone: .blue)
+                          tone: .mint)
                 if !settings.moveToTrash {
                     DividerLine().padding(.vertical, 12)
                     warningRow(symbol: "exclamationmark.triangle.fill",
@@ -302,7 +302,7 @@ struct SettingsPage: View {
                     Toggle("", isOn: $settings.showSystemApps)
                         .labelsHidden()
                         .toggleStyle(.switch)
-                        .tint(Theme.blue)
+                        .tint(Theme.mint)
                         .controlSize(.small)
                 }
             }
