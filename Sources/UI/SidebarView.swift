@@ -66,7 +66,7 @@ struct SidebarView: View {
                     .fill(Theme.brandGradient)
                     .frame(width: 38, height: 38)
                     .shadow(color: Theme.mint.opacity(0.35), radius: 12, y: 4)
-                Image(systemName: "feather")
+                Image(systemName: "wind")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Theme.textOnAccent)
             }

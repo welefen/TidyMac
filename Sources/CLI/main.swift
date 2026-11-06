@@ -22,6 +22,8 @@ struct QingyuCLI {
             await runSelfTest()
         case "paths":
             printHome()
+        case "debug":
+            debugSafety()
         case "--help", "-h", "help":
             printUsage()
         default:
@@ -48,6 +50,27 @@ struct QingyuCLI {
         """)
     }
 
+    static func debugSafety() {
+        print("home: \(HomePaths.home.path)")
+        for relative in ["Library/Caches/test", "Library/Logs/x.log", ".Trash/somefile", "Downloads/x.dmg",
+                         "Library/Mail/V99/MailData/Attachments", "Library/Keychains"] {
+            let url = HomePaths.url(relative)
+            print("")
+            print("path: \(url.path)")
+            print("  isProtected: \(SafetyPolicy.isProtected(url))")
+            print("  inJunkScope: \(SafetyPolicy.isInsideJunkScope(url.path))")
+            do {
+                try SafetyPolicy.validate(url, context: .junk)
+                print("  validate: OK")
+            } catch {
+                print("  validate: ERROR \(error.localizedDescription)")
+            }
+        }
+        print("")
+        print("junk roots:")
+        for root in SafetyPolicy.junkAllowedRoots { print("  \(root)") }
+    }
+
     static func printHome() {
         print("home: \(HomePaths.home.path)")
         print("temp: \(NSTemporaryDirectory())")
@@ -58,13 +81,20 @@ struct QingyuCLI {
         }
     }
 
-    static func progressPrinter() -> @Sendable (ScanProgress) -> Void {
-        var lastLine = 0
-        return { progress in
-            let percent = Int(progress.fraction * 100)
-            guard percent >= lastLine + 4 || percent >= 100 else { return }
-            lastLine = percent
-            let line = String(format: "\r  %3d%%  %@                    ", percent, progress.status)
+    final class ProgressLine: @unchecked Sendable {
+        private let lock = NSLock()
+        private var lastPercent = -100
+
+        func update(_ fraction: Double, _ status: String) {
+            let percent = Int(max(0, min(1, fraction)) * 100)
+            lock.lock()
+            guard percent >= lastPercent + 5 || percent >= 100 else {
+                lock.unlock()
+                return
+            }
+            lastPercent = percent
+            lock.unlock()
+            let line = String(format: "\r  %3d%%  %@                    ", percent, status)
             FileHandle.standardError.write(line.data(using: .utf8)!)
         }
     }
@@ -72,10 +102,9 @@ struct QingyuCLI {
     static func runScan() async {
         print("正在扫描系统垃圾…")
         let started = Date()
+        let progressLine = ProgressLine()
         let result = await SmartScanner.scan(excludedPaths: []) { progress in
-            let percent = Int(progress.fraction * 100)
-            let line = String(format: "\r  %3d%%  %@                    ", percent, progress.status)
-            FileHandle.standardError.write(line.data(using: .utf8)!)
+            progressLine.update(progress.fraction, progress.status)
         }
         FileHandle.standardError.write("\n".data(using: .utf8)!)
         print("磁盘: 可用 \(Format.bytes(result.freeBytes)) / 共 \(Format.bytes(result.totalBytes))")
@@ -114,11 +143,11 @@ struct QingyuCLI {
                      HomePaths.url("Desktop"), HomePaths.url("Movies"),
                      HomePaths.url("Pictures"), HomePaths.url("Music")]
         print("扫描大文件 > \(minimumMB) MB…")
+        let progressLine = ProgressLine()
         let files = await LargeFilesEngine.scan(roots: roots,
                                                 minSize: minimumMB * 1_000_000,
                                                 minAgeDays: nil) { fraction, status in
-            let line = String(format: "\r  %3d%%  %@                    ", Int(fraction * 100), status)
-            FileHandle.standardError.write(line.data(using: .utf8)!)
+            progressLine.update(fraction, status)
         }
         FileHandle.standardError.write("\n".data(using: .utf8)!)
         print("找到 \(files.count) 个文件，共 \(Format.bytes(files.reduce(0) { $0 + $1.byteCount }))")
@@ -130,9 +159,9 @@ struct QingyuCLI {
     static func runLens(args: [String]) async {
         let root = args.first.map { HomePaths.expand($0) } ?? HomePaths.home
         print("分析 \(root.path) …")
+        let progressLine = ProgressLine()
         let node = await SpaceLensEngine.scan(root: root, maxDepth: 2) { fraction, status in
-            let line = String(format: "\r  %3d%%  %@                    ", Int(fraction * 100), status)
-            FileHandle.standardError.write(line.data(using: .utf8)!)
+            progressLine.update(fraction, status)
         }
         FileHandle.standardError.write("\n".data(using: .utf8)!)
         print("总计: \(Format.bytes(node.byteCount))")
@@ -202,6 +231,12 @@ struct QingyuCLI {
                             kind: .cache, safety: .safe)
         let report = await Cleaner.clean(items: [item], moveToTrash: false,
                                          excludedPaths: []) { _ in }
+        if !report.failures.isEmpty || report.removedCount == 0 {
+            print("    [debug] junk=\(junk.path)")
+            print("    [debug] inScope=\(SafetyPolicy.isInsideJunkScope(junk.path)) protected=\(SafetyPolicy.isProtected(junk))")
+            print("    [debug] tempRoot=\(NSTemporaryDirectory())")
+            for failure in report.failures { print("    [debug] failure: \(failure.path) -> \(failure.reason)") }
+        }
         check(!fm.fileExists(atPath: junk.path), "清理临时缓存")
         check(report.removedCount >= 1, "清理计数")
         check(report.freedBytes > 0, "释放字节统计")

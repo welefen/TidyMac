@@ -57,9 +57,23 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(reduceMotion, forKey: Keys.reduceMotion) }
     }
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
 
     private init() {
+        // Demo runs (screenshots / design review) must never touch the user's
+        // real settings or clean history. Use an isolated defaults suite.
+        let demo = CommandLine.arguments.contains("--demo")
+        let store: UserDefaults
+        if demo {
+            let suiteName = "com.qingyu.clean.demo"
+            let suite = UserDefaults(suiteName: suiteName) ?? .standard
+            suite.removePersistentDomain(forName: suiteName)
+            store = suite
+        } else {
+            store = .standard
+        }
+        self.defaults = store
+
         defaults.register(defaults: [
             Keys.moveToTrash: true,
             Keys.confirmBeforeClean: true,
@@ -82,6 +96,22 @@ final class AppSettings: ObservableObject {
             history = decoded
         } else {
             history = []
+        }
+
+        if demo {
+            let now = Date()
+            let calendar = Calendar.current
+            totalFreedBytes = 38_600_000_000
+            cleanCount = 12
+            lastCleanDate = calendar.date(byAdding: .day, value: -3, to: now)
+            history = [
+                CleanHistoryEntry(date: calendar.date(byAdding: .day, value: -3, to: now) ?? now,
+                                  freedBytes: 4_280_000_000, itemCount: 21),
+                CleanHistoryEntry(date: calendar.date(byAdding: .day, value: -9, to: now) ?? now,
+                                  freedBytes: 2_140_000_000, itemCount: 13),
+                CleanHistoryEntry(date: calendar.date(byAdding: .day, value: -18, to: now) ?? now,
+                                  freedBytes: 6_720_000_000, itemCount: 28)
+            ]
         }
     }
 

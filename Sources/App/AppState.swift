@@ -182,25 +182,26 @@ final class AppState: ObservableObject {
         let started = Date()
         let excluded = Set(settings.excludedPaths)
         scanTask = Task { [weak self] in
+            guard let state = self else { return }
             let result = await SmartScanner.scan(excludedPaths: excluded) { progress in
-                Task { @MainActor [weak self] in
-                    guard let self, self.phase == .scanning else { return }
-                    self.scanProgress = progress
+                Task { @MainActor in
+                    guard state.phase == .scanning else { return }
+                    state.scanProgress = progress
                 }
             }
             guard !Task.isCancelled else { return }
-            await MainActor.run { [weak self] in
-                guard let self, self.phase == .scanning else { return }
-                self.scanResult = SmartScanResult(
+            await MainActor.run {
+                guard state.phase == .scanning else { return }
+                state.scanResult = SmartScanResult(
                     categories: result.categories,
                     freeBytes: result.freeBytes,
                     totalBytes: result.totalBytes,
                     scannedAt: Date(),
                     duration: Date().timeIntervalSince(started)
                 )
-                self.phase = .results
-                self.scanProgress = ScanProgress(fraction: 1, status: "扫描完成")
-                self.refreshDisk()
+                state.phase = .results
+                state.scanProgress = ScanProgress(fraction: 1, status: "扫描完成")
+                state.refreshDisk()
             }
         }
     }
@@ -326,17 +327,17 @@ final class AppState: ObservableObject {
         }
 
         Task { [weak self] in
+            guard let state = self else { return }
             let report = await Cleaner.clean(items: items,
                                              moveToTrash: moveToTrash,
                                              excludedPaths: excluded) { progress in
-                Task { @MainActor [weak self] in
-                    guard let self, self.phase == .cleaning else { return }
-                    self.cleanProgress = progress
+                Task { @MainActor in
+                    guard state.phase == .cleaning else { return }
+                    state.cleanProgress = progress
                 }
             }
-            await MainActor.run { [weak self] in
-                guard let self else { return }
-                self.finishClean(report)
+            await MainActor.run {
+                state.finishClean(report)
             }
         }
     }
@@ -344,7 +345,9 @@ final class AppState: ObservableObject {
     private func finishClean(_ report: CleanReport) {
         cleanReport = report
         phase = .finished
-        settings.recordClean(report)
+        if !isDemo {
+            settings.recordClean(report)
+        }
         refreshDisk()
     }
 

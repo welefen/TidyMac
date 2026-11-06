@@ -78,13 +78,34 @@ enum SafetyPolicy {
     }
 
     /// Paths that are protected in general but can be cleaned inside a specific context.
-    private static let mailAttachmentsMarker = "/Library/Mail/"
+    private static var mailAttachmentsMarker: String {
+        home.path + "/Library/Mail/"
+    }
     private static let mailAttachmentsSubpath = "/MailData/Attachments"
 
     static func isProtected(_ path: String) -> Bool {
         let p = normalized(path)
         if p == "/" || p == home.path { return true }
+
+        // Temporary folders live under /var (which is protected). Individual
+        // selftest / helper files inside them must remain removable. The temp
+        // root itself stays protected.
+        let tempRoot = normalized(NSTemporaryDirectory())
+        if !tempRoot.isEmpty, p != tempRoot {
+            if isDescendant(p, of: tempRoot) { return false }
+            if tempRoot.hasPrefix("/var/"), isDescendant(p, of: "/private" + tempRoot) { return false }
+        }
+        if isDescendant(p, of: "/tmp"), p != "/tmp" { return false }
+
         for root in protectedRoots {
+            // "/" matches every absolute path. The root itself is already
+            // rejected above, so it must not be treated as a protected subtree.
+            if root == "/" { continue }
+            // The home folder is protected, but its descendants are governed by
+            // the more specific entries below and by the per-context scope checks.
+            if root == home.path { continue }
+            // `/Users` protects other users' homes, not the current user's files.
+            if root == "/Users", isDescendant(p, of: home.path) { continue }
             if isDescendant(p, of: root) {
                 // Special-case mail attachments: they are junk, not the mail database.
                 if root == home.appendingPathComponent("Library/Mail").path,
@@ -92,7 +113,7 @@ enum SafetyPolicy {
                    p.contains(mailAttachmentsSubpath) {
                     return false
                 }
-                // Trash itself can be emptied by the dedicated trash flow.
+                // Trash contents may be emptied by the dedicated trash flow.
                 if root == home.appendingPathComponent(".Trash").path, p != root {
                     return false
                 }

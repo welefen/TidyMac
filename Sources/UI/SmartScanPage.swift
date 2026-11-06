@@ -4,23 +4,37 @@ struct SmartScanPage: View {
     @EnvironmentObject private var app: AppState
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 22) {
-                PageHeader(title: "智能扫描", subtitle: "扫描并清理无用文件")
-                if let result = app.scanResult {
-                    Text("发现 \(Format.bytes(result.totalBytesFound)) 可清理空间")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(Theme.textPrimary)
-                    Button("清理选中项") { app.cleanSelected() }
-                        .buttonStyle(PrimaryButtonStyle())
-                } else {
-                    Button("开始扫描") { app.startSmartScan() }
-                        .buttonStyle(PrimaryButtonStyle())
-                }
+        VStack(spacing: 0) {
+            PageHeader(title: "智能扫描", subtitle: "扫描并清理无用文件") {
+                QYAvailableSpacePill(disk: app.disk)
             }
             .padding(.horizontal, Theme.pagePadding)
             .padding(.top, 30)
-            .padding(.bottom, 40)
+            .padding(.bottom, 18)
+
+            phaseContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .animation(.easeInOut(duration: 0.25), value: app.phase)
+    }
+
+    @ViewBuilder
+    private var phaseContent: some View {
+        switch app.phase {
+        case .idle:
+            ScanIdleView()
+        case .scanning:
+            ScanRunningView()
+        case .results:
+            if let result = app.scanResult, result.totalItemCount > 0 {
+                ScanResultsView(result: result)
+            } else {
+                ScanEmptyResultsView()
+            }
+        case .cleaning:
+            ScanCleaningView()
+        case .finished:
+            ScanFinishedView()
         }
     }
 }
