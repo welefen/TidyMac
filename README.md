@@ -1,5 +1,7 @@
 # TidyMac
 
+[简体中文](README.md) | [English](README.en.md)
+
 > 轻净如羽，焕然一新。一款为 macOS 打造的智能清理与空间管理工具，交互与体验对标 CleanMyMac。
 
 ![TidyMac App Icon](Resources/AppIcon.png)
@@ -32,12 +34,12 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - 支持选择任意目录重新分析
 
 ### 自动更新
-- 应用内检查 GitHub 仓库中的 `updates/latest.json`
+- 应用内通过 GitHub Contents API 检查 `updates/latest.json`，raw.githubusercontent.com 作为兜底
 - 发现新版本后自动下载 ZIP，校验 SHA-256 与 Bundle 信息
 - 默认自动安装并重新启动；可在设置中关闭自动检查或自动安装
 - 更新资源位于 `updates/`，发布脚本：`./scripts/publish_update.sh --push`
 
-> 自动更新要求 GitHub 仓库为 **公开仓库**（默认 feed 使用 raw.githubusercontent.com）。私有仓库需要配置公开镜像或代理，不要将 GitHub Token 写入应用。
+> 自动更新要求 GitHub 仓库为 **公开仓库**。私有仓库需要配置公开镜像或代理，不要将 GitHub Token 写入应用。
 
 ### 多语言
 - 简体中文 / English
@@ -159,7 +161,7 @@ build/tidymac-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自�
 
 ## 验证结果
 
-- `./build.sh`：Swift 5 模式、39 个源文件，无 warning 构建通过（arm64 / macOS 14+）
+- `./build.sh`：Swift 5 模式、42 个源文件，无 warning 构建通过（arm64 / macOS 14+）
 - `build/tidymac-cli selftest`：**15/15 通过**（安全策略、大小计算、临时目录清理、受保护路径、排除项、废纸篓特殊分支）
 - 真实只读扫描：**3.7 秒**，发现 **17.42 GB / 29 项**（用户缓存 12.91 GB、日志 111.7 MB、包管理器缓存 2.15 GB、Chrome 缓存 2.24 GB）
 - 引擎 CLI 实测：`apps` 12 个应用 / 2.8s；`large --min 200` 11 个文件 / 13.06 GB；`lens ~ 2` 73.24 GB / 约 14s
