@@ -108,7 +108,7 @@ struct ScanIdleView: View {
             ForEach(targets) { target in
                 VStack(spacing: 8) {
                     ToneIcon(symbol: target.symbol, tone: target.tone, size: 30)
-                    Text(target.title)
+                    Text(L(target.title))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
@@ -224,7 +224,7 @@ struct ScanRunningView: View {
             .background(Capsule().fill(Theme.blue.opacity(0.10)))
             .overlay(Capsule().strokeBorder(Theme.blue.opacity(0.20), lineWidth: 0.8))
 
-            Text(app.scanProgress.status)
+            Text(L(app.scanProgress.status))
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(2)
@@ -272,7 +272,7 @@ struct ScanRunningView: View {
                         .font(.system(size: 10.5, weight: .medium))
                         .foregroundStyle(Theme.tint(row.tone).opacity(row.state == 0 ? 0.45 : 1))
                         .frame(width: 18)
-                    Text(row.title)
+                    Text(L(row.title))
                         .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(row.state == 0 ? Theme.textTertiary : Theme.textPrimary)
                     Spacer(minLength: 8)
@@ -366,7 +366,7 @@ struct ScanResultsView: View {
                 app.cleanSelected()
             }
         } message: {
-            Text(alertMessage)
+            Text(L(alertMessage))
         }
     }
 
@@ -394,12 +394,12 @@ struct ScanResultsView: View {
     }
 
     private var alertMessage: String {
-        var text = "将清理 \(app.selectedCount) 项，预计释放 \(Format.bytes(app.selectedBytes))。"
+        var text = L("将清理 \(app.selectedCount) 项，预计释放 \(Format.bytes(app.selectedBytes))。")
         text += settings.moveToTrash
             ? "\n文件会移入废纸篓，可随时恢复。"
             : "\n文件将被永久删除，无法恢复。"
         if app.riskySelectedCount > 0 {
-            text += "\n注意：其中 \(app.riskySelectedCount) 项属于重要项目，可能影响应用或需要重新下载。"
+            text += L("\n注意：其中 \(app.riskySelectedCount) 项属于重要项目，可能影响应用或需要重新下载。")
         }
         return text
     }
@@ -416,15 +416,15 @@ struct ScanResultsView: View {
                     .tracking(0.9)
                     .foregroundStyle(Theme.textTertiary)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(parts.number)
+                    Text(L(parts.number))
                         .font(.system(size: 38, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Theme.brandGradient)
-                    Text(parts.unit)
+                    Text(L(parts.unit))
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.mint)
                 }
-                Text("共 \(result.totalItemCount) 项 · 耗时 \(Format.compactDuration(result.duration))")
+                Text(L("共 \(result.totalItemCount) 项 · 耗时 \(Format.compactDuration(result.duration))"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -438,11 +438,11 @@ struct ScanResultsView: View {
                     .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(selectedParts.number)
+                    Text(L(selectedParts.number))
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(app.hasSelection ? Theme.textPrimary : Theme.textTertiary)
-                    Text(selectedParts.unit)
+                    Text(L(selectedParts.unit))
                         .font(.system(size: 10.5, weight: .medium))
                         .foregroundStyle(Theme.textTertiary)
                 }
@@ -498,10 +498,10 @@ struct ScanResultsView: View {
     private func groupBlock(_ section: ScanGroupSection) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(section.group.title)
+                Text(L(section.group.title))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text("\(section.categories.count) 类 · \(section.itemCount) 项")
+                Text(L("\(section.categories.count) 类 · \(section.itemCount) 项"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
@@ -587,7 +587,7 @@ struct ScanCategoryPanel: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 7) {
-                    Text(category.title)
+                    Text(L(category.title))
                         .font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
@@ -595,7 +595,7 @@ struct ScanCategoryPanel: View {
                         HStack(spacing: 3) {
                             Image(systemName: safety.symbol)
                                 .font(.system(size: 8, weight: .bold))
-                            Text("\(attentionCount) 项需注意")
+                            Text(L("\(attentionCount) 项需注意"))
                                 .font(.system(size: 9.5, weight: .medium))
                         }
                         .foregroundStyle(Theme.tint(safety.tone))
@@ -605,7 +605,7 @@ struct ScanCategoryPanel: View {
                         .overlay(Capsule().strokeBorder(Theme.tint(safety.tone).opacity(0.16), lineWidth: 0.5))
                     }
                 }
-                Text(category.subtitle)
+                Text(L(category.subtitle))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
@@ -674,7 +674,7 @@ struct ScanItemLine: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(item.name)
+                    Text(L(item.name))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(item.isSelected ? Theme.textPrimary : Theme.textSecondary)
                         .lineLimit(1)
@@ -687,7 +687,7 @@ struct ScanItemLine: View {
                             .background(Capsule().fill(Theme.red.opacity(0.10)))
                     }
                 }
-                Text(pathText)
+                Text(L(pathText))
                     .font(.system(size: 9.5))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
@@ -730,7 +730,7 @@ struct ScanActionBar: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("已选 \(app.selectedCount) 项 · \(Format.bytes(app.selectedBytes))")
+                Text(L("已选 \(app.selectedCount) 项 · \(Format.bytes(app.selectedBytes))"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(app.hasSelection ? Theme.textPrimary : Theme.textSecondary)
                 Text(settings.moveToTrash ? "将移入废纸篓，可随时恢复" : "将永久删除，无法恢复")
@@ -742,7 +742,7 @@ struct ScanActionBar: View {
                 HStack(spacing: 4) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 9))
-                    Text("含 \(app.riskySelectedCount) 项重要项目")
+                    Text(L("含 \(app.riskySelectedCount) 项重要项目"))
                         .font(.system(size: 10, weight: .medium))
                 }
                 .foregroundStyle(Theme.orange)
@@ -758,7 +758,7 @@ struct ScanActionBar: View {
                 HStack(spacing: 6) {
                     Image(systemName: "trash.fill")
                         .font(.system(size: 10.5, weight: .semibold))
-                    Text("清理 \(Format.bytes(app.selectedBytes))")
+                    Text(L("清理 \(Format.bytes(app.selectedBytes))"))
                 }
             }
             .buttonStyle(PrimaryButtonStyle(tone: .mint))
@@ -821,7 +821,7 @@ struct ScanCleaningView: View {
                     .multilineTextAlignment(.center)
                     .padding(.top, 22)
 
-                Text("已选 \(app.selectedCount) 项 · \(Format.bytes(app.selectedBytes))")
+                Text(L("已选 \(app.selectedCount) 项 · \(Format.bytes(app.selectedBytes))"))
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textSecondary)
                     .padding(.top, 7)
@@ -873,11 +873,11 @@ struct ScanFinishedView: View {
                             .foregroundStyle(Theme.textTertiary)
                             .padding(.top, 20)
                         HStack(alignment: .firstTextBaseline, spacing: 7) {
-                            Text(parts.number)
+                            Text(L(parts.number))
                                 .font(.system(size: 72, weight: .bold, design: .rounded))
                                 .monospacedDigit()
                                 .foregroundStyle(Theme.brandGradient)
-                            Text(parts.unit)
+                            Text(L(parts.unit))
                                 .font(.system(size: 22, weight: .semibold, design: .rounded))
                                 .foregroundStyle(Theme.mint)
                         }
@@ -888,7 +888,7 @@ struct ScanFinishedView: View {
                             .padding(.top, 2)
 
                         HStack(spacing: 8) {
-                            chip("checkmark.circle.fill", "已清理 \(report.removedCount) 项", .mint)
+                            chip("checkmark.circle.fill", L("已清理 \(report.removedCount) 项"), .mint)
                             chip("trash.fill", report.movedToTrash ? "已移入废纸篓" : "已永久删除",
                                  report.movedToTrash ? .blue : .orange)
                             chip("clock.fill", Format.dateTime(report.completedAt), .teal)
@@ -952,7 +952,7 @@ struct ScanFinishedView: View {
         HStack(spacing: 5) {
             Image(systemName: symbol)
                 .font(.system(size: 9))
-            Text(text)
+            Text(L(text))
                 .font(.system(size: 10.5, weight: .medium))
         }
         .foregroundStyle(Theme.tint(tone))
@@ -967,7 +967,7 @@ struct ScanFinishedView: View {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 10))
-                Text("\(report.failures.count) 个文件未能清理")
+                Text(L("\(report.failures.count) 个文件未能清理"))
                     .font(.system(size: 11.5, weight: .semibold))
                 Spacer(minLength: 8)
                 Text("可能权限不足或文件正被占用")
@@ -982,12 +982,12 @@ struct ScanFinishedView: View {
                         .font(.system(size: 8))
                         .foregroundStyle(Theme.orange.opacity(0.75))
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(failure.path)
+                        Text(L(failure.path))
                             .font(.system(size: 10, design: .monospaced))
                             .foregroundStyle(Theme.textSecondary)
                             .lineLimit(1)
                             .truncationMode(.middle)
-                        Text(failure.reason)
+                        Text(L(failure.reason))
                             .font(.system(size: 9.5))
                             .foregroundStyle(Theme.textTertiary)
                             .lineLimit(1)

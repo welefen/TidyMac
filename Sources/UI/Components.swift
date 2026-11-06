@@ -153,7 +153,7 @@ struct SafetyBadge: View {
         HStack(spacing: 4) {
             Image(systemName: symbol).font(.system(size: compact ? 8 : 9, weight: .bold))
             if !compact {
-                Text(label).font(.system(size: 10.5, weight: .semibold))
+                Text(L(label)).font(.system(size: 10.5, weight: .semibold))
             }
         }
         .foregroundStyle(color)
@@ -170,7 +170,7 @@ struct TagBadge: View {
     var filled = false
 
     var body: some View {
-        Text(text)
+        Text(L(text))
             .font(.system(size: 10.5, weight: .semibold))
             .foregroundStyle(filled ? Theme.textOnAccent : Theme.tint(tone))
             .padding(.horizontal, 8)
@@ -230,10 +230,10 @@ struct PageHeader<Trailing: View>: View {
     var body: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 5) {
-                Text(title)
+                Text(L(title))
                     .font(Theme.titleFont)
                     .foregroundStyle(Theme.textPrimary)
-                Text(subtitle)
+                Text(L(subtitle))
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -256,7 +256,7 @@ struct SectionHeader: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(title)
+            Text(L(title))
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
             if let count {
@@ -265,7 +265,7 @@ struct SectionHeader: View {
                     .foregroundStyle(Theme.textTertiary)
             }
             if let subtitle {
-                Text(subtitle)
+                Text(L(subtitle))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -283,7 +283,7 @@ struct SearchField: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Theme.textTertiary)
-            TextField(placeholder, text: $text)
+            TextField(L(placeholder), text: $text)
                 .textFieldStyle(.plain)
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.textPrimary)
@@ -319,7 +319,7 @@ struct FilterPill: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title)
+            Text(L(title))
                 .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
                 .foregroundStyle(isSelected
                                  ? (softSelection ? Theme.tint(tone) : Theme.textOnAccent)
@@ -378,22 +378,22 @@ struct StatTile: View {
         HStack(alignment: .top, spacing: 13) {
             ToneIcon(symbol: symbol, tone: tone, size: 38)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title)
+                Text(L(title))
                     .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text(value)
+                    Text(L(value))
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Theme.textPrimary)
                     if let unit {
-                        Text(unit)
+                        Text(L(unit))
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
                 if let caption {
-                    Text(caption)
+                    Text(L(caption))
                         .font(.system(size: 10.5))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
@@ -412,11 +412,11 @@ struct KeyValueRow: View {
 
     var body: some View {
         HStack {
-            Text(label)
+            Text(L(label))
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.textTertiary)
             Spacer()
-            Text(value)
+            Text(L(value))
                 .font(.system(size: 12, weight: .medium, design: mono ? .monospaced : .default))
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
@@ -453,17 +453,17 @@ struct EmptyStateView: View {
                     .foregroundStyle(Theme.mint)
             }
             VStack(spacing: 5) {
-                Text(title)
+                Text(L(title))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text(message)
+                Text(L(message))
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 360)
             }
             if let actionTitle, let action {
-                Button(actionTitle, action: action)
+                Button(L(actionTitle), action: action)
                     .buttonStyle(PrimaryButtonStyle(tone: .mint, compact: true))
                     .padding(.top, 2)
             }

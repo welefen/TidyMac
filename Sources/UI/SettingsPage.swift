@@ -15,6 +15,7 @@ struct SettingsPage: View {
                 }
 
                 appearanceSection
+                languageSection
                 behaviorSection
                 exclusionSection
                 securitySection
@@ -64,6 +65,47 @@ struct SettingsPage: View {
         }
     }
 
+    // MARK: - Language
+
+    private var languageSection: some View {
+        settingsCard(title: L("语言"), symbol: "globe", tone: .teal) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    ForEach(AppLanguage.allCases) { option in
+                        FilterPill(title: option.title,
+                                   isSelected: settings.language == option,
+                                   tone: .teal,
+                                   softSelection: true) {
+                            guard settings.language != option else { return }
+                            settings.applyLanguage(option)
+                            restartForLanguageChange()
+                        }
+                    }
+                    Spacer(minLength: 8)
+                    Text(L("跟随系统时使用 macOS 首选语言；不支持的语言会自动使用英文。"))
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(Theme.textTertiary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.trailing)
+                }
+                Text(L("切换语言后应用会自动重新启动。"))
+                    .font(.system(size: 10))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+        }
+    }
+
+    private func restartForLanguageChange() {
+        let appPath = Bundle.main.bundlePath
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/bin/sh")
+        task.arguments = ["-c", "sleep 0.7; /usr/bin/open -n '\(appPath)'"]
+        try? task.run()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NSApp.terminate(nil)
+        }
+    }
+
     // MARK: - Behavior
 
     private var behaviorSection: some View {
@@ -91,10 +133,10 @@ struct SettingsPage: View {
                            isOn: Binding<Bool>, tone: AccentTone) -> some View {
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(L(title))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text(subtitle)
+                Text(L(subtitle))
                     .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -316,7 +358,7 @@ struct SettingsPage: View {
         settingsCard(title: "使用统计", symbol: "chart.bar.fill", tone: .purple) {
             HStack(spacing: 12) {
                 statistic("累计释放", Format.bytes(settings.totalFreedBytes), "externaldrive.fill", .mint)
-                statistic("清理次数", "\(settings.cleanCount) 次", "sparkles", .blue)
+                statistic("清理次数", L("\(settings.cleanCount) 次"), "sparkles", .blue)
                 statistic("上次清理", Format.date(settings.lastCleanDate), "clock.fill", .purple)
             }
             HStack {
@@ -335,10 +377,10 @@ struct SettingsPage: View {
         HStack(spacing: 10) {
             ToneIcon(symbol: symbol, tone: tone, size: 30)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(L(title))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
-                Text(value)
+                Text(L(value))
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(Theme.textPrimary)
@@ -386,7 +428,7 @@ struct SettingsPage: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 9) {
                 ToneIcon(symbol: symbol, tone: tone, size: 27)
-                Text(title)
+                Text(L(title))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
@@ -401,7 +443,7 @@ struct SettingsPage: View {
             Image(systemName: symbol)
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(Theme.orange)
-            Text(text)
+            Text(L(text))
                 .font(.system(size: 11.5))
                 .foregroundStyle(Theme.orange)
                 .fixedSize(horizontal: false, vertical: true)

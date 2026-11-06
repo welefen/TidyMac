@@ -2,7 +2,7 @@ import Foundation
 
 /// `~/Library/Caches`: one item per top-level app cache directory/file that is at
 /// least 1 MB. The 12 largest are shown individually, the rest are folded into
-/// one "其他应用缓存" item.
+/// one L("其他应用缓存") item.
 enum UserCacheScanner {
     static let minimumBytes: Int64 = 1_000_000
     static let displayLimit = 12
@@ -39,9 +39,9 @@ enum UserCacheScanner {
         return ScanAggregate.compact(items,
                                      limit: displayLimit,
                                      aggregateID: "cache:other",
-                                     aggregateName: "其他应用缓存",
+                                     aggregateName: L("其他应用缓存"),
                                      aggregateKind: .cache,
                                      aggregateSafety: .safe,
-                                     aggregateDetail: "包含 {count} 个应用缓存项目，可安全重建")
+                                     aggregateDetail: L("包含 {count} 个应用缓存项目，可安全重建"))
     }
 }

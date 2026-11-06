@@ -26,8 +26,8 @@ enum SmartScanner {
     private static var domains: [Domain] {
         [
             Domain(categoryID: "system-cache",
-                   title: "用户缓存",
-                   subtitle: "应用运行时生成的临时数据，可安全重建",
+                   title: L("用户缓存"),
+                   subtitle: L("应用运行时生成的临时数据，可安全重建"),
                    symbol: "shippingbox.fill",
                    tone: .mint,
                    group: .systemJunk,
@@ -35,8 +35,8 @@ enum SmartScanner {
                        UserCacheScanner.items(exclusions: exclusions, isCancelled: { Task.isCancelled })
                    }),
             Domain(categoryID: "logs",
-                   title: "日志与崩溃报告",
-                   subtitle: "诊断日志与旧崩溃记录",
+                   title: L("日志与崩溃报告"),
+                   subtitle: L("诊断日志与旧崩溃记录"),
                    symbol: "doc.text.magnifyingglass",
                    tone: .blue,
                    group: .systemJunk,
@@ -44,8 +44,8 @@ enum SmartScanner {
                        LogScanner.items(exclusions: exclusions, isCancelled: { Task.isCancelled })
                    }),
             Domain(categoryID: "xcode",
-                   title: "Xcode 构建缓存",
-                   subtitle: "DerivedData、设备支持与模拟器缓存",
+                   title: L("Xcode 构建缓存"),
+                   subtitle: L("DerivedData、设备支持与模拟器缓存"),
                    symbol: "hammer.fill",
                    tone: .purple,
                    group: .developerJunk,
@@ -53,8 +53,8 @@ enum SmartScanner {
                        XcodeScanner.items(exclusions: exclusions, isCancelled: { Task.isCancelled })
                    }),
             Domain(categoryID: "dev-packages",
-                   title: "包管理器缓存",
-                   subtitle: "npm、Homebrew、pip 等下载缓存",
+                   title: L("包管理器缓存"),
+                   subtitle: L("npm、Homebrew、pip 等下载缓存"),
                    symbol: "shippingbox.and.arrow.backward.fill",
                    tone: .teal,
                    group: .developerJunk,
@@ -62,8 +62,8 @@ enum SmartScanner {
                        PackageCacheScanner.items(exclusions: exclusions, isCancelled: { Task.isCancelled })
                    }),
             Domain(categoryID: "browser",
-                   title: "浏览器数据",
-                   subtitle: "网页缓存与旧版本资源，建议先退出浏览器",
+                   title: L("浏览器数据"),
+                   subtitle: L("网页缓存与旧版本资源，建议先退出浏览器"),
                    symbol: "safari.fill",
                    tone: .blue,
                    group: .browserJunk,
@@ -71,8 +71,8 @@ enum SmartScanner {
                        BrowserCacheScanner.items(exclusions: exclusions, isCancelled: { Task.isCancelled })
                    }),
             Domain(categoryID: "mail",
-                   title: "邮件附件",
-                   subtitle: "已下载至本地的附件副本，邮件本身不受影响",
+                   title: L("邮件附件"),
+                   subtitle: L("已下载至本地的附件副本，邮件本身不受影响"),
                    symbol: "envelope.fill",
                    tone: .pink,
                    group: .mailAttachments,
@@ -80,8 +80,8 @@ enum SmartScanner {
                        MailAttachmentScanner.items(exclusions: exclusions, isCancelled: { Task.isCancelled })
                    }),
             Domain(categoryID: "ios-backups",
-                   title: "iOS 设备备份",
-                   subtitle: "旧设备备份，删除后需重新备份",
+                   title: L("iOS 设备备份"),
+                   subtitle: L("旧设备备份，删除后需重新备份"),
                    symbol: "iphone.gen3",
                    tone: .yellow,
                    group: .iosBackups,
@@ -89,8 +89,8 @@ enum SmartScanner {
                        IOSBackupScanner.items(exclusions: exclusions, isCancelled: { Task.isCancelled })
                    }),
             Domain(categoryID: "trash",
-                   title: "废纸篓",
-                   subtitle: "已删除但仍占用磁盘空间的项目",
+                   title: L("废纸篓"),
+                   subtitle: L("已删除但仍占用磁盘空间的项目"),
                    symbol: "trash.fill",
                    tone: .orange,
                    group: .trash,
@@ -108,8 +108,8 @@ enum SmartScanner {
         var collected: [Int: [ScanItem]] = [:]
 
         progress(ScanProgress(fraction: 0.05,
-                              status: "正在准备扫描…",
-                              detail: "检查可访问的缓存与日志位置"))
+                              status: L("正在准备扫描…"),
+                              detail: L("检查可访问的缓存与日志位置")))
 
         guard !Task.isCancelled, !domains.isEmpty else {
             return makeResult(categories: [], startedAt: startedAt)
@@ -123,7 +123,7 @@ enum SmartScanner {
                 let index = next
                 let domain = domains[index]
                 progress(ScanProgress(fraction: completedFraction(collected.count, total: domains.count),
-                                      status: "正在扫描\(domain.title)…",
+                                      status: L("正在扫描\(domain.title)…"),
                                       detail: domain.subtitle))
                 group.addTask {
                     let items = await domain.load(exclusions)
@@ -136,8 +136,8 @@ enum SmartScanner {
                 collected[index] = items
                 let fraction = completedFraction(collected.count, total: domains.count)
                 progress(ScanProgress(fraction: fraction,
-                                      status: "已扫描\(domains[index].title)",
-                                      detail: items.isEmpty ? "未发现可清理项目" : "发现 \(items.count) 项"))
+                                      status: L("已扫描\(domains[index].title)"),
+                                      detail: items.isEmpty ? L("未发现可清理项目") : L("发现 \(items.count) 项")))
 
                 if Task.isCancelled {
                     group.cancelAll()
@@ -147,7 +147,7 @@ enum SmartScanner {
                     let upcomingIndex = next
                     let domain = domains[upcomingIndex]
                     progress(ScanProgress(fraction: fraction,
-                                          status: "正在扫描\(domain.title)…",
+                                          status: L("正在扫描\(domain.title)…"),
                                           detail: domain.subtitle))
                     group.addTask {
                         let items = await domain.load(exclusions)
@@ -161,7 +161,7 @@ enum SmartScanner {
         if Task.isCancelled {
             return makeResult(categories: [], startedAt: startedAt)
         }
-        progress(ScanProgress(fraction: 0.95, status: "正在整理扫描结果…"))
+        progress(ScanProgress(fraction: 0.95, status: L("正在整理扫描结果…")))
 
         let categories = domains.enumerated().compactMap { index, domain -> ScanCategory? in
             guard let items = collected[index], !items.isEmpty else { return nil }
@@ -191,7 +191,7 @@ enum SmartScanner {
                                duration: Date().timeIntervalSince(startedAt))
     }
 
-    /// Largest first; the synthetic "其他…" bucket always stays at the end.
+    /// Largest first; the synthetic L("其他…") bucket always stays at the end.
     private static func sortedItems(_ items: [ScanItem]) -> [ScanItem] {
         var sorted: [ScanItem] = []
         var aggregate: [ScanItem] = []

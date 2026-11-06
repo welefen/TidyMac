@@ -30,7 +30,7 @@ enum UninstallerEngine {
 
     static func loadApplications(includeSystem: Bool,
                                  progress: @escaping @Sendable (Double, String) -> Void) async -> [InstalledApp] {
-        progress(0.01, "正在查找已安装的应用…")
+        progress(0.01, L("正在查找已安装的应用…"))
 
         var roots = userApplicationRoots
         if includeSystem { roots.append(systemApplicationRoot) }
@@ -52,7 +52,7 @@ enum UninstallerEngine {
         }
 
         guard !urls.isEmpty else {
-            progress(1, "没有找到可卸载的应用")
+            progress(1, L("没有找到可卸载的应用"))
             return []
         }
 
@@ -86,7 +86,7 @@ enum UninstallerEngine {
                     apps.append(app)
                 }
                 let fraction = 0.03 + 0.90 * Double(completed) / Double(total)
-                progress(min(0.95, fraction), "正在读取应用… \(completed)/\(total)")
+                progress(min(0.95, fraction), L("正在读取应用… \(completed)/\(total)"))
                 if nextIndex < total {
                     let index = nextIndex
                     let url = urls[index]
@@ -101,9 +101,9 @@ enum UninstallerEngine {
         }
 
         if Task.isCancelled {
-            progress(1, "已取消加载，返回 \(apps.count) 个应用")
+            progress(1, L("已取消加载，返回 \(apps.count) 个应用"))
         } else {
-            progress(1, "已加载 \(apps.count) 个应用")
+            progress(1, L("已加载 \(apps.count) 个应用"))
         }
         return apps
     }
@@ -155,11 +155,11 @@ enum UninstallerEngine {
 
     static func findLeftovers(for app: InstalledApp,
                               progress: @escaping @Sendable (Double, String) -> Void) async -> [LeftoverItem] {
-        progress(0.02, "正在检查 \(app.name) 的残留文件…")
+        progress(0.02, L("正在检查 \(app.name) 的残留文件…"))
 
         let candidates = leftoverCandidates(for: app)
         guard !candidates.isEmpty else {
-            progress(1, "没有找到残留文件")
+            progress(1, L("没有找到残留文件"))
             return []
         }
 
@@ -169,7 +169,7 @@ enum UninstallerEngine {
             if Task.isCancelled { break }
             defer {
                 let fraction = 0.05 + 0.90 * Double(index + 1) / Double(total)
-                progress(min(0.97, fraction), "正在检查残留文件… \(index + 1)/\(total)")
+                progress(min(0.97, fraction), L("正在检查残留文件… \(index + 1)/\(total)"))
             }
 
             let url = candidate.url
@@ -187,7 +187,7 @@ enum UninstallerEngine {
 
         items.sort { $0.byteCount > $1.byteCount }
         let totalBytes = items.reduce(Int64(0)) { $0 + $1.byteCount }
-        progress(1, "找到 \(items.count) 项残留，共 \(Format.bytes(totalBytes))")
+        progress(1, L("找到 \(items.count) 项残留，共 \(Format.bytes(totalBytes))"))
         return items
     }
 
@@ -240,7 +240,7 @@ enum UninstallerEngine {
                           leftovers: [LeftoverItem],
                           moveToTrash: Bool,
                           progress: @escaping @Sendable (Double, String) -> Void) async -> CleanReport {
-        progress(0.02, "正在卸载 \(app.name)…")
+        progress(0.02, L("正在卸载 \(app.name)…"))
 
         var removedCount = 0
         var freedBytes: Int64 = 0
@@ -264,7 +264,7 @@ enum UninstallerEngine {
                                          reason: ToolsSupport.failureReason(error)))
         }
         progress(0.05 + 0.90 * Double(step) / Double(max(1, totalSteps)),
-                 "正在删除应用主程序…")
+                 L("正在删除应用主程序…"))
 
         for leftover in selectedLeftovers {
             if Task.isCancelled { break }
@@ -280,14 +280,14 @@ enum UninstallerEngine {
                                              reason: ToolsSupport.failureReason(error)))
             }
             progress(0.05 + 0.90 * Double(step) / Double(max(1, totalSteps)),
-                     "正在删除残留文件… \(step - 1)/\(selectedLeftovers.count)")
+                     L("正在删除残留文件… \(step - 1)/\(selectedLeftovers.count)"))
         }
 
-        let action = moveToTrash ? "已移到废纸篓" : "已删除"
+        let action = moveToTrash ? L("已移到废纸篓") : L("已删除")
         if failures.isEmpty {
-            progress(1, "已卸载 \(app.name)，\(action) \(Format.bytes(freedBytes))")
+            progress(1, L("已卸载 \(app.name)，\(action) \(Format.bytes(freedBytes))"))
         } else {
-            progress(1, "卸载完成，\(failures.count) 项失败")
+            progress(1, L("卸载完成，\(failures.count) 项失败"))
         }
 
         return CleanReport(removedCount: removedCount,

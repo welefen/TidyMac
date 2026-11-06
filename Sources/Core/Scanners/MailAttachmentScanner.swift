@@ -31,10 +31,10 @@ enum MailAttachmentScanner {
         }
 
         guard !urls.isEmpty, bytes > 0 else { return [] }
-        let detail = "共 \(fileCount) 个附件文件，邮件正文与邮箱数据不受影响，附件可按需重新下载"
+        let detail = L("共 \(fileCount) 个附件文件，邮件正文与邮箱数据不受影响，附件可按需重新下载")
         return [ScanItem(
             id: "mail:attachments",
-            name: "邮件附件",
+            name: L("邮件附件"),
             urls: urls,
             byteCount: bytes,
             kind: .mailAttachment,

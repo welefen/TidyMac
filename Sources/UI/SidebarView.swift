@@ -77,7 +77,7 @@ struct SidebarView: View {
     }
 
     private func sectionLabel(_ text: String) -> some View {
-        Text(text)
+        Text(L(text))
             .font(.system(size: 10, weight: .semibold))
             .tracking(1.4)
             .foregroundStyle(Theme.textTertiary.opacity(0.85))
@@ -97,7 +97,7 @@ struct SidebarView: View {
                     .font(.system(size: 13.5, weight: selected ? .semibold : .medium))
                     .frame(width: 22)
                     .foregroundStyle(selected ? Theme.mint : Theme.textSecondary)
-                Text(page.title)
+                Text(L(page.title))
                     .font(.system(size: 13, weight: selected ? .semibold : .medium))
                     .foregroundStyle(selected ? Theme.textPrimary : Theme.textSecondary)
                 Spacer(minLength: 4)
@@ -148,7 +148,7 @@ struct SidebarView: View {
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                     Spacer()
-                    Text("\(Format.bytes(app.disk.freeBytes)) 可用")
+                    Text(L("\(Format.bytes(app.disk.freeBytes)) 可用"))
                         .font(.system(size: 9.5, weight: .medium))
                         .foregroundStyle(Theme.mint)
                 }
@@ -156,9 +156,9 @@ struct SidebarView: View {
                            tone: app.disk.usedFraction > 0.88 ? .orange : .mint,
                            height: 5)
                 HStack {
-                    Text("已用 \(Format.bytes(app.disk.usedBytes))")
+                    Text(L("已用 \(Format.bytes(app.disk.usedBytes))"))
                     Spacer()
-                    Text("共 \(Format.bytes(app.disk.totalBytes))")
+                    Text(L("共 \(Format.bytes(app.disk.totalBytes))"))
                 }
                 .font(.system(size: 9))
                 .foregroundStyle(Theme.textTertiary)

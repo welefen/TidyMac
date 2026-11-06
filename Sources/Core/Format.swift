@@ -1,6 +1,10 @@
 import Foundation
 
 enum Format {
+    private static var appLocale: Locale {
+        Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en")
+    }
+
     private static let byteFormatter: ByteCountFormatter = {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
@@ -30,51 +34,51 @@ enum Format {
     }
 
     static func itemCount(_ count: Int) -> String {
-        "\(count) 项"
+        L("\(count) 项")
     }
 
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = appLocale
         formatter.dateFormat = "yyyy/MM/dd"
         return formatter
     }()
 
     private static let dateTimeFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = appLocale
         formatter.dateFormat = "MM/dd HH:mm"
         return formatter
     }()
 
     static func date(_ date: Date?) -> String {
-        guard let date else { return "从未" }
+        guard let date else { return L("从未") }
         return dateFormatter.string(from: date)
     }
 
     static func dateTime(_ date: Date?) -> String {
-        guard let date else { return "从未" }
+        guard let date else { return L("从未") }
         return dateTimeFormatter.string(from: date)
     }
 
     static func relativeDate(_ date: Date?) -> String {
-        guard let date else { return "未知" }
+        guard let date else { return L("未知") }
         let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = appLocale
         formatter.unitsStyle = .short
         return formatter.localizedString(for: date, relativeTo: Date())
     }
 
     static func duration(_ seconds: TimeInterval) -> String {
-        if seconds < 1 { return "不到 1 秒" }
-        if seconds < 60 { return String(format: "%.1f 秒", seconds) }
+        if seconds < 1 { return L("不到 1 秒") }
+        if seconds < 60 { return L("%.1f 秒", seconds) }
         let minutes = Int(seconds / 60)
         let remainder = Int(seconds.truncatingRemainder(dividingBy: 60))
-        return "\(minutes) 分 \(remainder) 秒"
+        return L("%d 分 %d 秒", minutes, remainder)
     }
 
     static func compactDuration(_ seconds: TimeInterval) -> String {
-        if seconds < 60 { return "\(Int(seconds.rounded())) 秒" }
-        return "\(Int((seconds / 60).rounded())) 分钟"
+        if seconds < 60 { return L("%d 秒", Int(seconds.rounded())) }
+        return L("%d 分钟", Int((seconds / 60).rounded()))
     }
 }

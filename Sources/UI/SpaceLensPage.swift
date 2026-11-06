@@ -120,7 +120,7 @@ final class SpaceLensViewModel: ObservableObject {
         scanError = nil
         isScanning = true
         scanProgress = 0.02
-        scanStatus = "正在分析 \(root.lastPathComponent)…"
+        scanStatus = L("正在分析 \(root.lastPathComponent)…")
 
         scanTask = Task { [weak self] in
             guard let self else { return }
@@ -231,7 +231,7 @@ struct SpaceLensPage: View {
             HStack(spacing: 6) {
                 Image(systemName: "folder.fill")
                     .font(.system(size: 10.5, weight: .semibold))
-                Text(model.rootLabel)
+                Text(L(model.rootLabel))
                     .font(.system(size: 12, weight: .medium))
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
@@ -311,7 +311,7 @@ struct SpaceLensPage: View {
             LensStatCard(title: "目录数量",
                          value: "\(model.directoryCount)",
                          unit: "个",
-                         caption: "共 \(current.children.count) 个项目",
+                         caption: L("共 \(current.children.count) 个项目"),
                          symbol: "folder.fill",
                          tone: .blue)
             LensStatCard(title: "最大项目",
@@ -359,7 +359,7 @@ struct SpaceLensPage: View {
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
-                Text("共 \(current.children.count) 项")
+                Text(L("共 \(current.children.count) 项"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
             }

@@ -18,10 +18,10 @@ enum Cleaner {
         var failures: [CleanFailure] = []
 
         let total = max(1, items.count)
-        progress(CleanProgress(fraction: 0, status: "正在准备清理…"))
+        progress(CleanProgress(fraction: 0, status: L("正在准备清理…")))
 
         if items.isEmpty {
-            progress(CleanProgress(fraction: 1, status: "没有需要清理的项目"))
+            progress(CleanProgress(fraction: 1, status: L("没有需要清理的项目")))
             return CleanReport(removedCount: 0, freedBytes: 0, failures: [],
                                completedAt: Date(), movedToTrash: moveToTrash)
         }
@@ -59,7 +59,7 @@ enum Cleaner {
         for (index, item) in items.enumerated() {
             if Task.isCancelled { break }
             progress(CleanProgress(fraction: Self.clamp(Double(index) / Double(total)),
-                                   status: "正在清理 \(item.name)…"))
+                                   status: L("正在清理 \(item.name)…")))
 
             if item.kind == .trash {
                 // Never remove the trash folder itself: empty its contents.
@@ -81,10 +81,10 @@ enum Cleaner {
             }
 
             progress(CleanProgress(fraction: Self.clamp(Double(index + 1) / Double(total)),
-                                   status: item.kind == .trash ? "已清空废纸篓" : "已清理 \(item.name)"))
+                                   status: item.kind == .trash ? L("已清空废纸篓") : L("已清理 \(item.name)")))
         }
 
-        progress(CleanProgress(fraction: 1, status: "清理完成"))
+        progress(CleanProgress(fraction: 1, status: L("清理完成")))
         return CleanReport(removedCount: removedCount,
                            freedBytes: freedBytes,
                            failures: failures,
@@ -104,21 +104,21 @@ enum Cleaner {
         let nsError = error as NSError
         switch (nsError.domain, nsError.code) {
         case (NSCocoaErrorDomain, NSFileWriteNoPermissionError):
-            return "没有权限删除，已跳过（可在系统设置中授权）"
+            return L("没有权限删除，已跳过（可在系统设置中授权）")
         case (NSCocoaErrorDomain, NSFileReadNoPermissionError):
-            return "没有读取权限，已跳过"
+            return L("没有读取权限，已跳过")
         case (NSCocoaErrorDomain, NSFileNoSuchFileError), (NSCocoaErrorDomain, NSFileReadNoSuchFileError):
-            return "文件已不存在"
+            return L("文件已不存在")
         case (NSCocoaErrorDomain, NSFileWriteVolumeReadOnlyError):
-            return "磁盘为只读，无法删除"
+            return L("磁盘为只读，无法删除")
         case (NSPOSIXErrorDomain, Int(EPERM)), (NSPOSIXErrorDomain, Int(EACCES)):
-            return "没有权限删除，已跳过（可尝试授予完全磁盘访问权限）"
+            return L("没有权限删除，已跳过（可尝试授予完全磁盘访问权限）")
         case (NSPOSIXErrorDomain, Int(EBUSY)):
-            return "文件正在使用中，已跳过"
+            return L("文件正在使用中，已跳过")
         case (NSPOSIXErrorDomain, Int(EROFS)):
-            return "磁盘为只读，无法删除"
+            return L("磁盘为只读，无法删除")
         default:
-            return "删除失败：\(nsError.localizedDescription)"
+            return L("删除失败：\(nsError.localizedDescription)")
         }
     }
 }

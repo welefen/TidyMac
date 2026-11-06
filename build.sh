@@ -21,6 +21,9 @@ cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
 if [[ -f "$ROOT/Resources/AppIcon.icns" ]]; then
   cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 fi
+for lproj in "$ROOT"/Resources/*.lproj; do
+  [[ -d "$lproj" ]] && ditto "$lproj" "$APP/Contents/Resources/$(basename "$lproj")"
+done
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
 APP_SOURCES=()

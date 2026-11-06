@@ -10,9 +10,9 @@ enum AppAppearance: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .system: return "跟随系统"
-        case .light: return "浅色"
-        case .dark: return "深色"
+        case .system: return L("跟随系统")
+        case .light: return L("浅色")
+        case .dark: return L("深色")
         }
     }
 }
@@ -32,6 +32,7 @@ final class AppSettings: ObservableObject {
         static let showSystemApps = "settings.showSystemApps"
         static let reduceMotion = "settings.reduceMotion"
         static let appearance = "settings.appearance"
+        static let language = "settings.language"
     }
 
     @Published var moveToTrash: Bool {
@@ -78,6 +79,10 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) }
     }
 
+    @Published var language: AppLanguage {
+        didSet { defaults.set(language.rawValue, forKey: Keys.language) }
+    }
+
     private let defaults: UserDefaults
 
     private init() {
@@ -104,7 +109,8 @@ final class AppSettings: ObservableObject {
             Keys.cleanCount: 0,
             Keys.showSystemApps: false,
             Keys.reduceMotion: false,
-            Keys.appearance: AppAppearance.system.rawValue
+            Keys.appearance: AppAppearance.system.rawValue,
+            Keys.language: AppLanguage.system.rawValue
         ])
         moveToTrash = defaults.bool(forKey: Keys.moveToTrash)
         confirmBeforeClean = defaults.bool(forKey: Keys.confirmBeforeClean)
@@ -115,6 +121,7 @@ final class AppSettings: ObservableObject {
         showSystemApps = defaults.bool(forKey: Keys.showSystemApps)
         reduceMotion = defaults.bool(forKey: Keys.reduceMotion)
         appearance = AppAppearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
+        language = AppLanguage(rawValue: defaults.string(forKey: Keys.language) ?? "") ?? .system
         if let data = defaults.data(forKey: Keys.history),
            let decoded = try? JSONDecoder().decode([CleanHistoryEntry].self, from: data) {
             history = decoded
@@ -142,6 +149,17 @@ final class AppSettings: ObservableObject {
         if let raw = ProcessInfo.processInfo.environment["TIDYMAC_APPEARANCE"],
            let parsed = AppAppearance(rawValue: raw.lowercased()) {
             appearance = parsed
+        }
+    }
+
+    /// Applies a language override and persists AppleLanguages for the next launch.
+    /// The caller is responsible for relaunching the app.
+    func applyLanguage(_ newValue: AppLanguage) {
+        language = newValue
+        if let apple = newValue.appleLanguage {
+            defaults.set([apple], forKey: "AppleLanguages")
+        } else {
+            defaults.removeObject(forKey: "AppleLanguages")
         }
     }
 

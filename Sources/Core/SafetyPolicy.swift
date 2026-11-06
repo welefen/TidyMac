@@ -20,13 +20,13 @@ enum SafetyError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .rootPath:
-            return "拒绝操作：不能删除磁盘根目录或用户主目录。"
+            return L("拒绝操作：不能删除磁盘根目录或用户主目录。")
         case .protectedPath(let path):
-            return "受保护路径，已跳过：\(HomePaths.relativePath(URL(fileURLWithPath: path)))"
+            return L("受保护路径，已跳过：\(HomePaths.relativePath(URL(fileURLWithPath: path)))")
         case .outsideAllowedScope(let path):
-            return "超出允许的清理范围：\(HomePaths.relativePath(URL(fileURLWithPath: path)))"
+            return L("超出允许的清理范围：\(HomePaths.relativePath(URL(fileURLWithPath: path)))")
         case .invalidPath:
-            return "路径无效。"
+            return L("路径无效。")
         }
     }
 }
@@ -218,7 +218,7 @@ enum SafetyPolicy {
             try validate(url, context: .largeFile)
             return ""
         } catch {
-            return (error as? LocalizedError)?.errorDescription ?? "受保护路径"
+            return (error as? LocalizedError)?.errorDescription ?? L("受保护路径")
         }
     }
 }

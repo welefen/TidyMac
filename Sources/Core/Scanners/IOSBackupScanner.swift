@@ -20,11 +20,11 @@ enum IOSBackupScanner {
             let deviceName = (info?["Device Name"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
             let lastBackup = info?["Last Backup Date"] as? Date
             let name = (deviceName?.isEmpty == false ? deviceName! : ScanFileTool.name(of: child))
-            var detail = "iOS 设备备份，删除后需要重新连接设备备份"
+            var detail = L("iOS 设备备份，删除后需要重新连接设备备份")
             if let lastBackup {
-                detail = "\(name) · 最后备份 \(Format.date(lastBackup)) · 删除后需要重新备份"
+                detail = L("\(name) · 最后备份 \(Format.date(lastBackup)) · 删除后需要重新备份")
             } else if let deviceName, !deviceName.isEmpty {
-                detail = "\(deviceName) 的备份，删除后需要重新备份"
+                detail = L("\(deviceName) 的备份，删除后需要重新备份")
             }
             items.append(ScanItem(
                 id: "ios-backup:" + child.path,

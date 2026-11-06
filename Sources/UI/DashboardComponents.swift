@@ -26,7 +26,7 @@ struct QYAvailableSpacePill: View {
             }
             StorageBar(usedFraction: disk.usedFraction, tone: barTone, height: 5)
                 .frame(width: 176)
-            Text("共 \(Format.bytes(disk.totalBytes)) · 已用 \(Format.percent(disk.usedFraction))")
+            Text(L("共 \(Format.bytes(disk.totalBytes)) · 已用 \(Format.percent(disk.usedFraction))"))
                 .font(.system(size: 9.5, weight: .medium))
                 .foregroundStyle(Theme.textTertiary)
                 .lineLimit(1)
@@ -42,7 +42,7 @@ struct QYAvailableSpacePill: View {
                 .strokeBorder(Theme.stroke, lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("可用空间 \(Format.bytes(max(0, disk.freeBytes)))")
+        .accessibilityLabel(L("可用空间 \(Format.bytes(max(0, disk.freeBytes)))"))
     }
 }
 
@@ -249,7 +249,7 @@ struct DashboardHeroCard: View {
         return HStack(spacing: 6) {
             Image(systemName: symbol)
                 .font(.system(size: 9.5, weight: .bold))
-            Text(label)
+            Text(L(label))
                 .font(.system(size: 10.5, weight: .semibold))
                 .tracking(0.6)
             if isScanning {
@@ -269,7 +269,7 @@ struct DashboardHeroCard: View {
     @ViewBuilder
     private var titleView: some View {
         if isScanning {
-            Text(app.scanProgress.status)
+            Text(L(app.scanProgress.status))
                 .font(.system(size: 25, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(2)
@@ -309,7 +309,7 @@ struct DashboardHeroCard: View {
                     .truncationMode(.middle)
             }
         } else if hasResult {
-            Text("共 \(app.scanResult?.totalItemCount ?? 0) 项 · 耗时 \(Format.compactDuration(app.scanResult?.duration ?? 0)) · 默认只选择安全项目")
+            Text(L("共 \(app.scanResult?.totalItemCount ?? 0) 项 · 耗时 \(Format.compactDuration(app.scanResult?.duration ?? 0)) · 默认只选择安全项目"))
                 .font(.system(size: 12.5))
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(2)
@@ -410,10 +410,10 @@ struct DashboardQuickToolCard: View {
                         .overlay(Circle().strokeBorder(Theme.stroke, lineWidth: 1))
                 }
                 Spacer(minLength: 12)
-                Text(title)
+                Text(L(title))
                     .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text(subtitle)
+                Text(L(subtitle))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(2)
@@ -511,7 +511,7 @@ struct DashboardHistoryCard: View {
                     .foregroundStyle(Theme.mint)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text("释放 \(Format.bytes(entry.freedBytes))")
+                Text(L("释放 \(Format.bytes(entry.freedBytes))"))
                     .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(Format.dateTime(entry.date))

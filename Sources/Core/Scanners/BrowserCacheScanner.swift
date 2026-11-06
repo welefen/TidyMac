@@ -1,7 +1,7 @@
 import Foundation
 
 /// Browser caches live under `~/Library/Caches` but are reported separately so
-/// the user sees a dedicated "浏览器数据" section. Every path listed here is
+/// the user sees a dedicated L("浏览器数据") section. Every path listed here is
 /// reserved out of the generic user-cache category to avoid double counting.
 enum BrowserCacheScanner {
     private struct Definition {
@@ -10,14 +10,14 @@ enum BrowserCacheScanner {
     }
 
     private static let definitions: [Definition] = [
-        Definition(relativePath: "Library/Caches/com.apple.Safari", name: "Safari 缓存"),
-        Definition(relativePath: "Library/Caches/Google/Chrome", name: "Chrome 缓存"),
-        Definition(relativePath: "Library/Caches/Google/Chrome Canary", name: "Chrome Canary 缓存"),
-        Definition(relativePath: "Library/Caches/Firefox", name: "Firefox 缓存"),
-        Definition(relativePath: "Library/Caches/Microsoft Edge", name: "Edge 缓存"),
-        Definition(relativePath: "Library/Caches/com.microsoft.edgemac", name: "Edge 缓存"),
-        Definition(relativePath: "Library/Caches/com.brave.Browser", name: "Brave 缓存"),
-        Definition(relativePath: "Library/Caches/com.operasoftware.Opera", name: "Opera 缓存")
+        Definition(relativePath: "Library/Caches/com.apple.Safari", name: L("Safari 缓存")),
+        Definition(relativePath: "Library/Caches/Google/Chrome", name: L("Chrome 缓存")),
+        Definition(relativePath: "Library/Caches/Google/Chrome Canary", name: L("Chrome Canary 缓存")),
+        Definition(relativePath: "Library/Caches/Firefox", name: L("Firefox 缓存")),
+        Definition(relativePath: "Library/Caches/Microsoft Edge", name: L("Edge 缓存")),
+        Definition(relativePath: "Library/Caches/com.microsoft.edgemac", name: L("Edge 缓存")),
+        Definition(relativePath: "Library/Caches/com.brave.Browser", name: L("Brave 缓存")),
+        Definition(relativePath: "Library/Caches/com.operasoftware.Opera", name: L("Opera 缓存"))
     ]
 
     /// Absolute paths claimed by this scanner; the user-cache scanner ignores them.
@@ -40,7 +40,7 @@ enum BrowserCacheScanner {
                 byteCount: footprint.bytes,
                 kind: .browserCache,
                 safety: .caution,
-                detail: "建议先退出浏览器再清理，缓存会在下次浏览时自动重建",
+                detail: L("建议先退出浏览器再清理，缓存会在下次浏览时自动重建"),
                 modifiedAt: footprint.lastModified,
                 isSelected: true
             ))

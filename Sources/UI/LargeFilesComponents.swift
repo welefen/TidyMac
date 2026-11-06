@@ -138,7 +138,7 @@ struct LargeFileRowView: View {
             ToneIcon(symbol: file.kind.symbol, tone: file.kind.tone, size: 34)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(file.name)
+                Text(L(file.name))
                     .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
@@ -211,9 +211,9 @@ struct LargeFilesResultBanner: View {
 
     private var message: String {
         if hasFailure {
-            return "成功 \(report.removedCount) 个，释放 \(Format.bytes(report.freedBytes))。\(report.failures.first?.reason ?? "权限不足")"
+return L("成功 %d 个，释放 %@。%@", report.removedCount, Format.bytes(report.freedBytes), report.failures.first?.reason ?? L("权限不足"))
         }
-        return "\(report.removedCount) 个文件 · 释放 \(Format.bytes(report.freedBytes))，可随时从废纸篓恢复。"
+        return L("\(report.removedCount) 个文件 · 释放 \(Format.bytes(report.freedBytes))，可随时从废纸篓恢复。")
     }
 
     var body: some View {
@@ -221,10 +221,10 @@ struct LargeFilesResultBanner: View {
             ToneIcon(symbol: hasFailure ? "exclamationmark.triangle.fill" : "trash.fill",
                      tone: hasFailure ? .orange : .mint, size: 30)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(L(title))
                     .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text(message)
+                Text(L(message))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
@@ -292,7 +292,7 @@ struct LargeFilesScanningState: View {
                 Image(systemName: "sparkles")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.mint)
-                Text(status)
+                Text(L(status))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)

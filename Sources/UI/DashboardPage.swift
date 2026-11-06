@@ -73,7 +73,7 @@ struct DashboardPage: View {
             let parts = Format.bytesParts(value.bytes)
             return DashboardMetricItem(id: id, title: title, symbol: symbol, tone: tone,
                                        value: parts.number, unit: parts.unit,
-                                       caption: "\(value.count) 项可清理")
+                                       caption: L("\(value.count) 项可清理"))
         }
 
         return [
@@ -135,7 +135,7 @@ struct DashboardPage: View {
     private var historySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "最近清理",
-                          subtitle: settings.history.isEmpty ? nil : "最近 \(min(3, settings.history.count)) 条记录")
+                          subtitle: settings.history.isEmpty ? nil : L("最近 \(min(3, settings.history.count)) 条记录"))
             DashboardHistoryCard()
         }
     }

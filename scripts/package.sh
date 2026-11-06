@@ -30,7 +30,7 @@ else
 fi
 
 echo "▸ Creating ZIP"
-ditto -c -k --sequesterRsrc --keepParent "$ROOT/build/TidyMac.app" "$DIST/TidyMac-$VERSION.zip"
+COPYFILE_DISABLE=1 ditto -c -k --norsrc --keepParent "$ROOT/build/TidyMac.app" "$DIST/TidyMac-$VERSION.zip"
 
 echo "▸ Checksums"
 rm -f "$DIST/SHA256SUMS.txt"

@@ -32,18 +32,18 @@ enum SpaceLensEngine {
         let depth = min(3, max(1, maxDepth))
         let rootURL = ToolsSupport.standardizedURL(root)
         let rootName = rootURL.lastPathComponent.isEmpty ? rootURL.path : rootURL.lastPathComponent
-        progress(0.01, "正在分析 \(rootName)…")
+        progress(0.01, L("正在分析 \(rootName)…"))
 
         var isDirectory: ObjCBool = false
         guard fm.fileExists(atPath: rootURL.path, isDirectory: &isDirectory) else {
-            progress(1, "目录不存在：\(rootName)")
+            progress(1, L("目录不存在：\(rootName)"))
             return SpaceNode(name: rootName, url: rootURL, byteCount: 0,
                              isDirectory: true, childCount: 0, children: [])
         }
 
         if !isDirectory.boolValue {
             let size = FileMeasure.allocatedSize(ofItemAt: rootURL)
-            progress(1, "分析完成")
+            progress(1, L("分析完成"))
             return SpaceNode(name: rootName, url: rootURL, byteCount: size,
                              isDirectory: false, childCount: 0, children: [])
         }
@@ -61,7 +61,7 @@ enum SpaceLensEngine {
                                              includingPropertiesForKeys: Array(resourceKeys),
                                              options: [],
                                              errorHandler: { _, _ in true }) else {
-            progress(1, "无法读取目录：\(rootName)")
+            progress(1, L("无法读取目录：\(rootName)"))
             return SpaceNode(name: rootName, url: rootURL, byteCount: 0,
                              isDirectory: true, childCount: 0, children: [])
         }
@@ -74,7 +74,7 @@ enum SpaceLensEngine {
                     break
                 }
                 let fraction = 0.03 + 0.90 * Double(visited) / Double(visited + 25_000)
-                progress(min(0.95, fraction), "正在分析…已检查 \(visited) 项")
+                progress(min(0.95, fraction), L("正在分析…已检查 \(visited) 项"))
             }
 
             guard let values = try? url.resourceValues(forKeys: resourceKeys) else { continue }
@@ -180,9 +180,9 @@ enum SpaceLensEngine {
                                  children: children)
 
         if cancelled {
-            progress(1, "分析已取消，显示部分结果")
+            progress(1, L("分析已取消，显示部分结果"))
         } else {
-            progress(1, "分析完成，共 \(Format.bytes(rootSize))")
+            progress(1, L("分析完成，共 \(Format.bytes(rootSize))"))
         }
         return rootNode
     }

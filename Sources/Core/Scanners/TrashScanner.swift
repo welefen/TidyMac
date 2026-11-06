@@ -14,12 +14,12 @@ enum TrashScanner {
 
         return [ScanItem(
             id: "trash:root",
-            name: "废纸篓",
+            name: L("废纸篓"),
             urls: [trash],
             byteCount: footprint.bytes,
             kind: .trash,
             safety: .safe,
-            detail: "包含 \(children.count) 个项目，清空后将无法恢复",
+            detail: L("包含 \(children.count) 个项目，清空后将无法恢复"),
             modifiedAt: footprint.lastModified,
             isSelected: true
         )]

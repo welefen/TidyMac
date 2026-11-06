@@ -59,7 +59,7 @@ extension LeftoverKind {
 func relativeUsageText(_ date: Date?) -> String {
     guard let date else { return "从未使用" }
     let delta = Date().timeIntervalSince(date)
-    if delta >= 0 && delta < 60 { return "刚刚" }
+    if delta >= 0 && delta < 60 { return L("刚刚") }
     return Format.relativeDate(date)
 }
 
@@ -138,7 +138,7 @@ struct AppListRow: View {
                 AppGlyphView(app: app, size: 38)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(app.name)
+                    Text(L(app.name))
                         .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
@@ -240,7 +240,7 @@ struct LeftoverRowView: View {
                 SelectionCheck(isOn: item.isSelected, tone: .mint, size: 18)
                 ToneIcon(symbol: item.kind.symbol, tone: item.kind.tone, size: 26)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.name)
+                    Text(L(item.name))
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
@@ -278,10 +278,10 @@ struct MiniMetric: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(title)
+            Text(L(title))
                 .font(.system(size: 9.5, weight: .medium))
                 .foregroundStyle(Theme.textTertiary)
-            Text(value)
+            Text(L(value))
                 .font(.system(size: 12.5, weight: .semibold,
                               design: mono ? .monospaced : .rounded))
                 .foregroundStyle(Theme.textPrimary)
@@ -342,9 +342,9 @@ struct UninstallResultBanner: View {
     private var message: String {
         if hasFailure {
             let reason = report.failures.first?.reason ?? "权限不足"
-            return "已移除 \(report.removedCount) 项，释放 \(Format.bytes(report.freedBytes))。\(reason) · 可尝试将应用手动拖入废纸篓"
+            return L("已移除 \(report.removedCount) 项，释放 \(Format.bytes(report.freedBytes))。\(reason) · 可尝试将应用手动拖入废纸篓")
         }
-        return "移除 \(report.removedCount) 项，共释放 \(Format.bytes(report.freedBytes))。"
+        return L("移除 \(report.removedCount) 项，共释放 \(Format.bytes(report.freedBytes))。")
     }
 
     var body: some View {
@@ -352,10 +352,10 @@ struct UninstallResultBanner: View {
             ToneIcon(symbol: hasFailure ? "exclamationmark.triangle.fill" : "checkmark.circle.fill",
                      tone: hasFailure ? .orange : .mint, size: 32)
             VStack(alignment: .leading, spacing: 2) {
-                Text(hasFailure ? "部分项目未能移除" : "已卸载 \(appName)")
+                Text(hasFailure ? "部分项目未能移除" : L("已卸载 \(appName)"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text(message)
+                Text(L(message))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(2)

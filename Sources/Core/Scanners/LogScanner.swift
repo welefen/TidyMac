@@ -22,12 +22,12 @@ enum LogScanner {
 
         let crashReporter = HomePaths.url("Library/Application Support/CrashReporter")
         if HomePaths.exists(crashReporter), !exclusions.covers(crashReporter) {
-            candidates.append((crashReporter, .crashReport, "应用崩溃报告，可安全删除"))
+            candidates.append((crashReporter, .crashReport, L("应用崩溃报告，可安全删除")))
         }
 
         let savedState = HomePaths.url("Library/Saved Application State")
         if HomePaths.exists(savedState), !exclusions.covers(savedState) {
-            candidates.append((savedState, .savedState, "窗口恢复状态，删除后应用下次启动会重新创建"))
+            candidates.append((savedState, .savedState, L("窗口恢复状态，删除后应用下次启动会重新创建")))
         }
 
         var items: [ScanItem] = []
@@ -53,9 +53,9 @@ enum LogScanner {
         return ScanAggregate.compact(items,
                                      limit: displayLimit,
                                      aggregateID: "log:other",
-                                     aggregateName: "其他日志",
+                                     aggregateName: L("其他日志"),
                                      aggregateKind: .log,
                                      aggregateSafety: .safe,
-                                     aggregateDetail: "包含 {count} 个日志项目，可安全删除")
+                                     aggregateDetail: L("包含 {count} 个日志项目，可安全删除"))
     }
 }

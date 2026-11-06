@@ -31,6 +31,11 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - 面包屑下钻、空间排行、占比条
 - 支持选择任意目录重新分析
 
+### 多语言
+- 简体中文 / English
+- 默认跟随系统；不支持的系统语言自动回退到英文
+- 设置中切换后应用自动重新启动生效
+
 ### 设置与安全
 - 浅色 / 深色 / 跟随系统三种外观，设置中即时切换，全局自适应
 - 排除列表（文件 / 文件夹）
@@ -60,7 +65,15 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 | --- | --- |
 | ![总览浅色](screenshots/overview-light.png) | ![设置浅色](screenshots/settings-light.png) |
 
-> 截图均使用 `--demo` 演示数据，不涉及真实用户文件。浅色截图通过演示模式强制浅色外观生成；扫描引导页与空结果页见 `screenshots/smartscan-idle.png`、`screenshots/smartscan-empty.png`。
+| 设置 · 英文 | 英文总览 |
+| --- | --- |
+| ![设置英文](screenshots/settings-en.png) | ![总览英文](screenshots/overview-en.png) |
+
+| 英文智能扫描 | 英文大文件 |
+| --- | --- |
+| ![智能扫描英文](screenshots/smartscan-results-en.png) | ![大文件英文](screenshots/large-en.png) |
+
+> 截图均使用 `--demo` 演示数据，不涉及真实用户文件。浅色截图通过演示模式强制浅色外观生成；英文截图通过系统语言覆盖生成。扫描引导页与空结果页见 `screenshots/smartscan-idle.png`、`screenshots/smartscan-empty.png`。
 
 ## 快速开始
 
@@ -171,6 +184,8 @@ Resources/    Info.plist、AppIcon.icns
 - 无第三方依赖
 - 构建脚本使用 macOS 15.4 SDK，部署目标 macOS 14
 - `--demo` 模式与真实引擎解耦，便于 UI 设计、截图与验收
+- 界面支持简体中文与英文；中文文案作为本地化 key，英文资源位于 `Resources/en.lproj/Localizable.strings`
+- 默认跟随系统语言；未支持的系统语言回退到英文（`CFBundleDevelopmentRegion = en`）
 
 ## 已知限制
 

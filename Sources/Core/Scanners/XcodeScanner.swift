@@ -22,7 +22,7 @@ enum XcodeScanner {
                 byteCount: footprint.bytes,
                 kind: .derivedData,
                 safety: .safe,
-                detail: "项目构建缓存，下次构建会自动重新生成",
+                detail: L("项目构建缓存，下次构建会自动重新生成"),
                 modifiedAt: footprint.lastModified,
                 isSelected: true
             ))
@@ -42,7 +42,7 @@ enum XcodeScanner {
                 byteCount: footprint.bytes,
                 kind: .deviceSupport,
                 safety: .caution,
-                detail: "设备调试符号，下次连接该版本设备时会重新生成",
+                detail: L("设备调试符号，下次连接该版本设备时会重新生成"),
                 modifiedAt: footprint.lastModified,
                 isSelected: true
             ))
@@ -52,15 +52,15 @@ enum XcodeScanner {
         items.append(contentsOf: singleItems(
             definitions: [
                 (relativePath: "Library/Developer/CoreSimulator/Caches",
-                 name: "模拟器缓存",
+                 name: L("模拟器缓存"),
                  kind: .simulatorCache,
                  safety: .safe,
-                 detail: "模拟器缓存，下次启动模拟器时会重新生成"),
+                 detail: L("模拟器缓存，下次启动模拟器时会重新生成")),
                 (relativePath: "Library/Developer/Xcode/DocumentationCache",
-                 name: "Xcode 文档缓存",
+                 name: L("Xcode 文档缓存"),
                  kind: .cache,
                  safety: .safe,
-                 detail: "Xcode 文档与 API 索引缓存，可重新下载")
+                 detail: L("Xcode 文档与 API 索引缓存，可重新下载"))
             ],
             exclusions: exclusions,
             isCancelled: isCancelled

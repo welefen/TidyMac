@@ -114,7 +114,7 @@ final class UninstallerViewModel: ObservableObject {
             self.apps = loaded
             self.isLoading = false
             self.loadProgress = 1
-            self.loadStatus = "已加载 \(loaded.count) 个应用"
+            self.loadStatus = L("已加载 \(loaded.count) 个应用")
             if let first = self.filteredApps.first { self.select(first) }
         }
     }
@@ -167,12 +167,12 @@ final class UninstallerViewModel: ObservableObject {
         if selectedLeftovers.isEmpty {
             leftoverPart = "仅移除应用本体"
         } else {
-            leftoverPart = "以及 \(selectedLeftovers.count) 项关联文件（\(Format.bytes(selectedLeftoverBytes))）"
+            leftoverPart = L("以及 \(selectedLeftovers.count) 项关联文件（\(Format.bytes(selectedLeftoverBytes))）")
         }
         let mode = moveToTrash
             ? "这些项目会被移到废纸篓，可在废纸篓中恢复。"
             : "这些项目将被直接删除，无法恢复。"
-        var text = "将移除 \(app.name)（\(Format.bytes(app.byteCount))）\(leftoverPart)，合计 \(Format.bytes(selectedTotalBytes))。\n\(mode)"
+        var text = L("将移除 \(app.name)（\(Format.bytes(app.byteCount))）\(leftoverPart)，合计 \(Format.bytes(selectedTotalBytes))。\n\(mode)")
         if isRunning(app) {
             text += "\n应用当前正在运行，建议先退出。"
         }
@@ -294,10 +294,10 @@ struct UninstallerPage: View {
             guard model.apps.isEmpty else { return }
             model.load(isDemo: app.isDemo, includeSystem: settings.showSystemApps)
         }
-        .alert("卸载 \(model.selectedApp?.name ?? "应用")？",
+        .alert(Text(L("卸载 %@？", model.selectedApp?.name ?? L("应用"))),
                isPresented: $model.showConfirm) {
             Button("取消", role: .cancel) {}
-            Button(settings.moveToTrash ? "移到废纸篓" : "直接删除", role: .destructive) {
+            Button(L(settings.moveToTrash ? "移到废纸篓" : "直接删除"), role: .destructive) {
                 model.confirmUninstall(isDemo: app.isDemo, moveToTrash: settings.moveToTrash)
             }
         } message: {
@@ -320,7 +320,7 @@ struct UninstallerPage: View {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.up.arrow.down")
                     .font(.system(size: 10.5, weight: .semibold))
-                Text(model.sort.title)
+                Text(L(model.sort.title))
                     .font(.system(size: 12, weight: .medium))
                 Image(systemName: "chevron.down")
                     .font(.system(size: 8, weight: .bold))
@@ -422,7 +422,7 @@ struct UninstallerPage: View {
     private var loadingList: some View {
         VStack(spacing: 2) {
             HStack(spacing: 6) {
-                Text(model.loadStatus)
+                Text(L(model.loadStatus))
                     .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
@@ -510,7 +510,7 @@ struct UninstallerPage: View {
             AppGlyphView(app: installed, size: 64)
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
-                    Text(installed.name)
+                    Text(L(installed.name))
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
@@ -519,7 +519,7 @@ struct UninstallerPage: View {
                     }
                 }
                 HStack(spacing: 6) {
-                    Text("版本 \(installed.version)")
+                    Text(L("版本 \(installed.version)"))
                     Text("·")
                     Text(installed.isSystem ? "系统安装" : "用户安装")
                 }
@@ -649,7 +649,7 @@ struct UninstallerPage: View {
             if model.isUninstalling {
                 VStack(spacing: 7) {
                     HStack(spacing: 8) {
-                        Text(model.uninstallStatus)
+                        Text(L(model.uninstallStatus))
                             .font(.system(size: 11.5, weight: .medium))
                             .foregroundStyle(Theme.textSecondary)
                             .lineLimit(1)
@@ -690,11 +690,11 @@ struct UninstallerPage: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(model.selectedLeftovers.isEmpty
                              ? "将移除应用本体"
-                             : "将移除应用及 \(model.selectedLeftovers.count) 项残留")
+                             : L("将移除应用及 \(model.selectedLeftovers.count) 项残留"))
                             .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
                             .lineLimit(1)
-                        Text("共 \(Format.bytes(model.selectedTotalBytes))")
+                        Text(L("共 \(Format.bytes(model.selectedTotalBytes))"))
                             .font(.system(size: 15, weight: .bold, design: .rounded))
                             .monospacedDigit()
                             .foregroundStyle(Theme.textPrimary)

@@ -14,23 +14,23 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     var title: String {
         switch self {
-        case .overview: return "总览"
-        case .smartScan: return "智能扫描"
-        case .uninstaller: return "卸载器"
-        case .largeFiles: return "大文件"
-        case .spaceLens: return "空间透镜"
-        case .settings: return "设置"
+        case .overview: return L("总览")
+        case .smartScan: return L("智能扫描")
+        case .uninstaller: return L("卸载器")
+        case .largeFiles: return L("大文件")
+        case .spaceLens: return L("空间透镜")
+        case .settings: return L("设置")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .overview: return "让 Mac 轻净如羽"
-        case .smartScan: return "扫描并清理无用文件"
-        case .uninstaller: return "彻底移除应用及残留"
-        case .largeFiles: return "找出最占空间的文件"
-        case .spaceLens: return "看清每一 GB 的去向"
-        case .settings: return "清理偏好与排除项"
+        case .overview: return L("让 Mac 轻净如羽")
+        case .smartScan: return L("扫描并清理无用文件")
+        case .uninstaller: return L("彻底移除应用及残留")
+        case .largeFiles: return L("找出最占空间的文件")
+        case .spaceLens: return L("看清每一 GB 的去向")
+        case .settings: return L("清理偏好与排除项")
         }
     }
 
@@ -69,9 +69,9 @@ enum SafetyLevel: String, Codable, Hashable, Sendable, CaseIterable {
 
     var label: String {
         switch self {
-        case .safe: return "安全"
-        case .caution: return "谨慎"
-        case .risky: return "重要"
+        case .safe: return L("安全")
+        case .caution: return L("谨慎")
+        case .risky: return L("重要")
         }
     }
 }
@@ -88,12 +88,12 @@ enum CleanupGroup: String, Codable, Hashable, Sendable, CaseIterable, Identifiab
 
     var title: String {
         switch self {
-        case .systemJunk: return "系统垃圾"
-        case .developerJunk: return "开发者垃圾"
-        case .browserJunk: return "浏览器数据"
-        case .mailAttachments: return "邮件附件"
-        case .iosBackups: return "iOS 备份"
-        case .trash: return "废纸篓"
+        case .systemJunk: return L("系统垃圾")
+        case .developerJunk: return L("开发者垃圾")
+        case .browserJunk: return L("浏览器数据")
+        case .mailAttachments: return L("邮件附件")
+        case .iosBackups: return L("iOS 备份")
+        case .trash: return L("废纸篓")
         }
     }
 
@@ -167,7 +167,7 @@ struct ScanItem: Identifiable, Hashable, Sendable {
 
     var displayDetail: String? {
         if let detail, !detail.isEmpty { return detail }
-        if urls.count > 1 { return "包含 \(urls.count) 个项目" }
+        if urls.count > 1 { return L("包含 \(urls.count) 个项目") }
         return nil
     }
 }
@@ -234,7 +234,7 @@ struct ScanProgress: Sendable {
     var status: String
     var detail: String = ""
 
-    static let idle = ScanProgress(fraction: 0, status: "准备就绪")
+    static let idle = ScanProgress(fraction: 0, status: L("准备就绪"))
 }
 
 struct CleanProgress: Sendable {
@@ -308,13 +308,13 @@ enum LeftoverKind: String, CaseIterable, Hashable, Sendable {
 
     var title: String {
         switch self {
-        case .applicationSupport: return "应用支持文件"
-        case .caches: return "缓存"
-        case .preferences: return "偏好设置"
-        case .savedState: return "窗口状态"
-        case .logs: return "日志"
-        case .containers: return "容器"
-        case .other: return "其他残留"
+        case .applicationSupport: return L("应用支持文件")
+        case .caches: return L("缓存")
+        case .preferences: return L("偏好设置")
+        case .savedState: return L("窗口状态")
+        case .logs: return L("日志")
+        case .containers: return L("容器")
+        case .other: return L("其他残留")
         }
     }
 }
@@ -344,14 +344,14 @@ enum LargeFileKind: String, CaseIterable, Hashable, Sendable, Identifiable {
 
     var title: String {
         switch self {
-        case .video: return "视频"
-        case .image: return "图片"
-        case .archive: return "压缩包"
-        case .document: return "文档"
-        case .diskImage: return "磁盘映像"
-        case .audio: return "音频"
-        case .code: return "开发文件"
-        case .other: return "其他"
+        case .video: return L("视频")
+        case .image: return L("图片")
+        case .archive: return L("压缩包")
+        case .document: return L("文档")
+        case .diskImage: return L("磁盘映像")
+        case .audio: return L("音频")
+        case .code: return L("开发文件")
+        case .other: return L("其他")
         }
     }
 

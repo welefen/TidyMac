@@ -154,7 +154,7 @@ final class LargeFilesViewModel: ObservableObject {
     }
 
     var confirmMessage: String {
-        "将把 \(selectedFiles.count) 个文件（\(Format.bytes(selectedBytes))）移到废纸篓。\n移到废纸篓的文件可随时恢复，不会立即释放磁盘空间，清空废纸篓后才会真正释放。"
+        L("将把 \(selectedFiles.count) 个文件（\(Format.bytes(selectedBytes))）移到废纸篓。\n移到废纸篓的文件可随时恢复，不会立即释放磁盘空间，清空废纸篓后才会真正释放。")
     }
 
     // MARK: Trash
@@ -237,7 +237,7 @@ struct LargeFilesPage: View {
                 model.confirmTrash(isDemo: app.isDemo)
             }
         } message: {
-            Text(model.confirmMessage)
+            Text(L(model.confirmMessage))
         }
     }
 
@@ -300,7 +300,7 @@ struct LargeFilesPage: View {
     }
 
     private func filterLabel(_ text: String) -> some View {
-        Text(text)
+        Text(L(text))
             .font(.system(size: 10.5, weight: .medium))
             .foregroundStyle(Theme.textTertiary)
     }
@@ -324,7 +324,7 @@ struct LargeFilesPage: View {
             HStack(spacing: 6) {
                 Image(systemName: "line.3.horizontal.decrease.circle")
                     .font(.system(size: 10.5, weight: .semibold))
-                Text(model.kindFilter?.title ?? "全部类型")
+                Text(L(model.kindFilter?.title ?? "全部类型"))
                     .font(.system(size: 12, weight: .medium))
                 Image(systemName: "chevron.down")
                     .font(.system(size: 8, weight: .bold))
@@ -352,7 +352,7 @@ struct LargeFilesPage: View {
                      unit: found.unit,
                      symbol: "doc.zipper",
                      tone: .mint,
-                     caption: "共 \(model.filteredFiles.count) 个匹配文件")
+                     caption: L("共 \(model.filteredFiles.count) 个匹配文件"))
                 .frame(maxWidth: .infinity)
 
             let selected = Format.bytesParts(model.selectedBytes)
@@ -361,7 +361,7 @@ struct LargeFilesPage: View {
                      unit: selected.unit,
                      symbol: "checkmark.circle.fill",
                      tone: .blue,
-                     caption: "\(model.selectedFiles.count) 项待清理")
+                     caption: L("\(model.selectedFiles.count) 项待清理"))
                 .frame(maxWidth: .infinity)
 
             StatTile(title: "最旧文件",
@@ -483,10 +483,10 @@ struct LargeFilesPage: View {
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.textTertiary)
                 } else {
-                    Text("已选 \(model.selectedFiles.count) 项")
+                    Text(L("已选 \(model.selectedFiles.count) 项"))
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.textSecondary)
-                    Text("共 \(Format.bytes(model.selectedBytes))")
+                    Text(L("共 \(Format.bytes(model.selectedBytes))"))
                         .font(.system(size: 14.5, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Theme.textPrimary)
@@ -506,7 +506,7 @@ struct LargeFilesPage: View {
                         .overlay(Capsule(style: .continuous).strokeBorder(Theme.stroke, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
-                .help(model.isAllVisibleSelected ? "取消全选当前列表" : "全选当前列表中的 \(model.filteredFiles.count) 个文件")
+                .help(model.isAllVisibleSelected ? "取消全选当前列表" : L("全选当前列表中的 \(model.filteredFiles.count) 个文件"))
             }
 
             if model.isScanning && model.hasScanned {
@@ -514,7 +514,7 @@ struct LargeFilesPage: View {
                     ProgressView()
                         .controlSize(.small)
                         .scaleEffect(0.7)
-                    Text(model.scanStatus)
+                    Text(L(model.scanStatus))
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)

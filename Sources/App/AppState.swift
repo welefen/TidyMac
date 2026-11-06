@@ -81,7 +81,7 @@ final class AppState: ObservableObject {
             case "scanning":
                 phase = .scanning
                 scanProgress = ScanProgress(fraction: 0.64,
-                                            status: "正在扫描开发者缓存…",
+                                            status: L("正在扫描开发者缓存…"),
                                             detail: "~/Library/Developer/Xcode/DerivedData")
                 page = .smartScan
             case "idle":
@@ -181,7 +181,7 @@ final class AppState: ObservableObject {
         errorMessage = nil
         scanResult = nil
         phase = .scanning
-        scanProgress = ScanProgress(fraction: 0.02, status: "正在准备扫描…", detail: "检查可访问的缓存位置")
+        scanProgress = ScanProgress(fraction: 0.02, status: L("正在准备扫描…"), detail: L("检查可访问的缓存位置"))
         page = .smartScan
 
         if isDemo {
@@ -210,7 +210,7 @@ final class AppState: ObservableObject {
                     duration: Date().timeIntervalSince(started)
                 )
                 state.phase = .results
-                state.scanProgress = ScanProgress(fraction: 1, status: "扫描完成")
+                state.scanProgress = ScanProgress(fraction: 1, status: L("扫描完成"))
                 state.refreshDisk()
             }
         }
@@ -219,13 +219,13 @@ final class AppState: ObservableObject {
     private func runDemoScan() {
         demoProgressTask = Task { [weak self] in
             let steps: [(Double, String, String)] = [
-                (0.12, "正在扫描用户缓存…", "~/Library/Caches"),
-                (0.28, "正在检查日志与崩溃报告…", "~/Library/Logs"),
-                (0.44, "正在分析 Xcode 构建缓存…", "~/Library/Developer/Xcode/DerivedData"),
-                (0.61, "正在检查包管理器缓存…", "~/.npm · Homebrew · pip"),
-                (0.76, "正在检查浏览器数据…", "Safari · Chrome · Firefox"),
-                (0.88, "正在检查邮件附件与备份…", "~/Library/Mail · MobileSync"),
-                (1.0, "扫描完成", "")
+                (0.12, L("正在扫描用户缓存…"), "~/Library/Caches"),
+                (0.28, L("正在检查日志与崩溃报告…"), "~/Library/Logs"),
+                (0.44, L("正在分析 Xcode 构建缓存…"), "~/Library/Developer/Xcode/DerivedData"),
+                (0.61, L("正在检查包管理器缓存…"), "~/.npm · Homebrew · pip"),
+                (0.76, L("正在检查浏览器数据…"), "Safari · Chrome · Firefox"),
+                (0.88, L("正在检查邮件附件与备份…"), "~/Library/Mail · MobileSync"),
+                (1.0, L("扫描完成"), "")
             ]
             for step in steps {
                 if Task.isCancelled { return }
@@ -316,7 +316,7 @@ final class AppState: ObservableObject {
         let moveToTrash = settings.moveToTrash
         let excluded = Set(settings.excludedPaths)
         phase = .cleaning
-        cleanProgress = CleanProgress(fraction: 0.02, status: "正在清理…")
+        cleanProgress = CleanProgress(fraction: 0.02, status: L("正在清理…"))
         errorMessage = nil
 
         if isDemo {

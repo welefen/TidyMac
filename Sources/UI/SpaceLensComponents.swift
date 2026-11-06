@@ -187,7 +187,7 @@ private struct TreemapCellView: View {
     private var label: some View {
         if size.width >= 130 && size.height >= 62 {
             VStack(alignment: .leading, spacing: 3) {
-                Text(node.name)
+                Text(L(node.name))
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
@@ -200,7 +200,7 @@ private struct TreemapCellView: View {
                     .minimumScaleFactor(0.8)
             }
         } else if size.width >= 58 && size.height >= 30 {
-            Text(node.name)
+            Text(L(node.name))
                 .font(.system(size: 10.5, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
@@ -231,7 +231,7 @@ struct SpaceLensBreadcrumb: View {
                 Button {
                     onSelect(index)
                 } label: {
-                    Text(node.name)
+                    Text(L(node.name))
                         .font(.system(size: 12, weight: index == path.count - 1 ? .semibold : .medium))
                         .foregroundStyle(index == path.count - 1 ? Theme.textPrimary : Theme.textSecondary)
                         .lineLimit(1)
@@ -258,24 +258,24 @@ struct LensStatCard: View {
         HStack(spacing: 10) {
             ToneIcon(symbol: symbol, tone: tone, size: 30)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(L(title))
                     .font(.system(size: 9.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text(value)
+                    Text(L(value))
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
                     if let unit {
-                        Text(unit)
+                        Text(L(unit))
                             .font(.system(size: 9.5, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
                 if let caption {
-                    Text(caption)
+                    Text(L(caption))
                         .font(.system(size: 9.5))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
@@ -315,11 +315,11 @@ struct SpaceRankRowView: View {
                          tone: tone, size: 30)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(node.name)
+                    Text(L(node.name))
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
-                    Text(subtitle)
+                    Text(L(subtitle))
                         .font(.system(size: 10))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
@@ -387,7 +387,7 @@ struct SpaceRankRowView: View {
         if node.children.isEmpty {
             return node.byteCount > 0 ? "文件夹" : "空目录"
         }
-        return "\(node.children.count) 个子项目"
+        return L("\(node.children.count) 个子项目")
     }
 }
 
@@ -408,7 +408,7 @@ struct SpaceLensScanningView: View {
                         .foregroundStyle(Theme.textPrimary)
                 )
             VStack(spacing: 4) {
-                Text(status)
+                Text(L(status))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)

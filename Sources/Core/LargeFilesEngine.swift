@@ -20,12 +20,12 @@ enum LargeFilesEngine {
                      minSize: Int64,
                      minAgeDays: Int?,
                      progress: @escaping @Sendable (Double, String) -> Void) async -> [LargeFile] {
-        progress(0.01, "正在准备扫描大文件…")
+        progress(0.01, L("正在准备扫描大文件…"))
 
         let requested = roots.isEmpty ? defaultRoots : roots
         let searchRoots = normalizedRoots(requested)
         guard !searchRoots.isEmpty else {
-            progress(1, "没有可扫描的目录")
+            progress(1, L("没有可扫描的目录"))
             return []
         }
 
@@ -55,7 +55,7 @@ enum LargeFilesEngine {
             }
             let rootName = root.lastPathComponent.isEmpty ? root.path : root.lastPathComponent
             report(0.03 + 0.90 * Double(rootIndex) / Double(searchRoots.count),
-                   "正在扫描 \(rootName)…")
+                   L("正在扫描 \(rootName)…"))
 
             let rootInsideLibrary = ToolsSupport.isInside(root, libraryRoot)
             let rootInsideSystem = ToolsSupport.systemRoots.contains { ToolsSupport.isInside(root, $0) }
@@ -73,7 +73,7 @@ enum LargeFilesEngine {
                         break
                     }
                     let fraction = 0.03 + 0.90 * Double(visited) / Double(visited + 8_000)
-                    report(min(0.95, fraction), "正在扫描…已检查 \(visited) 项")
+                    report(min(0.95, fraction), L("正在扫描…已检查 \(visited) 项"))
                 }
 
                 guard let values = try? url.resourceValues(forKeys: resourceKeys) else { continue }
@@ -119,9 +119,9 @@ enum LargeFilesEngine {
         }
 
         if cancelled {
-            progress(1, "扫描已取消，返回 \(files.count) 个大文件")
+            progress(1, L("扫描已取消，返回 \(files.count) 个大文件"))
         } else {
-            progress(1, "扫描完成，找到 \(files.count) 个大文件")
+            progress(1, L("扫描完成，找到 \(files.count) 个大文件"))
         }
         return files
     }
@@ -217,13 +217,13 @@ enum LargeFilesEngine {
 
     static func trash(files: [LargeFile],
                       progress: @escaping @Sendable (Double, String) -> Void) async -> CleanReport {
-        progress(0.01, "正在移到废纸篓…")
+        progress(0.01, L("正在移到废纸篓…"))
 
         // Only user-selected rows are removed. Callers may pass the entire scan
         // result; unselected entries are ignored (never delete what was deselected).
         let selected = files.filter(\.isSelected)
         guard !selected.isEmpty else {
-            progress(1, "没有选择要删除的文件")
+            progress(1, L("没有选择要删除的文件"))
             return CleanReport(removedCount: 0,
                                freedBytes: 0,
                                failures: [],
@@ -252,15 +252,15 @@ enum LargeFilesEngine {
                                              reason: ToolsSupport.failureReason(error)))
             }
             progress(0.02 + 0.96 * Double(index + 1) / Double(selected.count),
-                     "正在移到废纸篓… \(index + 1)/\(selected.count)")
+                     L("正在移到废纸篓… \(index + 1)/\(selected.count)"))
         }
 
         if cancelled {
-            progress(1, "已取消，移入废纸篓 \(removedCount) 项")
+            progress(1, L("已取消，移入废纸篓 \(removedCount) 项"))
         } else if failures.isEmpty {
-            progress(1, "已移入废纸篓 \(removedCount) 项，释放 \(Format.bytes(freedBytes))")
+            progress(1, L("已移入废纸篓 \(removedCount) 项，释放 \(Format.bytes(freedBytes))"))
         } else {
-            progress(1, "完成，移入废纸篓 \(removedCount) 项，\(failures.count) 项失败")
+            progress(1, L("完成，移入废纸篓 \(removedCount) 项，\(failures.count) 项失败"))
         }
 
         return CleanReport(removedCount: removedCount,
