@@ -26,7 +26,7 @@ struct SidebarView: View {
             VStack(alignment: .leading, spacing: 0) {
                 brand
                     .padding(.top, 52)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 12)
 
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(mainPages) { page in
@@ -63,7 +63,7 @@ struct SidebarView: View {
     // MARK: Brand
 
     private var brand: some View {
-        HStack(spacing: 9) {
+        HStack(spacing: 8) {
             AppBrandIcon(size: 44)
                 .shadow(color: Theme.mint.opacity(0.20), radius: 10, y: 4)
             VStack(alignment: .leading, spacing: 1) {
@@ -71,6 +71,8 @@ struct SidebarView: View {
                     Text("TidyMac")
                         .font(.system(size: 19, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                        .fixedSize()
                     versionBadge
                 }
                 Text("SMART CLEAN")
@@ -90,11 +92,10 @@ struct SidebarView: View {
                 updates.installDownloadedUpdate()
             } label: {
                 HStack(spacing: 3) {
-                    Circle()
-                        .fill(Theme.mint)
-                        .frame(width: 4, height: 4)
-                    Text("v\(version)")
+                    Text("v\(appVersion)")
                         .font(.system(size: 8.5, weight: .semibold))
+                    Image(systemName: "arrow.down.circle.fill")
+                        .font(.system(size: 8.5, weight: .bold))
                 }
                 .foregroundStyle(Theme.mint)
                 .padding(.horizontal, 5)
