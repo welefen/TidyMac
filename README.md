@@ -31,6 +31,14 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - 面包屑下钻、空间排行、占比条
 - 支持选择任意目录重新分析
 
+### 自动更新
+- 应用内检查 GitHub 仓库中的 `updates/latest.json`
+- 发现新版本后自动下载 ZIP，校验 SHA-256 与 Bundle 信息
+- 默认自动安装并重新启动；可在设置中关闭自动检查或自动安装
+- 更新资源位于 `updates/`，发布脚本：`./scripts/publish_update.sh --push`
+
+> 自动更新要求 GitHub 仓库为 **公开仓库**（当前默认 feed 使用 raw.githubusercontent.com）。私有仓库需要配置公开镜像或代理，不要将 GitHub Token 写入应用。
+
 ### 多语言
 - 简体中文 / English
 - 默认跟随系统；不支持的系统语言自动回退到英文
@@ -145,8 +153,8 @@ build/tidymac-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自�
 
 - `build/TidyMac.app` — 可直接运行的应用
 - `build/tidymac-cli` — 无界面诊断/自检工具
-- `dist/TidyMac-1.0.0.dmg` — 磁盘映像（拖入「应用程序」安装）
-- `dist/TidyMac-1.0.0.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
+- `dist/TidyMac-1.0.1.dmg` — 磁盘映像（拖入「应用程序」安装）
+- `dist/TidyMac-1.0.1.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
 - `dist/SHA256SUMS.txt` — 校验和
 
 ## 验证结果

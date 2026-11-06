@@ -33,6 +33,8 @@ final class AppSettings: ObservableObject {
         static let reduceMotion = "settings.reduceMotion"
         static let appearance = "settings.appearance"
         static let language = "settings.language"
+        static let autoCheckUpdates = "settings.autoCheckUpdates"
+        static let autoInstallUpdates = "settings.autoInstallUpdates"
     }
 
     @Published var moveToTrash: Bool {
@@ -83,6 +85,14 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(language.rawValue, forKey: Keys.language) }
     }
 
+    @Published var autoCheckUpdates: Bool {
+        didSet { defaults.set(autoCheckUpdates, forKey: Keys.autoCheckUpdates) }
+    }
+
+    @Published var autoInstallUpdates: Bool {
+        didSet { defaults.set(autoInstallUpdates, forKey: Keys.autoInstallUpdates) }
+    }
+
     private let defaults: UserDefaults
 
     private init() {
@@ -110,7 +120,9 @@ final class AppSettings: ObservableObject {
             Keys.showSystemApps: false,
             Keys.reduceMotion: false,
             Keys.appearance: AppAppearance.system.rawValue,
-            Keys.language: AppLanguage.system.rawValue
+            Keys.language: AppLanguage.system.rawValue,
+            Keys.autoCheckUpdates: true,
+            Keys.autoInstallUpdates: true
         ])
         moveToTrash = defaults.bool(forKey: Keys.moveToTrash)
         confirmBeforeClean = defaults.bool(forKey: Keys.confirmBeforeClean)
@@ -122,6 +134,8 @@ final class AppSettings: ObservableObject {
         reduceMotion = defaults.bool(forKey: Keys.reduceMotion)
         appearance = AppAppearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         language = AppLanguage(rawValue: defaults.string(forKey: Keys.language) ?? "") ?? .system
+        autoCheckUpdates = defaults.object(forKey: Keys.autoCheckUpdates) as? Bool ?? true
+        autoInstallUpdates = defaults.object(forKey: Keys.autoInstallUpdates) as? Bool ?? true
         if let data = defaults.data(forKey: Keys.history),
            let decoded = try? JSONDecoder().decode([CleanHistoryEntry].self, from: data) {
             history = decoded

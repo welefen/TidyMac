@@ -6,12 +6,14 @@ struct TidyMacApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var appState = AppState()
     @StateObject private var settings = AppSettings.shared
+    @StateObject private var updater = UpdateManager.shared
 
     var body: some Scene {
         WindowGroup("TidyMac") {
             RootView()
                 .environmentObject(appState)
                 .environmentObject(settings)
+                .environmentObject(updater)
                 .frame(minWidth: Theme.windowMinWidth, minHeight: Theme.windowMinHeight)
         }
         .windowStyle(.hiddenTitleBar)
@@ -23,10 +25,16 @@ struct TidyMacApp: App {
                 Button("关于 TidyMac") {
                     NSApp.orderFrontStandardAboutPanel(options: [
                         .applicationName: "TidyMac",
-                        .applicationVersion: "1.0.0",
+                        .applicationVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "",
                         .credits: NSAttributedString(string: "轻净如羽，焕然一新。\n一款为 macOS 打造的智能清理与空间管理工具。")
                     ])
                 }
+            }
+            CommandGroup(after: .appInfo) {
+                Button("检查更新…") {
+                    Task { await UpdateManager.shared.check(manual: true) }
+                }
+                .disabled(UpdateManager.shared.phase.isBusy)
             }
             CommandGroup(replacing: .appSettings) {
                 Button("设置…") {

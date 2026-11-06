@@ -4,6 +4,7 @@ import AppKit
 struct RootView: View {
     @EnvironmentObject private var app: AppState
     @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var updater: UpdateManager
 
     var body: some View {
         HStack(spacing: 0) {
@@ -23,6 +24,7 @@ struct RootView: View {
         .ignoresSafeArea()
         .preferredColorScheme(preferredColorScheme)
         .onAppear { applyWindowAppearance(settings.appearance) }
+        .task { await updater.startOnLaunch(isDemo: app.isDemo) }
         .onChange(of: settings.appearance) { _, appearance in
             applyWindowAppearance(appearance)
         }

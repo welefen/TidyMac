@@ -4,6 +4,7 @@ import AppKit
 struct SettingsPage: View {
     @EnvironmentObject private var app: AppState
     @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var updates: UpdateManager
 
     @State private var showResetAlert = false
 
@@ -11,11 +12,12 @@ struct SettingsPage: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 PageHeader(title: "设置", subtitle: "清理偏好、排除项与安全策略") {
-                    TagBadge(text: "v1.0.0", tone: .mint)
+                    TagBadge(text: "v\(updates.currentVersion)", tone: .mint)
                 }
 
                 appearanceSection
                 languageSection
+                updatesSection
                 behaviorSection
                 exclusionSection
                 securitySection
@@ -104,6 +106,55 @@ struct SettingsPage: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             NSApp.terminate(nil)
         }
+    }
+
+    // MARK: - Updates
+
+    private var updatesSection: some View {
+        settingsCard(title: L("更新"), symbol: "arrow.down.circle", tone: .blue) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("TidyMac \(updates.currentVersion)")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(updates.statusText)
+                            .font(.system(size: 11.5))
+                            .foregroundStyle(updateStatusColor)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 12)
+                    if case .ready = updates.phase {
+                        Button(L("安装并重启")) {
+                            updates.installDownloadedUpdate()
+                        }
+                        .buttonStyle(PrimaryButtonStyle(tone: .mint, compact: true))
+                    }
+                    Button(L("检查更新")) {
+                        Task { await updates.check(manual: true) }
+                    }
+                    .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
+                    .disabled(updates.phase.isBusy)
+                }
+
+                DividerLine()
+
+                toggleRow("自动检查更新",
+                          "启动时检查 GitHub 上的新版本。",
+                          isOn: $settings.autoCheckUpdates,
+                          tone: .blue)
+                toggleRow("下载后自动安装",
+                          "发现新版本时自动下载并安装，然后重新启动 TidyMac。",
+                          isOn: $settings.autoInstallUpdates,
+                          tone: .blue)
+            }
+        }
+    }
+
+    private var updateStatusColor: Color {
+        if case .failed = updates.phase { return Theme.orange }
+        if case .upToDate = updates.phase { return Theme.mint }
+        return Theme.textSecondary
     }
 
     // MARK: - Behavior
@@ -406,7 +457,7 @@ struct SettingsPage: View {
                 Text("TidyMac")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
-                Text(L("轻净如羽，焕然一新  ·  v1.0.0  ·  macOS 14+"))
+                Text(L("轻净如羽，焕然一新  ·  v%@  ·  macOS 14+", updates.currentVersion))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
             }
