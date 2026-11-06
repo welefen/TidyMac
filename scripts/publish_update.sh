@@ -19,7 +19,7 @@ SHA="$(shasum -a 256 "$ZIP" | awk '{print $1}')"
 cat > updates/latest.json <<JSON
 {
   "version": "$VERSION",
-  "downloadURL": "https://raw.githubusercontent.com/welefen/TidyMac/main/$ZIP",
+  "downloadURL": "https://cdn.jsdelivr.net/gh/welefen/TidyMac@main/$ZIP",
   "sha256": "$SHA",
   "releaseNotes": "TidyMac $VERSION"
 }

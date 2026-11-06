@@ -37,7 +37,7 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - 默认自动安装并重新启动；可在设置中关闭自动检查或自动安装
 - 更新资源位于 `updates/`，发布脚本：`./scripts/publish_update.sh --push`
 
-> 自动更新要求 GitHub 仓库为 **公开仓库**（当前默认 feed 使用 raw.githubusercontent.com）。私有仓库需要配置公开镜像或代理，不要将 GitHub Token 写入应用。
+> 自动更新要求 GitHub 仓库为 **公开仓库**（当前默认 feed 使用 jsDelivr CDN 镜像 GitHub 仓库）。私有仓库需要配置公开镜像或代理，不要将 GitHub Token 写入应用。
 
 ### 多语言
 - 简体中文 / English
