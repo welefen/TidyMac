@@ -128,7 +128,7 @@ struct SettingsPage: View {
                         Button(updateActionTitle) {
                             updates.installDownloadedUpdate()
                         }
-                        .buttonStyle(PrimaryButtonStyle(tone: .mint, compact: true))
+                        .buttonStyle(SoftButtonStyle(tone: .mint, compact: true))
                     } else {
                         Button(updateActionTitle) {
                             Task { await updates.check(manual: true) }

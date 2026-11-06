@@ -3,6 +3,27 @@ import AppKit
 
 // MARK: - Buttons
 
+
+struct SoftButtonStyle: ButtonStyle {
+    var tone: AccentTone = .mint
+    var compact = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: compact ? 12 : 13.5, weight: .semibold))
+            .foregroundStyle(Theme.tint(tone))
+            .padding(.horizontal, compact ? 14 : 20)
+            .padding(.vertical, compact ? 7 : 10)
+            .background(Capsule(style: .continuous).fill(Theme.softGradient(tone)))
+            .overlay(Capsule(style: .continuous)
+                .strokeBorder(Theme.tint(tone).opacity(0.28), lineWidth: 1))
+            .shadow(color: Theme.tint(tone).opacity(configuration.isPressed ? 0.04 : 0.10),
+                    radius: compact ? 6 : 10, x: 0, y: compact ? 2 : 4)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.spring(response: 0.25, dampingFraction: 0.75), value: configuration.isPressed)
+    }
+}
+
 struct PrimaryButtonStyle: ButtonStyle {
     var tone: AccentTone = .mint
     var compact = false
