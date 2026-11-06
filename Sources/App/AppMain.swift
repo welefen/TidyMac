@@ -26,7 +26,7 @@ struct TidyMacApp: App {
                     NSApp.orderFrontStandardAboutPanel(options: [
                         .applicationName: "TidyMac",
                         .applicationVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "",
-                        .credits: NSAttributedString(string: L("轻净如羽，焕然一新。\n一款为 macOS 打造的智能清理与空间管理工具。"))
+                        .credits: aboutCredits()
                     ])
                 }
             }
@@ -108,3 +108,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 
 // MARK: - Window styling
+
+
+private func aboutCredits() -> NSAttributedString {
+    let text = L("轻净如羽，焕然一新。\nmacOS 智能清理与空间管理工具")
+    let style = NSMutableParagraphStyle()
+    style.alignment = .center
+    style.lineSpacing = 2
+    return NSAttributedString(string: text, attributes: [.paragraphStyle: style])
+}
