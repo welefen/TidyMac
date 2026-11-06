@@ -122,6 +122,7 @@ struct DashboardHeroCard: View {
                 .blur(radius: 90)
                 .offset(x: 110, y: 150)
         }
+        .allowsHitTesting(false)
     }
 
     private var heroDecorations: some View {
