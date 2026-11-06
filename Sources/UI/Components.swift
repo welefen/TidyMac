@@ -536,6 +536,20 @@ struct VisualEffectView: NSViewRepresentable {
     }
 }
 
+/// The real application icon, used anywhere the in-app brand mark is shown so
+/// it always matches the Dock / Finder icon.
+struct AppBrandIcon: View {
+    var size: CGFloat = 40
+
+    var body: some View {
+        Image(nsImage: NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath))
+            .resizable()
+            .interpolation(.high)
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+}
+
 struct AppIconView: View {
     let path: String
     var size: CGFloat = 44

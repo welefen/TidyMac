@@ -61,15 +61,8 @@ struct SidebarView: View {
 
     private var brand: some View {
         HStack(spacing: 11) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill(Theme.brandGradient)
-                    .frame(width: 38, height: 38)
-                    .shadow(color: Theme.mint.opacity(0.35), radius: 12, y: 4)
-                Image(systemName: "wind")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Theme.textOnAccent)
-            }
+            AppBrandIcon(size: 44)
+                .shadow(color: Theme.mint.opacity(0.20), radius: 10, y: 4)
             VStack(alignment: .leading, spacing: 1) {
                 Text("TidyMac")
                     .font(.system(size: 19, weight: .bold, design: .rounded))

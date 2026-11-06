@@ -311,14 +311,7 @@ struct SettingsPage: View {
 
     private var aboutSection: some View {
         HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Theme.brandGradient)
-                    .frame(width: 46, height: 46)
-                Image(systemName: "wind")
-                    .font(.system(size: 21, weight: .semibold))
-                    .foregroundStyle(Theme.textOnAccent)
-            }
+            AppBrandIcon(size: 46)
             VStack(alignment: .leading, spacing: 3) {
                 Text("TidyMac")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
