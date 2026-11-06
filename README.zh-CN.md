@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) | [English](README.md)
 
-> 轻净如羽，焕然一新。一款为 macOS 打造的智能清理与空间管理工具，交互与体验对标 CleanMyMac。
+> 轻净如羽，焕然一新。一款为 macOS 打造的智能清理与空间管理工具。
 
 ![TidyMac App Icon](Resources/AppIcon.png)
 

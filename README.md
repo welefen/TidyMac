@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) | [English](README.md)
 
-> Feather-light, fresh and clean. A smart cleaner and disk space manager for macOS with a CleanMyMac-class experience.
+> Feather-light, fresh and clean. A smart cleaner and disk space manager for macOS.
 
 ![TidyMac App Icon](Resources/AppIcon.png)
 
