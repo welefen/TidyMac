@@ -155,8 +155,8 @@ Build artifacts:
 
 - `build/TidyMac.app` — runnable app
 - `build/tidymac-cli` — headless diagnostic/self-test tool
-- `dist/TidyMac-1.0.10.dmg` — disk image (drag into Applications)
-- `dist/TidyMac-1.0.10.zip` — distribution ZIP (ad-hoc signed; unzip and drag into Applications)
+- `dist/TidyMac-1.0.11.dmg` — disk image (drag into Applications)
+- `dist/TidyMac-1.0.11.zip` — distribution ZIP (ad-hoc signed; unzip and drag into Applications)
 - `dist/SHA256SUMS.txt` — checksums
 
 ## Verification

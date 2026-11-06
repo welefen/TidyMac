@@ -111,9 +111,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 
 private func aboutCredits() -> NSAttributedString {
-    let text = L("轻净如羽，焕然一新。\nmacOS 智能清理与空间管理工具")
+    let tagline = L("轻净如羽，焕然一新。\nmacOS 智能清理与空间管理工具")
+    let text = L("作者：") + "@welefen\n" + tagline
     let style = NSMutableParagraphStyle()
     style.alignment = .center
     style.lineSpacing = 2
-    return NSAttributedString(string: text, attributes: [.paragraphStyle: style])
+    let credits = NSMutableAttributedString(string: text, attributes: [.paragraphStyle: style])
+    if let range = text.range(of: "@welefen") {
+        credits.addAttributes([
+            .link: URL(string: "https://github.com/welefen")!,
+            .foregroundColor: NSColor.linkColor
+        ], range: NSRange(range, in: text))
+    }
+    return credits
 }
