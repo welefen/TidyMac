@@ -49,6 +49,7 @@ final class SpaceLensViewModel: ObservableObject {
 
     private var scanTask: Task<Void, Never>?
     private var scanRoot: URL = HomePaths.home
+    private var demoMode = false
 
     // MARK: Derived
 
@@ -107,6 +108,7 @@ final class SpaceLensViewModel: ObservableObject {
 
     private func applyDemoTree() {
         scanTask?.cancel()
+        demoMode = true
         isScanning = false
         scanProgress = 1
         scanStatus = "分析完成"
@@ -117,6 +119,7 @@ final class SpaceLensViewModel: ObservableObject {
 
     func startScan(root: URL) {
         scanTask?.cancel()
+        demoMode = false
         scanError = nil
         isScanning = true
         scanProgress = 0.02
@@ -152,8 +155,47 @@ final class SpaceLensViewModel: ObservableObject {
     // MARK: Navigation
 
     func enter(_ node: SpaceNode) {
-        guard !node.children.isEmpty else { return }
-        path.append(node)
+        guard node.isDirectory else { return }
+        if !node.children.isEmpty {
+            path.append(node)
+            return
+        }
+        guard !demoMode, node.canDrillInLens else { return }
+        drillInto(node)
+    }
+
+    /// The initial scan is intentionally shallow. When the user opens a folder
+    /// at the deepest scanned level, scan just that subtree and append it to the
+    /// existing breadcrumb path instead of restarting from the lens root.
+    private func drillInto(_ node: SpaceNode) {
+        scanTask?.cancel()
+        scanError = nil
+        isScanning = true
+        scanProgress = 0.02
+        scanStatus = L("正在分析 \(node.name)…")
+        let basePath = path
+
+        scanTask = Task { [weak self] in
+            guard let self else { return }
+            let scanned = await SpaceLensEngine.scan(root: node.url, maxDepth: 2) { progress, status in
+                Task { @MainActor [weak self] in
+                    guard let self, self.isScanning else { return }
+                    self.scanProgress = progress
+                    self.scanStatus = status
+                }
+            }
+            guard !Task.isCancelled else { return }
+            self.isScanning = false
+            self.scanProgress = 1
+            self.scanStatus = "分析完成"
+            self.hasLoaded = true
+            if scanned.children.isEmpty && scanned.byteCount == 0 {
+                self.scanError = "未能读取该目录，可能是权限不足或目录为空。"
+                self.path = basePath
+            } else {
+                self.path = basePath + [scanned]
+            }
+        }
     }
 
     func pop(to index: Int) {

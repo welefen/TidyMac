@@ -129,7 +129,7 @@ struct SpaceTreemapView: View {
                         TreemapCellView(node: sizedChildren[index],
                                         size: padded.size,
                                         tone: SpaceLensPalette.tone(at: index),
-                                        isEnterable: !sizedChildren[index].children.isEmpty) {
+                                        isEnterable: sizedChildren[index].canDrillInLens) {
                             onEnter(sizedChildren[index])
                         }
                         .position(x: padded.midX, y: padded.midY)
@@ -360,7 +360,7 @@ struct SpaceRankRowView: View {
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(width: 10)
-                    .opacity(node.children.isEmpty ? 0 : (isHovered ? 1 : 0.5))
+                    .opacity(node.canDrillInLens ? (isHovered ? 1 : 0.5) : 0)
             }
             .padding(.horizontal, 14)
             .frame(height: 46)
@@ -371,7 +371,7 @@ struct SpaceRankRowView: View {
             )
             .contentShape(Rectangle())
             .onTapGesture {
-                if !node.children.isEmpty { onEnter() }
+                if node.canDrillInLens { onEnter() }
             }
 
             if !isLast {

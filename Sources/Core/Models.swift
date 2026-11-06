@@ -402,3 +402,12 @@ struct CleanHistoryEntry: Codable, Identifiable, Hashable, Sendable {
     let freedBytes: Int64
     let itemCount: Int
 }
+
+
+extension SpaceNode {
+    /// The lens scans only a few levels ahead. A directory that is deeper than
+    /// the current scan can still be opened by rescanning it on demand.
+    var canDrillInLens: Bool {
+        isDirectory && (!children.isEmpty || childCount > 0 || byteCount > 0)
+    }
+}
