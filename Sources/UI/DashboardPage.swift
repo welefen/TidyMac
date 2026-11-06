@@ -146,7 +146,7 @@ struct DashboardPage: View {
         HStack(spacing: 6) {
             Image(systemName: "checkmark.shield.fill")
                 .font(.system(size: 9.5))
-            Text("所有清理均经过安全校验，默认移入废纸篓")
+            Text(L("所有清理均经过安全校验，默认移入废纸篓"))
                 .font(.system(size: 10.5))
         }
         .foregroundStyle(Theme.textTertiary)

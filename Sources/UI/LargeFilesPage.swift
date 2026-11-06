@@ -251,7 +251,7 @@ struct LargeFilesPage: View {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 11, weight: .semibold))
-                Text("重新扫描")
+                Text(L("重新扫描"))
                     .font(.system(size: 12, weight: .medium))
             }
             .foregroundStyle(Theme.textSecondary)
@@ -476,10 +476,10 @@ struct LargeFilesPage: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 if model.selectedFiles.isEmpty {
-                    Text("未选择文件")
+                    Text(L("未选择文件"))
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.textSecondary)
-                    Text(model.isScanning ? "扫描完成后可勾选清理" : "选择文件后可移入废纸篓")
+                    Text(L(model.isScanning ? "扫描完成后可勾选清理" : "选择文件后可移入废纸篓"))
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.textTertiary)
                 } else {
@@ -497,7 +497,7 @@ struct LargeFilesPage: View {
                 Button {
                     model.toggleSelectAllVisible()
                 } label: {
-                    Text(model.isAllVisibleSelected ? "取消全选" : "全选")
+                    Text(L(model.isAllVisibleSelected ? "取消全选" : "全选"))
                         .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                         .padding(.horizontal, 10)
@@ -528,7 +528,7 @@ struct LargeFilesPage: View {
                     ProgressView()
                         .controlSize(.small)
                         .scaleEffect(0.7)
-                    Text("正在移入废纸篓…")
+                    Text(L("正在移入废纸篓…"))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
@@ -539,7 +539,7 @@ struct LargeFilesPage: View {
                     HStack(spacing: 6) {
                         Image(systemName: "trash.fill")
                             .font(.system(size: 11, weight: .semibold))
-                        Text("移入废纸篓")
+                        Text(L("移入废纸篓"))
                     }
                 }
                 .buttonStyle(DangerButtonStyle(compact: true))

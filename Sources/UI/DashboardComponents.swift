@@ -16,7 +16,7 @@ struct QYAvailableSpacePill: View {
                 Image(systemName: "internaldrive.fill")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
-                Text("可用空间")
+                Text(L("可用空间"))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 Text(Format.bytes(max(0, disk.freeBytes)))
@@ -172,7 +172,7 @@ struct DashboardHeroCard: View {
                     .foregroundStyle(LinearGradient(colors: [Theme.blue, Theme.mint],
                                                     startPoint: .topLeading,
                                                     endPoint: .bottomTrailing))
-                Text("扫描中")
+                Text(L("扫描中"))
                     .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -189,7 +189,7 @@ struct DashboardHeroCard: View {
                         .font(.system(size: 11.5, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.mint)
                 }
-                Text("可清理")
+                Text(L("可清理"))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -207,7 +207,7 @@ struct DashboardHeroCard: View {
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.mint)
                 }
-                Text("可用空间")
+                Text(L("可用空间"))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -232,7 +232,7 @@ struct DashboardHeroCard: View {
                 HStack(spacing: 5) {
                     Image(systemName: "checkmark.shield.fill")
                         .font(.system(size: 9.5))
-                    Text("默认移入废纸篓，可随时恢复")
+                    Text(L("默认移入废纸篓，可随时恢复"))
                         .font(.system(size: 10.5))
                 }
                 .foregroundStyle(Theme.textTertiary)
@@ -276,18 +276,18 @@ struct DashboardHeroCard: View {
                 .fixedSize(horizontal: false, vertical: true)
         } else if hasResult, let found = app.scanResult?.totalBytesFound {
             HStack(alignment: .firstTextBaseline, spacing: 7) {
-                Text("发现")
+                Text(L("发现"))
                     .foregroundStyle(Theme.textPrimary)
                 Text(Format.bytes(found))
                     .foregroundStyle(Theme.brandGradient)
-                Text("可清理")
+                Text(L("可清理"))
                     .foregroundStyle(Theme.textPrimary)
             }
             .font(.system(size: 28, weight: .bold, design: .rounded))
             .lineLimit(1)
             .minimumScaleFactor(0.8)
         } else {
-            Text("让 Mac 轻净如羽")
+            Text(L("让 Mac 轻净如羽"))
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
@@ -302,7 +302,7 @@ struct DashboardHeroCard: View {
                 Image(systemName: "folder.fill")
                     .font(.system(size: 9.5))
                     .foregroundStyle(Theme.textTertiary)
-                Text(app.scanProgress.detail.isEmpty ? "正在准备扫描…" : app.scanProgress.detail)
+                Text(app.scanProgress.detail.isEmpty ? L("正在准备扫描…") : app.scanProgress.detail)
                     .font(.system(size: 11.5, design: .monospaced))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
@@ -315,7 +315,7 @@ struct DashboardHeroCard: View {
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         } else {
-            Text("一次扫描，找出缓存、日志、旧备份与开发者垃圾，让空间重新流动起来。")
+            Text(L("一次扫描，找出缓存、日志、旧备份与开发者垃圾，让空间重新流动起来。"))
                 .font(.system(size: 12.5))
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(2)
@@ -332,7 +332,7 @@ struct DashboardHeroCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "xmark")
                             .font(.system(size: 10, weight: .bold))
-                        Text("取消扫描")
+                        Text(L("取消扫描"))
                     }
                 }
                 .buttonStyle(SecondaryButtonStyle(tone: .blue))
@@ -341,7 +341,7 @@ struct DashboardHeroCard: View {
                     app.navigate(to: .smartScan)
                 } label: {
                     HStack(spacing: 6) {
-                        Text("查看清理建议")
+                        Text(L("查看清理建议"))
                         Image(systemName: "arrow.right")
                             .font(.system(size: 10, weight: .bold))
                     }
@@ -353,7 +353,7 @@ struct DashboardHeroCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.system(size: 10, weight: .semibold))
-                        Text("重新扫描")
+                        Text(L("重新扫描"))
                     }
                 }
                 .buttonStyle(SecondaryButtonStyle(tone: .mint))
@@ -364,7 +364,7 @@ struct DashboardHeroCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "sparkles")
                             .font(.system(size: 11, weight: .semibold))
-                        Text("开始扫描")
+                        Text(L("开始扫描"))
                     }
                 }
                 .buttonStyle(PrimaryButtonStyle(tone: .mint))
@@ -374,7 +374,7 @@ struct DashboardHeroCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "list.bullet.rectangle")
                             .font(.system(size: 10, weight: .semibold))
-                        Text("查看扫描详情")
+                        Text(L("查看扫描详情"))
                     }
                 }
                 .buttonStyle(SecondaryButtonStyle(tone: .mint))
@@ -461,10 +461,10 @@ struct DashboardHistoryCard: View {
                             .foregroundStyle(Theme.mint.opacity(0.8))
                     }
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("还没有清理记录")
+                        Text(L("还没有清理记录"))
                             .font(.system(size: 12.5, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
-                        Text("完成一次智能扫描后，这里会显示你释放的空间。")
+                        Text(L("完成一次智能扫描后，这里会显示你释放的空间。"))
                             .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
                             .lineLimit(1)
@@ -544,10 +544,10 @@ struct DashboardPermissionBanner: View {
                     .foregroundStyle(Theme.orange)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text("授予完全磁盘访问权限")
+                Text(L("授予完全磁盘访问权限"))
                     .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text("部分邮件附件与备份需要授权。列表中若没有 TidyMac，点击 + 添加。")
+                Text(L("部分邮件附件与备份需要授权。列表中若没有 TidyMac，点击 + 添加。"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
@@ -559,7 +559,7 @@ struct DashboardPermissionBanner: View {
                 HStack(spacing: 4) {
                     Image(systemName: "folder")
                         .font(.system(size: 9.5, weight: .semibold))
-                    Text("在 Finder 中显示")
+                    Text(L("在 Finder 中显示"))
                 }
                 .font(.system(size: 11))
                 .foregroundStyle(Theme.orange)
@@ -569,7 +569,7 @@ struct DashboardPermissionBanner: View {
             Button {
                 FullDiskAccess.openPrivacySettings()
             } label: {
-                Text("打开系统设置")
+                Text(L("打开系统设置"))
             }
             .buttonStyle(SecondaryButtonStyle(tone: .orange, compact: true))
             Button(action: onDismiss) {

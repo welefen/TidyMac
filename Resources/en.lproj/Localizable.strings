@@ -419,3 +419,8 @@
 "最近 %d 条记录" = "Last %d records";
 "共 %d 个匹配文件" = "%d matching files";
 "%d 个匹配文件" = "%d matching files";
+"\n文件会移入废纸篓，可随时恢复。" = "\nFiles will be moved to the Trash and can be restored anytime.";
+"\n文件将被永久删除，无法恢复。" = "\nFiles will be permanently deleted and cannot be recovered.";
+"将移除 %@（%@）%@，合计 %@。" = "Remove %@ (%@). %@ Total %@.";
+"以及 %d 项关联文件（%@）" = "plus %d leftover files (%@)";
+"\n应用当前正在运行，建议先退出。" = "\nThe app is running. Quit it before uninstalling to release files in use.";

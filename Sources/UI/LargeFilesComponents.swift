@@ -98,11 +98,11 @@ struct LargeFilesTableHeader: View {
             .help(isAllSelected ? "取消全选当前列表" : "全选当前列表")
             .accessibilityLabel(isAllSelected ? "取消全选当前列表" : "全选当前列表")
             Color.clear.frame(width: 34, height: 1)
-            Text("名称")
+            Text(L("名称"))
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button(action: toggleSort) {
                 HStack(spacing: 3) {
-                    Text("大小")
+                    Text(L("大小"))
                     Image(systemName: sortDescending ? "chevron.down" : "chevron.up")
                         .font(.system(size: 8, weight: .bold))
                 }
@@ -111,7 +111,7 @@ struct LargeFilesTableHeader: View {
             }
             .buttonStyle(.plain)
             .frame(width: 92, alignment: .trailing)
-            Text("修改时间")
+            Text(L("修改时间"))
                 .frame(width: 96, alignment: .trailing)
             Color.clear.frame(width: 32, height: 1)
         }
@@ -303,7 +303,7 @@ struct LargeFilesScanningState: View {
                     .foregroundStyle(Theme.mint)
             }
             StorageBar(usedFraction: progress, tone: .mint, height: 6)
-            Text("正在扫描下载、文档、桌面、影片、图片与音乐目录…")
+            Text(L("正在扫描下载、文档、桌面、影片、图片与音乐目录…"))
                 .font(.system(size: 11))
                 .foregroundStyle(Theme.textTertiary)
         }

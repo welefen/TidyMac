@@ -165,16 +165,17 @@ final class UninstallerViewModel: ObservableObject {
         guard let app = selectedApp else { return "" }
         let leftoverPart: String
         if selectedLeftovers.isEmpty {
-            leftoverPart = "仅移除应用本体"
+            leftoverPart = L("仅移除应用本体")
         } else {
             leftoverPart = L("以及 \(selectedLeftovers.count) 项关联文件（\(Format.bytes(selectedLeftoverBytes))）")
         }
-        let mode = moveToTrash
+        let mode = L(moveToTrash
             ? "这些项目会被移到废纸篓，可在废纸篓中恢复。"
-            : "这些项目将被直接删除，无法恢复。"
-        var text = L("将移除 \(app.name)（\(Format.bytes(app.byteCount))）\(leftoverPart)，合计 \(Format.bytes(selectedTotalBytes))。\n\(mode)")
+            : "这些项目将被直接删除，无法恢复。")
+        var text = L("将移除 %@（%@）%@，合计 %@。", app.name, Format.bytes(app.byteCount), leftoverPart, Format.bytes(selectedTotalBytes))
+        text += "\n" + mode
         if isRunning(app) {
-            text += "\n应用当前正在运行，建议先退出。"
+            text += L("\n应用当前正在运行，建议先退出。")
         }
         return text
     }
@@ -344,7 +345,7 @@ struct UninstallerPage: View {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 11, weight: .semibold))
-                Text("刷新")
+                Text(L("刷新"))
                     .font(.system(size: 12, weight: .medium))
             }
             .foregroundStyle(Theme.textSecondary)
@@ -489,7 +490,7 @@ struct UninstallerPage: View {
                     HStack(spacing: 6) {
                         Image(systemName: "info.circle")
                             .font(.system(size: 10))
-                        Text("勾选的残留会随应用一起移除；取消勾选可保留偏好设置等数据。")
+                        Text(L("勾选的残留会随应用一起移除；取消勾选可保留偏好设置等数据。"))
                             .font(.system(size: 10.5))
                             .lineLimit(1)
                     }
@@ -521,11 +522,11 @@ struct UninstallerPage: View {
                 HStack(spacing: 6) {
                     Text(L("版本 \(installed.version)"))
                     Text("·")
-                    Text(installed.isSystem ? "系统安装" : "用户安装")
+                    Text(L(installed.isSystem ? "系统安装" : "用户安装"))
                 }
                 .font(.system(size: 11.5, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
-                Text(installed.bundleID ?? "未知 Bundle ID")
+                Text(L(installed.bundleID ?? "未知 Bundle ID"))
                     .font(.system(size: 10.5, design: .monospaced))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
@@ -558,7 +559,7 @@ struct UninstallerPage: View {
 
     private var leftoversHeader: some View {
         HStack(spacing: 8) {
-            Text("关联文件")
+            Text(L("关联文件"))
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
             if !model.leftovers.isEmpty {
@@ -571,7 +572,7 @@ struct UninstallerPage: View {
             }
             Spacer()
             if !model.leftovers.isEmpty && !model.isLoadingLeftovers {
-                Button(model.allLeftoversSelected ? "取消全选" : "全选") {
+                Button(L(model.allLeftoversSelected ? "取消全选" : "全选")) {
                     model.setAllLeftovers(!model.allLeftoversSelected)
                 }
                 .buttonStyle(GhostButtonStyle(tone: .mint))
@@ -593,7 +594,7 @@ struct UninstallerPage: View {
                     Image(systemName: "checkmark.seal.fill")
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.mint)
-                    Text("未发现关联残留，将仅移除应用本体。")
+                    Text(L("未发现关联残留，将仅移除应用本体。"))
                         .font(.system(size: 11.5))
                         .foregroundStyle(Theme.textSecondary)
                 }
@@ -622,10 +623,10 @@ struct UninstallerPage: View {
                 .foregroundStyle(Theme.blue)
                 .padding(.top, 1)
             VStack(alignment: .leading, spacing: 3) {
-                Text("系统应用受 SIP 保护")
+                Text(L("系统应用受 SIP 保护"))
                     .font(.system(size: 11.5, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
-                Text("这类应用由 macOS 系统完整性保护管理，TidyMac 无法移除。此处仅用于查看系统组件占用。")
+                Text(L("这类应用由 macOS 系统完整性保护管理，TidyMac 无法移除。此处仅用于查看系统组件占用。"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -664,10 +665,10 @@ struct UninstallerPage: View {
             } else if installed.isSystem {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("系统应用不可卸载")
+                        Text(L("系统应用不可卸载"))
                             .font(.system(size: 12.5, weight: .semibold))
                             .foregroundStyle(Theme.textSecondary)
-                        Text("受 macOS 系统完整性保护（SIP）限制，TidyMac 只能查看占用信息。")
+                        Text(L("受 macOS 系统完整性保护（SIP）限制，TidyMac 只能查看占用信息。"))
                             .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
                             .lineLimit(1)
@@ -676,7 +677,7 @@ struct UninstallerPage: View {
                     HStack(spacing: 6) {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 10, weight: .semibold))
-                        Text("系统应用不可卸载")
+                        Text(L("系统应用不可卸载"))
                     }
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
@@ -689,7 +690,7 @@ struct UninstallerPage: View {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(model.selectedLeftovers.isEmpty
-                             ? "将移除应用本体"
+                             ? L("将移除应用本体")
                              : L("将移除应用及 \(model.selectedLeftovers.count) 项残留"))
                             .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
@@ -706,7 +707,7 @@ struct UninstallerPage: View {
                         HStack(spacing: 6) {
                             Image(systemName: "trash.slash.fill")
                                 .font(.system(size: 11, weight: .semibold))
-                            Text("卸载应用")
+                            Text(L("卸载应用"))
                         }
                     }
                     .buttonStyle(DangerButtonStyle())

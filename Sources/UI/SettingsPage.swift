@@ -22,7 +22,7 @@ struct SettingsPage: View {
                 statisticsSection
                 aboutSection
 
-                Text("TidyMac 不会上传任何扫描数据。所有分析均在本机完成。")
+                Text(L("TidyMac 不会上传任何扫描数据。所有分析均在本机完成。"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(maxWidth: .infinity)
@@ -38,7 +38,7 @@ struct SettingsPage: View {
             Button("取消", role: .cancel) {}
             Button("重置", role: .destructive) { settings.resetStatistics() }
         } message: {
-            Text("将清空累计释放空间、清理次数与历史记录，此操作不可撤销。")
+            Text(L("将清空累计释放空间、清理次数与历史记录，此操作不可撤销。"))
         }
     }
 
@@ -57,7 +57,7 @@ struct SettingsPage: View {
                         }
                     }
                     Spacer(minLength: 8)
-                    Text("跟随系统时会自动随 macOS 深色/浅色外观切换")
+                    Text(L("跟随系统时会自动随 macOS 深色/浅色外观切换"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
@@ -155,7 +155,7 @@ struct SettingsPage: View {
     private var exclusionSection: some View {
         settingsCard(title: "排除列表", symbol: "hand.raised.fill", tone: .orange) {
             VStack(alignment: .leading, spacing: 12) {
-                Text("排除的文件或文件夹不会被智能扫描清理，也不会出现在结果中。")
+                Text(L("排除的文件或文件夹不会被智能扫描清理，也不会出现在结果中。"))
                     .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textSecondary)
 
@@ -163,7 +163,7 @@ struct SettingsPage: View {
                     HStack(spacing: 10) {
                         Image(systemName: "tray")
                             .foregroundStyle(Theme.textTertiary)
-                        Text("暂无排除项")
+                        Text(L("暂无排除项"))
                             .font(.system(size: 12))
                             .foregroundStyle(Theme.textTertiary)
                         Spacer()
@@ -254,9 +254,9 @@ struct SettingsPage: View {
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
         panel.canCreateDirectories = false
-        panel.title = "选择要排除的文件或文件夹"
-        panel.prompt = "排除"
-        panel.message = "这些内容将不会被 TidyMac 扫描或清理。"
+        panel.title = L("选择要排除的文件或文件夹")
+        panel.prompt = L("排除")
+        panel.message = L("这些内容将不会被 TidyMac 扫描或清理。")
         panel.begin { response in
             guard response == .OK else { return }
             for url in panel.urls {
@@ -280,7 +280,7 @@ struct SettingsPage: View {
                             .foregroundStyle(FullDiskAccess.hasAccess() ? Theme.mint : Theme.orange)
                     }
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(FullDiskAccess.hasAccess() ? "完全磁盘访问权限已启用" : "建议开启完全磁盘访问权限")
+                        Text(L(FullDiskAccess.hasAccess() ? "完全磁盘访问权限已启用" : "建议开启完全磁盘访问权限"))
                             .font(.system(size: 12.5, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text(FullDiskAccess.hasAccess()
@@ -300,10 +300,10 @@ struct SettingsPage: View {
                         .foregroundStyle(Theme.blue)
                         .padding(.top, 1)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("列表中找不到 TidyMac？")
+                        Text(L("列表中找不到 TidyMac？"))
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(Theme.textSecondary)
-                        Text("点击列表下方的 +，选择 TidyMac.app；或点击「在 Finder 中显示」，把应用拖入列表。开启开关后请重新启动 TidyMac。")
+                        Text(L("点击列表下方的 +，选择 TidyMac.app；或点击「在 Finder 中显示」，把应用拖入列表。开启开关后请重新启动 TidyMac。"))
                             .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -324,7 +324,7 @@ struct SettingsPage: View {
                     Label("安全保护始终开启", systemImage: "lock.fill")
                         .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(Theme.textSecondary)
-                    Text("系统目录、钥匙串、照片图库、邮件数据库、iCloud 文档等路径受到硬性保护，任何清理操作都会先通过安全策略校验。")
+                    Text(L("系统目录、钥匙串、照片图库、邮件数据库、iCloud 文档等路径受到硬性保护，任何清理操作都会先通过安全策略校验。"))
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.textTertiary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -334,10 +334,10 @@ struct SettingsPage: View {
 
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("在卸载器中显示系统应用")
+                        Text(L("在卸载器中显示系统应用"))
                             .font(.system(size: 12.5, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
-                        Text("仅用于查看系统组件占用；受 SIP 保护的系统应用无法卸载。")
+                        Text(L("仅用于查看系统组件占用；受 SIP 保护的系统应用无法卸载。"))
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.textTertiary)
                     }
@@ -362,7 +362,7 @@ struct SettingsPage: View {
                 statistic("上次清理", Format.date(settings.lastCleanDate), "clock.fill", .purple)
             }
             HStack {
-                Text("统计数据仅保存在本机。")
+                Text(L("统计数据仅保存在本机。"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
@@ -406,7 +406,7 @@ struct SettingsPage: View {
                 Text("TidyMac")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
-                Text("轻净如羽，焕然一新  ·  v1.0.0  ·  macOS 14+")
+                Text(L("轻净如羽，焕然一新  ·  v1.0.0  ·  macOS 14+"))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
             }

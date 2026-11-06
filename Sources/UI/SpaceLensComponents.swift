@@ -412,7 +412,7 @@ struct SpaceLensScanningView: View {
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
-                Text("正在分析目录大小，可以随时取消")
+                Text(L("正在分析目录大小，可以随时取消"))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
             }

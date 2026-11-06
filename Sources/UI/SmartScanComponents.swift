@@ -27,11 +27,11 @@ struct ScanIdleView: View {
                 VStack(spacing: 0) {
                     Spacer(minLength: 14)
                     ring
-                    Text("开始智能扫描")
+                    Text(L("开始智能扫描"))
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.textPrimary)
                         .padding(.top, 20)
-                    Text("TidyMac 会检查缓存、日志、开发者构建缓存、浏览器数据与旧备份，\n只推荐可以安全清理的项目，并默认移入废纸篓。")
+                    Text(L("TidyMac 会检查缓存、日志、开发者构建缓存、浏览器数据与旧备份，\n只推荐可以安全清理的项目，并默认移入废纸篓。"))
                         .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textSecondary)
                         .multilineTextAlignment(.center)
@@ -45,11 +45,11 @@ struct ScanIdleView: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "sparkles")
                                     .font(.system(size: 11, weight: .semibold))
-                                Text("开始智能扫描")
+                                Text(L("开始智能扫描"))
                             }
                         }
                         .buttonStyle(PrimaryButtonStyle(tone: .mint))
-                        Text("通常只需 10 – 30 秒")
+                        Text(L("通常只需 10 – 30 秒"))
                             .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
                     }
@@ -59,7 +59,7 @@ struct ScanIdleView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark.shield.fill")
                             .font(.system(size: 9.5))
-                        Text("所有清理均经过安全校验，默认移入废纸篓，可随时恢复。")
+                        Text(L("所有清理均经过安全校验，默认移入废纸篓，可随时恢复。"))
                             .font(.system(size: 10.5))
                     }
                     .foregroundStyle(Theme.textTertiary)
@@ -95,7 +95,7 @@ struct ScanIdleView: View {
                 Image(systemName: "wind")
                     .font(.system(size: 36, weight: .light))
                     .foregroundStyle(Theme.brandGradient)
-                Text("准备就绪")
+                Text(L("准备就绪"))
                     .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -202,7 +202,7 @@ struct ScanRunningView: View {
                     .foregroundStyle(LinearGradient(colors: [Theme.mint, Theme.blue],
                                                     startPoint: .topLeading,
                                                     endPoint: .bottomTrailing))
-                Text("已完成")
+                Text(L("已完成"))
                     .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -214,7 +214,7 @@ struct ScanRunningView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 7) {
                 ScanPulseDot(color: Theme.blue, size: 5)
-                Text("正在扫描")
+                Text(L("正在扫描"))
                     .font(.system(size: 10.5, weight: .semibold))
                     .tracking(0.6)
             }
@@ -233,7 +233,7 @@ struct ScanRunningView: View {
             HStack(spacing: 7) {
                 Image(systemName: "folder.fill")
                     .font(.system(size: 9.5))
-                Text(app.scanProgress.detail.isEmpty ? "正在准备扫描位置…" : app.scanProgress.detail)
+                Text(app.scanProgress.detail.isEmpty ? L("正在准备扫描位置…") : app.scanProgress.detail)
                     .font(.system(size: 11.5, design: .monospaced))
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -252,11 +252,11 @@ struct ScanRunningView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "xmark")
                             .font(.system(size: 10, weight: .bold))
-                        Text("取消扫描")
+                        Text(L("取消扫描"))
                     }
                 }
                 .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
-                Text("已扫描的结果不会被保存")
+                Text(L("已扫描的结果不会被保存"))
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -284,12 +284,12 @@ struct ScanRunningView: View {
                     case 1:
                         HStack(spacing: 5) {
                             ScanPulseDot(color: Theme.blue, size: 5)
-                            Text("扫描中")
+                            Text(L("扫描中"))
                                 .font(.system(size: 10, weight: .medium))
                                 .foregroundStyle(Theme.blue)
                         }
                     default:
-                        Text("等待")
+                        Text(L("等待"))
                             .font(.system(size: 10))
                             .foregroundStyle(Theme.textTertiary.opacity(0.8))
                     }
@@ -362,7 +362,7 @@ struct ScanResultsView: View {
         .onAppear(perform: expandInitialCategory)
         .alert("确认清理", isPresented: $showConfirm) {
             Button("取消", role: .cancel) {}
-            Button(settings.moveToTrash ? "移到废纸篓" : "永久删除", role: .destructive) {
+            Button(L(settings.moveToTrash ? "移到废纸篓" : "永久删除"), role: .destructive) {
                 app.cleanSelected()
             }
         } message: {
@@ -395,9 +395,9 @@ struct ScanResultsView: View {
 
     private var alertMessage: String {
         var text = L("将清理 \(app.selectedCount) 项，预计释放 \(Format.bytes(app.selectedBytes))。")
-        text += settings.moveToTrash
+        text += L(settings.moveToTrash
             ? "\n文件会移入废纸篓，可随时恢复。"
-            : "\n文件将被永久删除，无法恢复。"
+            : "\n文件将被永久删除，无法恢复。")
         if app.riskySelectedCount > 0 {
             text += L("\n注意：其中 \(app.riskySelectedCount) 项属于重要项目，可能影响应用或需要重新下载。")
         }
@@ -411,7 +411,7 @@ struct ScanResultsView: View {
         let selectedParts = Format.bytesParts(app.selectedBytes)
         return HStack(alignment: .center, spacing: 22) {
             VStack(alignment: .leading, spacing: 5) {
-                Text("扫描完成 · 可清理空间")
+                Text(L("扫描完成 · 可清理空间"))
                     .font(.system(size: 10.5, weight: .semibold))
                     .tracking(0.9)
                     .foregroundStyle(Theme.textTertiary)
@@ -434,7 +434,7 @@ struct ScanResultsView: View {
                 .frame(width: 1, height: 54)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text("已选择")
+                Text(L("已选择"))
                     .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -458,7 +458,7 @@ struct ScanResultsView: View {
                     app.setAllCategories(selected: !app.allSelected)
                 } label: {
                     HStack(spacing: 7) {
-                        Text(app.allSelected ? "取消全选" : "全选")
+                        Text(L(app.allSelected ? "取消全选" : "全选"))
                             .font(.system(size: 11.5, weight: .medium))
                             .foregroundStyle(Theme.textSecondary)
                         SelectionCheck(isOn: app.allSelected, isPartial: partiallySelected, size: 19)
@@ -473,7 +473,7 @@ struct ScanResultsView: View {
                     HStack(spacing: 5) {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.system(size: 10, weight: .semibold))
-                        Text("重新扫描")
+                        Text(L("重新扫描"))
                     }
                 }
                 .buttonStyle(SecondaryButtonStyle(tone: .mint, compact: true))
@@ -528,7 +528,7 @@ struct ScanResultsView: View {
         HStack(spacing: 6) {
             Image(systemName: "checkmark.shield.fill")
                 .font(.system(size: 9.5))
-            Text("勾选的项目会经过安全校验后再清理，标记为「重要」的项目默认不勾选。")
+            Text(L("勾选的项目会经过安全校验后再清理，标记为「重要」的项目默认不勾选。"))
                 .font(.system(size: 10.5))
         }
         .foregroundStyle(Theme.textTertiary)
@@ -635,7 +635,7 @@ struct ScanCategoryPanel: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help(category.isAllSelected ? "取消选择此类别" : "全选此类别")
+            .help(L(category.isAllSelected ? "取消选择此类别" : "全选此类别"))
 
             Image(systemName: "chevron.down")
                 .font(.system(size: 10, weight: .bold))
@@ -679,7 +679,7 @@ struct ScanItemLine: View {
                         .foregroundStyle(item.isSelected ? Theme.textPrimary : Theme.textSecondary)
                         .lineLimit(1)
                     if item.safety == .risky {
-                        Text("默认不选")
+                        Text(L("默认不选"))
                             .font(.system(size: 9, weight: .medium))
                             .foregroundStyle(Theme.red.opacity(0.9))
                             .padding(.horizontal, 4)
@@ -733,7 +733,7 @@ struct ScanActionBar: View {
                 Text(L("已选 \(app.selectedCount) 项 · \(Format.bytes(app.selectedBytes))"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(app.hasSelection ? Theme.textPrimary : Theme.textSecondary)
-                Text(settings.moveToTrash ? "将移入废纸篓，可随时恢复" : "将永久删除，无法恢复")
+                Text(L(settings.moveToTrash ? "将移入废纸篓，可随时恢复" : "将永久删除，无法恢复"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(settings.moveToTrash ? Theme.textTertiary : Theme.orange)
             }
@@ -807,7 +807,7 @@ struct ScanCleaningView: View {
                             .font(.system(size: 42, weight: .bold, design: .rounded))
                             .monospacedDigit()
                             .foregroundStyle(Theme.brandGradient)
-                        Text("清理中")
+                        Text(L("清理中"))
                             .font(.system(size: 10.5, weight: .medium))
                             .foregroundStyle(Theme.textSecondary)
                     }
@@ -833,7 +833,7 @@ struct ScanCleaningView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 9.5))
-                    Text("清理过程中请不要关闭应用")
+                    Text(L("清理过程中请不要关闭应用"))
                         .font(.system(size: 10.5))
                 }
                 .foregroundStyle(Theme.orange.opacity(0.85))
@@ -867,7 +867,7 @@ struct ScanFinishedView: View {
                     VStack(spacing: 0) {
                         Spacer(minLength: 12)
                         successBadge
-                        Text("清理完成")
+                        Text(L("清理完成"))
                             .font(.system(size: 10.5, weight: .semibold))
                             .tracking(1.5)
                             .foregroundStyle(Theme.textTertiary)
@@ -882,7 +882,7 @@ struct ScanFinishedView: View {
                                 .foregroundStyle(Theme.mint)
                         }
                         .padding(.top, 2)
-                        Text("空间已释放")
+                        Text(L("空间已释放"))
                             .font(.system(size: 13.5))
                             .foregroundStyle(Theme.textSecondary)
                             .padding(.top, 2)
@@ -907,7 +907,7 @@ struct ScanFinishedView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 10, weight: .bold))
-                                    Text("完成")
+                                    Text(L("完成"))
                                 }
                             }
                             .buttonStyle(PrimaryButtonStyle(tone: .mint))
@@ -917,7 +917,7 @@ struct ScanFinishedView: View {
                                 HStack(spacing: 5) {
                                     Image(systemName: "arrow.triangle.2.circlepath")
                                         .font(.system(size: 10, weight: .semibold))
-                                    Text("再次扫描")
+                                    Text(L("再次扫描"))
                                 }
                             }
                             .buttonStyle(SecondaryButtonStyle(tone: .mint))
@@ -970,7 +970,7 @@ struct ScanFinishedView: View {
                 Text(L("\(report.failures.count) 个文件未能清理"))
                     .font(.system(size: 11.5, weight: .semibold))
                 Spacer(minLength: 8)
-                Text("可能权限不足或文件正被占用")
+                Text(L("可能权限不足或文件正被占用"))
                     .font(.system(size: 9.5))
                     .foregroundStyle(Theme.textTertiary)
             }

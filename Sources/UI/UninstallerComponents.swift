@@ -148,13 +148,13 @@ struct AppListRow: View {
                             HStack(spacing: 2) {
                                 Image(systemName: "lock.fill")
                                     .font(.system(size: 7.5, weight: .bold))
-                                Text("系统")
+                                Text(L("系统"))
                                     .font(.system(size: 9.5, weight: .semibold))
                             }
                             .foregroundStyle(Theme.textTertiary)
                         }
                         if isRunning {
-                            Text("运行中")
+                            Text(L("运行中"))
                                 .font(.system(size: 9.5, weight: .semibold))
                                 .foregroundStyle(Theme.orange)
                         }
@@ -308,10 +308,10 @@ struct RunningAppWarning: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Theme.orange)
             VStack(alignment: .leading, spacing: 1) {
-                Text("应用当前正在运行")
+                Text(L("应用当前正在运行"))
                     .font(.system(size: 11.5, weight: .semibold))
                     .foregroundStyle(Theme.orange)
-                Text("建议先退出应用后再卸载，以释放被占用的文件")
+                Text(L("建议先退出应用后再卸载，以释放被占用的文件"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)

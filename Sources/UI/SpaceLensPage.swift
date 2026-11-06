@@ -256,7 +256,7 @@ struct SpaceLensPage: View {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 11, weight: .semibold))
-                Text("重新扫描")
+                Text(L("重新扫描"))
                     .font(.system(size: 12, weight: .medium))
             }
             .foregroundStyle(Theme.textSecondary)
@@ -276,8 +276,8 @@ struct SpaceLensPage: View {
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
         panel.canCreateDirectories = false
-        panel.prompt = "分析"
-        panel.message = "选择要分析空间占用的文件夹"
+        panel.prompt = L("分析")
+        panel.message = L("选择要分析空间占用的文件夹")
         if panel.runModal() == .OK, let url = panel.url {
             model.load(customRoot: url, isDemo: app.isDemo)
         }
@@ -328,14 +328,14 @@ struct SpaceLensPage: View {
     private func treemapPanel(_ current: SpaceNode) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Text("空间分布")
+                Text(L("空间分布"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text("点击色块进入下一层")
+                Text(L("点击色块进入下一层"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
-                Text("按占用从多到少排列")
+                Text(L("按占用从多到少排列"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -352,10 +352,10 @@ struct SpaceLensPage: View {
     private func rankingPanel(_ current: SpaceNode) -> some View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
-                Text("空间排行")
+                Text(L("空间排行"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text("点击目录进入")
+                Text(L("点击目录进入"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
