@@ -76,11 +76,27 @@ extension LargeFileKind {
 
 struct LargeFilesTableHeader: View {
     var sortDescending: Bool
+    var isAllSelected: Bool
+    var isPartiallySelected: Bool
+    var isEnabled: Bool
     var toggleSort: () -> Void
+    var toggleAll: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
-            Color.clear.frame(width: 20, height: 1)
+            Button(action: toggleAll) {
+                SelectionCheck(isOn: isAllSelected,
+                               isPartial: isPartiallySelected,
+                               tone: .mint,
+                               size: 18)
+                    .frame(width: 20, height: 20)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!isEnabled)
+            .opacity(isEnabled ? 1 : 0.35)
+            .help(isAllSelected ? "取消全选当前列表" : "全选当前列表")
+            .accessibilityLabel(isAllSelected ? "取消全选当前列表" : "全选当前列表")
             Color.clear.frame(width: 34, height: 1)
             Text("名称")
                 .frame(maxWidth: .infinity, alignment: .leading)

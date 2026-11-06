@@ -46,6 +46,17 @@ final class LargeFilesViewModel: ObservableObject {
 
     var foundBytes: Int64 { filteredFiles.reduce(0) { $0 + $1.byteCount } }
 
+    /// Number of currently visible (filtered) rows that are selected.
+    var visibleSelectedCount: Int { filteredFiles.filter(\.isSelected).count }
+
+    var isAllVisibleSelected: Bool {
+        !filteredFiles.isEmpty && visibleSelectedCount == filteredFiles.count
+    }
+
+    var isPartiallyVisibleSelected: Bool {
+        visibleSelectedCount > 0 && !isAllVisibleSelected
+    }
+
     var oldestFile: LargeFile? {
         filteredFiles.min { $0.modifiedAt < $1.modifiedAt }
     }
@@ -121,6 +132,19 @@ final class LargeFilesViewModel: ObservableObject {
     func toggle(_ file: LargeFile) {
         guard let index = allFiles.firstIndex(where: { $0.id == file.id }) else { return }
         allFiles[index].isSelected.toggle()
+    }
+
+    /// Selects or deselects every file that is currently visible under the
+    /// active filters. Hidden rows keep their existing state.
+    func setAllVisibleSelected(_ selected: Bool) {
+        let visibleIDs = Set(filteredFiles.map(\.id))
+        for index in allFiles.indices where visibleIDs.contains(allFiles[index].id) {
+            allFiles[index].isSelected = selected
+        }
+    }
+
+    func toggleSelectAllVisible() {
+        setAllVisibleSelected(!isAllVisibleSelected)
     }
 
     func clearSelection() {
@@ -354,9 +378,12 @@ struct LargeFilesPage: View {
 
     private var listPanel: some View {
         VStack(spacing: 0) {
-            LargeFilesTableHeader(sortDescending: model.sortDescending) {
-                model.sortDescending.toggle()
-            }
+            LargeFilesTableHeader(sortDescending: model.sortDescending,
+                                  isAllSelected: model.isAllVisibleSelected,
+                                  isPartiallySelected: model.isPartiallyVisibleSelected,
+                                  isEnabled: !model.filteredFiles.isEmpty && !model.isScanning && !model.isTrashing,
+                                  toggleSort: { model.sortDescending.toggle() },
+                                  toggleAll: { model.toggleSelectAllVisible() })
             DividerLine()
 
             Group {
@@ -464,6 +491,22 @@ struct LargeFilesPage: View {
                         .monospacedDigit()
                         .foregroundStyle(Theme.textPrimary)
                 }
+            }
+
+            if !model.filteredFiles.isEmpty && !model.isScanning {
+                Button {
+                    model.toggleSelectAllVisible()
+                } label: {
+                    Text(model.isAllVisibleSelected ? "取消全选" : "全选")
+                        .font(.system(size: 11.5, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                        .padding(.horizontal, 10)
+                        .frame(height: 28)
+                        .background(Capsule(style: .continuous).fill(Theme.cardElevated))
+                        .overlay(Capsule(style: .continuous).strokeBorder(Theme.stroke, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .help(model.isAllVisibleSelected ? "取消全选当前列表" : "全选当前列表中的 \(model.filteredFiles.count) 个文件")
             }
 
             if model.isScanning && model.hasScanned {
