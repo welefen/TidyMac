@@ -78,7 +78,7 @@ final class UpdateManager: ObservableObject {
         case .downloading(let version):
             return L("正在下载 v%@…", version)
         case .ready(let version):
-            return L("v%@ 已下载，点击左上角版本号安装", version)
+            return L("v%@ 已下载", version)
         case .installing(let version):
             return L("正在安装 v%@ 并重新启动…", version)
         case .failed(let message):
