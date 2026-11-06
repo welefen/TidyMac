@@ -168,7 +168,7 @@ struct DashboardHeroCard: View {
         if isScanning {
             VStack(spacing: 4) {
                 Text(Format.percent(app.scanProgress.fraction))
-                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(LinearGradient(colors: [Theme.blue, Theme.mint],
                                                     startPoint: .topLeading,
@@ -179,34 +179,40 @@ struct DashboardHeroCard: View {
             }
         } else if app.scanResult != nil && hasResult {
             VStack(spacing: 3) {
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text(Format.bytesParts(app.scanResult?.totalBytesFound ?? 0).number)
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: 31, weight: .bold, design: .rounded))
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                         .foregroundStyle(Theme.brandGradient)
                     Text(Format.bytesParts(app.scanResult?.totalBytesFound ?? 0).unit)
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11.5, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.mint)
                 }
                 Text("可清理")
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
+            .padding(.horizontal, 12)
         } else {
             VStack(spacing: 3) {
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text(Format.bytesParts(app.disk.freeBytes).number)
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
                         .foregroundStyle(Theme.textPrimary)
                     Text(Format.bytesParts(app.disk.freeBytes).unit)
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.mint)
                 }
                 Text("可用空间")
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
+            .padding(.horizontal, 14)
         }
     }
 
