@@ -6,6 +6,7 @@ struct SidebarView: View {
 
     private var appVersion: String { updates.currentVersion }
     @State private var hoveredPage: AppPage?
+    @State private var hoveringUpdate = false
 
     private var mainPages: [AppPage] { [.overview, .smartScan] }
     private var toolPages: [AppPage] { [.uninstaller, .largeFiles, .spaceLens] }
@@ -106,9 +107,51 @@ struct SidebarView: View {
                 .padding(.vertical, 2.5)
                 .background(Capsule().fill(Theme.mint.opacity(0.12)))
                 .overlay(Capsule().strokeBorder(Theme.mint.opacity(0.30), lineWidth: 0.8))
+                .overlay {
+                    if hoveringUpdate {
+                        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+                            let angle = context.date.timeIntervalSinceReferenceDate
+                                .truncatingRemainder(dividingBy: 2.2) / 2.2 * 360
+                            Capsule()
+                                .stroke(
+                                    AngularGradient(
+                                        colors: [.clear, Theme.mint, .clear],
+                                        center: .center,
+                                        startAngle: .degrees(angle),
+                                        endAngle: .degrees(angle + 360)
+                                    ),
+                                    lineWidth: 1.3
+                                )
+                                .allowsHitTesting(false)
+                        }
+                    }
+                }
+                .overlay(alignment: .bottom) {
+                    if hoveringUpdate {
+                        Text(L("新版本立即安装"))
+                            .font(.system(size: 9.5, weight: .medium))
+                            .foregroundStyle(Theme.textPrimary)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Theme.cardElevated)
+                                    .shadow(color: .black.opacity(0.14), radius: 7, y: 3)
+                            )
+                            .overlay(Capsule().strokeBorder(Theme.stroke, lineWidth: 0.8))
+                            .fixedSize()
+                            .offset(y: 25)
+                            .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
+                            .allowsHitTesting(false)
+                            .zIndex(20)
+                    }
+                }
+                .scaleEffect(hoveringUpdate ? 1.04 : 1)
+                .animation(.easeOut(duration: 0.16), value: hoveringUpdate)
                 .fixedSize()
             }
             .buttonStyle(.plain)
+            .onHover { hoveringUpdate = $0 }
             .help(L("有新版本 v%@，点击安装", version))
             .accessibilityLabel(L("有新版本 v%@，点击安装", version))
         case .downloading:
