@@ -228,6 +228,30 @@ struct SettingsPage: View {
                         .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
                 }
 
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Theme.blue)
+                        .padding(.top, 1)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("列表中找不到 TidyMac？")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                        Text("点击列表下方的 +，选择 TidyMac.app；或点击「在 Finder 中显示」，把应用拖入列表。开启开关后请重新启动 TidyMac。")
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(Theme.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 8)
+                    Button("在 Finder 中显示") { AppPermissionActions.revealApplicationInFinder() }
+                        .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
+                }
+                .padding(10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Theme.field)
+                )
+
                 DividerLine()
 
                 VStack(alignment: .leading, spacing: 6) {

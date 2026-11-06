@@ -549,12 +549,25 @@ struct DashboardPermissionBanner: View {
                 Text("授予完全磁盘访问权限")
                     .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text("部分邮件附件、系统缓存与备份需要该权限才能被扫描和清理。")
+                Text("部分邮件附件与备份需要授权。列表中若没有 TidyMac，点击 + 添加。")
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
             }
             Spacer(minLength: 8)
+            Button {
+                AppPermissionActions.revealApplicationInFinder()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "folder")
+                        .font(.system(size: 9.5, weight: .semibold))
+                    Text("在 Finder 中显示")
+                }
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.orange)
+            }
+            .buttonStyle(.plain)
+            .help("在 Finder 中显示 TidyMac，便于拖入完全磁盘访问列表")
             Button {
                 FullDiskAccess.openPrivacySettings()
             } label: {

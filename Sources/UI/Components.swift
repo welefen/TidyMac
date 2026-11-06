@@ -536,6 +536,14 @@ struct VisualEffectView: NSViewRepresentable {
     }
 }
 
+enum AppPermissionActions {
+    static var applicationURL: URL { Bundle.main.bundleURL }
+
+    static func revealApplicationInFinder() {
+        NSWorkspace.shared.activateFileViewerSelecting([applicationURL])
+    }
+}
+
 /// The real application icon, used anywhere the in-app brand mark is shown so
 /// it always matches the Dock / Finder icon.
 struct AppBrandIcon: View {
