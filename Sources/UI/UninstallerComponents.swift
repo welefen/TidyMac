@@ -144,6 +144,15 @@ struct AppListRow: View {
                         .lineLimit(1)
                     HStack(spacing: 5) {
                         Text("v\(app.version)")
+                        if app.isSystem {
+                            HStack(spacing: 2) {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 7.5, weight: .bold))
+                                Text("系统")
+                                    .font(.system(size: 9.5, weight: .semibold))
+                            }
+                            .foregroundStyle(Theme.textTertiary)
+                        }
                         if isRunning {
                             Text("运行中")
                                 .font(.system(size: 9.5, weight: .semibold))

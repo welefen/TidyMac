@@ -180,7 +180,7 @@ final class UninstallerViewModel: ObservableObject {
     }
 
     func confirmUninstall(isDemo: Bool, moveToTrash: Bool) {
-        guard let app = selectedApp, !isUninstalling else { return }
+        guard let app = selectedApp, !isUninstalling, !app.isSystem else { return }
         finishedAppName = app.name
         isUninstalling = true
         uninstallProgress = 0.03
@@ -472,24 +472,30 @@ struct UninstallerPage: View {
             DividerLine()
                 .padding(.vertical, 13)
             metricsCard(installed)
+            if installed.isSystem {
+                systemAppNotice
+                    .padding(.top, 12)
+            }
             if model.isRunning(installed) {
                 RunningAppWarning()
                     .padding(.top, 12)
             }
-            leftoversHeader
-                .padding(.top, 16)
-                .padding(.bottom, 6)
-            leftoversBody
-            if !model.leftovers.isEmpty && !model.isLoadingLeftovers {
-                HStack(spacing: 6) {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 10))
-                    Text("勾选的残留会随应用一起移除；取消勾选可保留偏好设置等数据。")
-                        .font(.system(size: 10.5))
-                        .lineLimit(1)
+            if !installed.isSystem {
+                leftoversHeader
+                    .padding(.top, 16)
+                    .padding(.bottom, 6)
+                leftoversBody
+                if !model.leftovers.isEmpty && !model.isLoadingLeftovers {
+                    HStack(spacing: 6) {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 10))
+                        Text("勾选的残留会随应用一起移除；取消勾选可保留偏好设置等数据。")
+                            .font(.system(size: 10.5))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(.top, 8)
                 }
-                .foregroundStyle(Theme.textTertiary)
-                .padding(.top, 8)
             }
             actionBar(installed)
                 .padding(.top, 12)
@@ -609,6 +615,34 @@ struct UninstallerPage: View {
         .frame(maxHeight: .infinity, alignment: .top)
     }
 
+    private var systemAppNotice: some View {
+        HStack(alignment: .top, spacing: 9) {
+            Image(systemName: "lock.shield.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Theme.blue)
+                .padding(.top, 1)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("系统应用受 SIP 保护")
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                Text("这类应用由 macOS 系统完整性保护管理，TidyMac 无法移除。此处仅用于查看系统组件占用。")
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(11)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Theme.softGradient(.blue))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Theme.blue.opacity(0.16), lineWidth: 1)
+        )
+    }
+
     private func actionBar(_ installed: InstalledApp) -> some View {
         VStack(spacing: 10) {
             DividerLine()
@@ -626,6 +660,30 @@ struct UninstallerPage: View {
                             .foregroundStyle(Theme.mint)
                     }
                     StorageBar(usedFraction: model.uninstallProgress, tone: .mint, height: 6)
+                }
+            } else if installed.isSystem {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("系统应用不可卸载")
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                        Text("受 macOS 系统完整性保护（SIP）限制，TidyMac 只能查看占用信息。")
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(Theme.textTertiary)
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 8)
+                    HStack(spacing: 6) {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text("系统应用不可卸载")
+                    }
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 9)
+                    .background(Capsule().fill(Theme.cardElevated))
+                    .overlay(Capsule().strokeBorder(Theme.stroke, lineWidth: 1))
                 }
             } else {
                 HStack(spacing: 12) {

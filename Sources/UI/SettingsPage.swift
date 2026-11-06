@@ -294,7 +294,7 @@ struct SettingsPage: View {
                         Text("在卸载器中显示系统应用")
                             .font(.system(size: 12.5, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
-                        Text("默认隐藏 com.apple.* 与 /System 应用，避免误删。")
+                        Text("仅用于查看系统组件占用；受 SIP 保护的系统应用无法卸载。")
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.textTertiary)
                     }
