@@ -139,14 +139,10 @@ struct SettingsPage: View {
 
                 DividerLine()
 
-                toggleRow("自动检查更新",
-                          "启动时检查 GitHub 上的新版本。",
-                          isOn: $settings.autoCheckUpdates,
-                          tone: .mint)
-                toggleRow("下载后自动安装",
-                          "发现新版本时自动下载并安装，然后重新启动 TidyMac。",
-                          isOn: $settings.autoInstallUpdates,
-                          tone: .mint)
+                Text(L("启动 TidyMac 时会自动检查并下载更新。下载完成后，点击左上角版本号即可安装。"))
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

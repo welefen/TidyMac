@@ -36,7 +36,7 @@ TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk
 ### Automatic Updates
 - Checks `updates/latest.json` in the GitHub repository via the GitHub Contents API, with `raw.githubusercontent.com` as fallback
 - Downloads the new ZIP automatically and verifies its SHA-256 and bundle identity
-- Installs and relaunches automatically by default; auto-check and auto-install can be disabled in Settings
+- Checks and downloads automatically on every launch; when ready, the version number in the sidebar shows a prompt — click it to install and relaunch
 - Update assets live in `updates/`; publish with `./scripts/publish_update.sh --push`
 
 > Automatic updates require a **public GitHub repository**. For a private repository, configure a public mirror or proxy; never embed a GitHub token in the app.
@@ -155,8 +155,8 @@ Build artifacts:
 
 - `build/TidyMac.app` — runnable app
 - `build/tidymac-cli` — headless diagnostic/self-test tool
-- `dist/TidyMac-1.0.5.dmg` — disk image (drag into Applications)
-- `dist/TidyMac-1.0.5.zip` — distribution ZIP (ad-hoc signed; unzip and drag into Applications)
+- `dist/TidyMac-1.0.6.dmg` — disk image (drag into Applications)
+- `dist/TidyMac-1.0.6.zip` — distribution ZIP (ad-hoc signed; unzip and drag into Applications)
 - `dist/SHA256SUMS.txt` — checksums
 
 ## Verification

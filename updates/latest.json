@@ -1,6 +1,6 @@
 {
-  "version": "1.0.5",
-  "downloadURL": "https://raw.githubusercontent.com/welefen/TidyMac/main/updates/TidyMac-1.0.5.zip",
-  "sha256": "67a84d0209491be3a2d66816e6551c24aaaa7e9b97e02b87792af5238e958e3a",
-  "releaseNotes": "TidyMac 1.0.5"
+  "version": "1.0.6",
+  "downloadURL": "https://raw.githubusercontent.com/welefen/TidyMac/main/updates/TidyMac-1.0.6.zip",
+  "sha256": "6b56ce0cc14d1bc758d785de9c4129525f9fc73c56464cf46b27138da9da38ab",
+  "releaseNotes": "TidyMac 1.0.6"
 }

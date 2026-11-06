@@ -1,11 +1,10 @@
 import SwiftUI
 
 struct SidebarView: View {
-    private var appVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-    }
-
     @EnvironmentObject private var app: AppState
+    @EnvironmentObject private var updates: UpdateManager
+
+    private var appVersion: String { updates.currentVersion }
     @State private var hoveredPage: AppPage?
 
     private var mainPages: [AppPage] { [.overview, .smartScan] }
@@ -64,19 +63,60 @@ struct SidebarView: View {
     // MARK: Brand
 
     private var brand: some View {
-        HStack(spacing: 11) {
+        HStack(spacing: 9) {
             AppBrandIcon(size: 44)
                 .shadow(color: Theme.mint.opacity(0.20), radius: 10, y: 4)
             VStack(alignment: .leading, spacing: 1) {
-                Text("TidyMac")
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("TidyMac")
+                        .font(.system(size: 19, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                    versionBadge
+                }
                 Text("SMART CLEAN")
                     .font(.system(size: 7.5, weight: .semibold))
                     .tracking(1.6)
                     .foregroundStyle(Theme.textTertiary)
             }
             Spacer()
+        }
+    }
+
+    @ViewBuilder
+    private var versionBadge: some View {
+        switch updates.phase {
+        case .ready(let version):
+            Button {
+                updates.installDownloadedUpdate()
+            } label: {
+                HStack(spacing: 3) {
+                    Circle()
+                        .fill(Theme.mint)
+                        .frame(width: 4, height: 4)
+                    Text("v\(version)")
+                        .font(.system(size: 8.5, weight: .semibold))
+                }
+                .foregroundStyle(Theme.mint)
+                .padding(.horizontal, 5)
+                .padding(.vertical, 2.5)
+                .background(Capsule().fill(Theme.mint.opacity(0.12)))
+                .overlay(Capsule().strokeBorder(Theme.mint.opacity(0.30), lineWidth: 0.8))
+            }
+            .buttonStyle(.plain)
+            .help(L("有新版本 v%@，点击安装", version))
+            .accessibilityLabel(L("有新版本 v%@，点击安装", version))
+        case .downloading:
+            HStack(spacing: 3) {
+                ProgressView()
+                    .controlSize(.mini)
+                Text("v\(appVersion)")
+                    .font(.system(size: 8.5))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+        default:
+            Text("v\(appVersion)")
+                .font(.system(size: 8.5))
+                .foregroundStyle(Theme.textTertiary)
         }
     }
 
@@ -193,11 +233,6 @@ struct SidebarView: View {
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(app.page == .settings ? Theme.textPrimary : Theme.textSecondary)
                 Spacer()
-                Text("v\(appVersion)")
-                    .font(.system(size: 9.5))
-                    .foregroundStyle(Theme.textTertiary)
-                    .lineLimit(1)
-                    .fixedSize()
             }
             .padding(.horizontal, 11)
             .frame(height: 36)

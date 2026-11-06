@@ -42,7 +42,6 @@ final class UpdateManager: ObservableObject {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     }()
 
-    private let settings = AppSettings.shared
     private static var didStartOnLaunch = false
 
     private static func debug(_ message: String) {
@@ -79,7 +78,7 @@ final class UpdateManager: ObservableObject {
         case .downloading(let version):
             return L("正在下载 v%@…", version)
         case .ready(let version):
-            return L("v%@ 已下载，可以安装", version)
+            return L("v%@ 已下载，点击左上角版本号安装", version)
         case .installing(let version):
             return L("正在安装 v%@ 并重新启动…", version)
         case .failed(let message):
@@ -88,10 +87,9 @@ final class UpdateManager: ObservableObject {
     }
 
     func startOnLaunch(isDemo: Bool) async {
-        Self.debug("startOnLaunch demo=\(isDemo) autoCheck=\(settings.autoCheckUpdates)")
+        Self.debug("startOnLaunch demo=\(isDemo)")
         guard !isDemo, !Self.didStartOnLaunch else { return }
         Self.didStartOnLaunch = true
-        guard settings.autoCheckUpdates else { Self.debug("autoCheck disabled"); return }
         try? await Task.sleep(nanoseconds: 2_000_000_000)
         Self.debug("starting automatic check")
         guard phase == .idle else { return }
@@ -214,12 +212,6 @@ final class UpdateManager: ObservableObject {
 
             stagedAppURL = app
             phase = .ready(manifest.version)
-
-            if settings.autoInstallUpdates {
-                phase = .installing(manifest.version)
-                try? await Task.sleep(nanoseconds: 600_000_000)
-                installAndRelaunch(staged: app, version: manifest.version)
-            }
         } catch {
             phase = .failed(L("下载更新失败：%@", error.localizedDescription))
         }
