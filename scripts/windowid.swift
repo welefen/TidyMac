@@ -1,7 +1,7 @@
 import CoreGraphics
 import Foundation
 
-// Prints the CGWindowID of the frontmost on-screen 清羽 window.
+// Prints the CGWindowID of the frontmost on-screen TidyMac window.
 // Usage: windowid [pid] — when a PID is given, only that process is considered.
 let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
 guard let raw = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
@@ -21,7 +21,7 @@ for window in raw {
 
     if let targetPID, ownerPID != targetPID { continue }
 
-    if (owner == "清羽" || owner == "Qingyu" || owner.contains("Qingyu")),
+    if (owner == "TidyMac" || owner.contains("TidyMac")),
        layer == 0, width > 900, height > 600 {
         print(number)
         exit(0)

@@ -19,21 +19,31 @@ struct LaunchOptions {
     static var current: LaunchOptions {
         var options = LaunchOptions()
         let args = CommandLine.arguments
-        options.isDemo = args.contains("--demo")
-        options.autoScan = args.contains("--scan")
-        if let index = args.firstIndex(of: "--page"), index + 1 < args.count {
-            let raw = args[index + 1].lowercased()
-            switch raw {
+        let environment = ProcessInfo.processInfo.environment
+
+        options.isDemo = args.contains("--demo") || environment["TIDYMAC_DEMO"] == "1"
+        options.autoScan = args.contains("--scan") || environment["TIDYMAC_SCAN"] == "1"
+
+        let rawPage: String? = {
+            if let value = environment["TIDYMAC_PAGE"] { return value }
+            if let index = args.firstIndex(of: "--page"), index + 1 < args.count { return args[index + 1] }
+            return nil
+        }()
+        if let rawPage {
+            switch rawPage.lowercased() {
             case "overview", "home": options.page = .overview
             case "scan", "smartscan", "smart-scan": options.page = .smartScan
             case "uninstaller", "apps": options.page = .uninstaller
             case "large", "largefiles", "large-files": options.page = .largeFiles
             case "space", "spacelens", "space-lens": options.page = .spaceLens
             case "settings", "prefs": options.page = .settings
-            default: options.page = AppPage(rawValue: raw)
+            default: options.page = AppPage(rawValue: rawPage.lowercased())
             }
         }
-        if let index = args.firstIndex(of: "--demo-state"), index + 1 < args.count {
+
+        if let value = environment["TIDYMAC_DEMO_STATE"] {
+            options.demoState = value.lowercased()
+        } else if let index = args.firstIndex(of: "--demo-state"), index + 1 < args.count {
             options.demoState = args[index + 1].lowercased()
         }
         return options

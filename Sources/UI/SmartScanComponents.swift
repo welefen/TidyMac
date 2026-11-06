@@ -31,7 +31,7 @@ struct ScanIdleView: View {
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.textPrimary)
                         .padding(.top, 20)
-                    Text("清羽会检查缓存、日志、开发者构建缓存、浏览器数据与旧备份，\n只推荐可以安全清理的项目，并默认移入废纸篓。")
+                    Text("TidyMac 会检查缓存、日志、开发者构建缓存、浏览器数据与旧备份，\n只推荐可以安全清理的项目，并默认移入废纸篓。")
                         .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textSecondary)
                         .multilineTextAlignment(.center)

@@ -9,12 +9,12 @@ if [[ ! -d "$SDK" ]]; then
   SDK="$(xcrun --show-sdk-path)"
 fi
 
-CACHE="${QINGYU_MODULE_CACHE:-$ROOT/.build/modulecache}"
-TMP="${QINGYU_TMP:-$ROOT/.build/tmp}"
-BUILD_DIR="${QINGYU_BUILD_DIR:-$ROOT/build}"
+CACHE="${TIDYMAC_MODULE_CACHE:-$ROOT/.build/modulecache}"
+TMP="${TIDYMAC_TMP:-$ROOT/.build/tmp}"
+BUILD_DIR="${TIDYMAC_BUILD_DIR:-$ROOT/build}"
 mkdir -p "$CACHE" "$TMP" "$BUILD_DIR"
 
-APP="$BUILD_DIR/Qingyu.app"
+APP="$BUILD_DIR/TidyMac.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
@@ -26,7 +26,7 @@ printf 'APPL????' > "$APP/Contents/PkgInfo"
 APP_SOURCES=()
 while IFS= read -r file; do APP_SOURCES+=("$file"); done < <(find Sources/App Sources/Core Sources/UI -name '*.swift' -print | sort)
 
-echo "▸ Compiling Qingyu.app (${#APP_SOURCES[@]} files)"
+echo "▸ Compiling TidyMac.app (${#APP_SOURCES[@]} files)"
 SWIFT_MODULE_CACHE_PATH="$CACHE" CLANG_MODULE_CACHE_PATH="$CACHE" TMPDIR="$TMP" \
   swiftc -sdk "$SDK" \
     -module-cache-path "$CACHE" \
@@ -34,7 +34,7 @@ SWIFT_MODULE_CACHE_PATH="$CACHE" CLANG_MODULE_CACHE_PATH="$CACHE" TMPDIR="$TMP" 
     -swift-version 5 \
     -parse-as-library \
     -O \
-    -o "$APP/Contents/MacOS/Qingyu" \
+    -o "$APP/Contents/MacOS/TidyMac" \
     "${APP_SOURCES[@]}"
 
 codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
@@ -50,8 +50,8 @@ SWIFT_MODULE_CACHE_PATH="$CACHE" CLANG_MODULE_CACHE_PATH="$CACHE" TMPDIR="$TMP" 
     -swift-version 5 \
     -parse-as-library \
     -O \
-    -o "$BUILD_DIR/qingyu-cli" \
+    -o "$BUILD_DIR/tidymac-cli" \
     "${CORE_SOURCES[@]}" Sources/CLI/main.swift
 
-echo "▸ Built $BUILD_DIR/qingyu-cli"
-echo "▸ Done. Launch with: open $BUILD_DIR/Qingyu.app"
+echo "▸ Built $BUILD_DIR/tidymac-cli"
+echo "▸ Done. Launch with: open $BUILD_DIR/TidyMac.app"

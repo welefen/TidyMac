@@ -2,13 +2,13 @@ import SwiftUI
 import AppKit
 
 @main
-struct QingyuApp: App {
+struct TidyMacApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var appState = AppState()
     @StateObject private var settings = AppSettings.shared
 
     var body: some Scene {
-        WindowGroup("清羽") {
+        WindowGroup("TidyMac") {
             RootView()
                 .environmentObject(appState)
                 .environmentObject(settings)
@@ -21,9 +21,9 @@ struct QingyuApp: App {
         .commands {
             CommandGroup(replacing: .newItem) {}
             CommandGroup(replacing: .appInfo) {
-                Button("关于清羽") {
+                Button("关于 TidyMac") {
                     NSApp.orderFrontStandardAboutPanel(options: [
-                        .applicationName: "清羽",
+                        .applicationName: "TidyMac",
                         .applicationVersion: "1.0.0",
                         .credits: NSAttributedString(string: "轻净如羽，焕然一新。\n一款为 macOS 打造的智能清理与空间管理工具。")
                     ])
@@ -81,7 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard !configuredWindows.contains(identifier), window.canBecomeMain else { return }
         configuredWindows.insert(identifier)
 
-        window.title = "清羽"
+        window.title = "TidyMac"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.styleMask.insert(.fullSizeContentView)

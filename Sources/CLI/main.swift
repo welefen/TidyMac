@@ -1,7 +1,7 @@
 import Foundation
 
 @main
-struct QingyuCLI {
+struct TidyMacCLI {
     static func main() async {
         let args = Array(CommandLine.arguments.dropFirst())
         guard let command = args.first else {
@@ -35,9 +35,9 @@ struct QingyuCLI {
 
     static func printUsage() {
         print("""
-        清羽 macOS 清理工具 · 命令行诊断
+        TidyMac 清理工具 · 命令行诊断
 
-        用法: qingyu-cli <命令>
+        用法: tidymac-cli <命令>
 
           scan              扫描系统垃圾（只读）
           apps              列出已安装应用及占用空间
@@ -46,7 +46,7 @@ struct QingyuCLI {
           selftest          运行核心逻辑自检
           paths             显示当前用户与关键目录
 
-        图形界面: open build/Qingyu.app
+        图形界面: open build/TidyMac.app
         """)
     }
 
@@ -187,7 +187,7 @@ struct QingyuCLI {
             }
         }
 
-        print("清羽核心自检")
+        print("TidyMac 核心自检")
         print("")
 
         // Formatting
@@ -212,7 +212,7 @@ struct QingyuCLI {
         // Temp workspace
         let fm = FileManager.default
         let base = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("qingyu-selftest-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("tidymac-selftest-\(UUID().uuidString)", isDirectory: true)
         try? fm.createDirectory(at: base, withIntermediateDirectories: true)
         defer { try? fm.removeItem(at: base) }
 

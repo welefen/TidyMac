@@ -1,10 +1,10 @@
-# 清羽 · Qingyu Clean
+# TidyMac
 
 > 轻净如羽，焕然一新。一款为 macOS 打造的智能清理与空间管理工具，交互与体验对标 CleanMyMac。
 
-![清羽 App Icon](Resources/AppIcon.png)
+![TidyMac App Icon](Resources/AppIcon.png)
 
-清羽是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向。所有分析都在本机完成，**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
+TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向。所有分析都在本机完成，**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
 
 ## 功能
 
@@ -69,20 +69,20 @@
 ./build.sh
 
 # 3. 运行
-open build/Qingyu.app
+open build/TidyMac.app
 ```
 
 演示模式（使用内置示例数据，不扫描真实磁盘）：
 
 ```bash
-build/Qingyu.app/Contents/MacOS/Qingyu --demo --page overview
-build/Qingyu.app/Contents/MacOS/Qingyu --demo --page smartscan --demo-state scanning
-build/Qingyu.app/Contents/MacOS/Qingyu --demo --page smartscan --demo-state results
-build/Qingyu.app/Contents/MacOS/Qingyu --demo --page smartscan --demo-state finished
-build/Qingyu.app/Contents/MacOS/Qingyu --demo --page smartscan --demo-state idle
-build/Qingyu.app/Contents/MacOS/Qingyu --demo --page uninstaller
-build/Qingyu.app/Contents/MacOS/Qingyu --demo --page large
-build/Qingyu.app/Contents/MacOS/Qingyu --demo --page space
+build/TidyMac.app/Contents/MacOS/TidyMac --demo --page overview
+build/TidyMac.app/Contents/MacOS/TidyMac --demo --page smartscan --demo-state scanning
+build/TidyMac.app/Contents/MacOS/TidyMac --demo --page smartscan --demo-state results
+build/TidyMac.app/Contents/MacOS/TidyMac --demo --page smartscan --demo-state finished
+build/TidyMac.app/Contents/MacOS/TidyMac --demo --page smartscan --demo-state idle
+build/TidyMac.app/Contents/MacOS/TidyMac --demo --page uninstaller
+build/TidyMac.app/Contents/MacOS/TidyMac --demo --page large
+build/TidyMac.app/Contents/MacOS/TidyMac --demo --page space
 ```
 
 重新生成文档截图（需已构建）：
@@ -96,11 +96,11 @@ build/Qingyu.app/Contents/MacOS/Qingyu --demo --page space
 命令行诊断工具：
 
 ```bash
-build/qingyu-cli scan          # 只读扫描系统垃圾
-build/qingyu-cli apps          # 列出应用及占用
-build/qingyu-cli large --min 100
-build/qingyu-cli lens ~ 2
-build/qingyu-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自检
+build/tidymac-cli scan          # 只读扫描系统垃圾
+build/tidymac-cli apps          # 列出应用及占用
+build/tidymac-cli large --min 100
+build/tidymac-cli lens ~ 2
+build/tidymac-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自检
 ```
 
 打包可分发的 ZIP（在支持 `hdiutil` 的环境中同时生成 DMG）：
@@ -111,15 +111,15 @@ build/qingyu-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自�
 
 构建产物：
 
-- `build/Qingyu.app` — 可直接运行的应用
-- `build/qingyu-cli` — 无界面诊断/自检工具
-- `dist/Qingyu-1.0.0.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
+- `build/TidyMac.app` — 可直接运行的应用
+- `build/tidymac-cli` — 无界面诊断/自检工具
+- `dist/TidyMac-1.0.0.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
 - `dist/SHA256SUMS.txt` — 校验和
 
 ## 验证结果
 
 - `./build.sh`：Swift 5 模式、39 个源文件，无 warning 构建通过（arm64 / macOS 14+）
-- `build/qingyu-cli selftest`：**15/15 通过**（安全策略、大小计算、临时目录清理、受保护路径、排除项、废纸篓特殊分支）
+- `build/tidymac-cli selftest`：**15/15 通过**（安全策略、大小计算、临时目录清理、受保护路径、排除项、废纸篓特殊分支）
 - 真实只读扫描：**3.7 秒**，发现 **17.42 GB / 29 项**（用户缓存 12.91 GB、日志 111.7 MB、包管理器缓存 2.15 GB、Chrome 缓存 2.24 GB）
 - 引擎 CLI 实测：`apps` 12 个应用 / 2.8s；`large --min 200` 11 个文件 / 13.06 GB；`lens ~ 2` 73.24 GB / 约 14s
 - UI 全流程实测（demo）：清理确认弹窗 → cleaning → finished → 完成回总览；四个扫描状态、空结果、最小窗口尺寸均验证无截断
@@ -127,7 +127,7 @@ build/qingyu-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自�
 
 ## 安全设计
 
-清羽遵循「宁可漏扫，也不误删」：
+TidyMac 遵循「宁可漏扫，也不误删」：
 
 - 每次删除前调用 `SafetyPolicy.validate(_:context:)`；受保护路径（`/System`、`/Library`、`~/.ssh`、钥匙串、照片图库、Mail 数据库、iCloud 文档等）永远拒绝
 - 默认使用 `FileManager.trashItem` 移入废纸篓；废纸篓清空单独处理

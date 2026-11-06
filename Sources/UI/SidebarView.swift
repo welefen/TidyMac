@@ -71,10 +71,10 @@ struct SidebarView: View {
                     .foregroundStyle(Theme.textOnAccent)
             }
             VStack(alignment: .leading, spacing: 1) {
-                Text("清羽")
+                Text("TidyMac")
                     .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
-                Text("QINGYU CLEAN")
+                Text("SMART CLEAN")
                     .font(.system(size: 7.5, weight: .semibold))
                     .tracking(1.6)
                     .foregroundStyle(Theme.textTertiary)

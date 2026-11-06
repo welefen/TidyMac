@@ -12,31 +12,31 @@ DIST="$ROOT/dist"
 rm -rf "$DIST"
 mkdir -p "$DIST/stage"
 
-ditto "$ROOT/build/Qingyu.app" "$DIST/stage/Qingyu.app"
+ditto "$ROOT/build/TidyMac.app" "$DIST/stage/TidyMac.app"
 ln -s /Applications "$DIST/stage/Applications"
 
 echo "▸ Creating DMG"
 if hdiutil create \
-  -volname "清羽" \
+  -volname "TidyMac" \
   -srcfolder "$DIST/stage" \
   -ov -format UDZO \
-  "$DIST/Qingyu-$VERSION.dmg" >/dev/null 2>&1; then
+  "$DIST/TidyMac-$VERSION.dmg" >/dev/null 2>&1; then
   echo "  DMG ready"
 else
   # hdiutil needs privileges that are unavailable in some sandboxed/CI
   # environments. The ZIP below is a fully functional alternative.
-  rm -f "$DIST/Qingyu-$VERSION.dmg"
+  rm -f "$DIST/TidyMac-$VERSION.dmg"
   echo "  DMG creation unavailable in this environment; ZIP only."
 fi
 
 echo "▸ Creating ZIP"
-ditto -c -k --sequesterRsrc --keepParent "$ROOT/build/Qingyu.app" "$DIST/Qingyu-$VERSION.zip"
+ditto -c -k --sequesterRsrc --keepParent "$ROOT/build/TidyMac.app" "$DIST/TidyMac-$VERSION.zip"
 
 echo "▸ Checksums"
 rm -f "$DIST/SHA256SUMS.txt"
 (
   cd "$DIST"
-  for file in Qingyu-"$VERSION".dmg Qingyu-"$VERSION".zip; do
+  for file in TidyMac-"$VERSION".dmg TidyMac-"$VERSION".zip; do
     [[ -f "$file" ]] && shasum -a 256 "$file"
   done
 ) | tee "$DIST/SHA256SUMS.txt"

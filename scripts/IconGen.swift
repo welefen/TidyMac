@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 
-// Renders the 1024x1024 master app icon for 清羽 (Qingyu Clean).
+// Renders the 1024x1024 master app icon for TidyMac.
 // Run via scripts/make_icon.sh.
 
 let side = 1024

@@ -453,7 +453,7 @@ struct LargeFilesPage: View {
     private var permissionState: some View {
         EmptyStateView(symbol: "lock.shield.fill",
                        title: "需要磁盘访问权限",
-                       message: "未能读取文件列表。请在「系统设置 › 隐私与安全性 › 完全磁盘访问权限」中允许清羽访问，然后重新扫描。",
+                       message: "未能读取文件列表。请在「系统设置 › 隐私与安全性 › 完全磁盘访问权限」中允许 TidyMac 访问，然后重新扫描。",
                        actionTitle: "重新扫描") {
             model.rescan(isDemo: app.isDemo, permissionHint: app.showPermissionHint)
         }

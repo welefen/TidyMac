@@ -63,9 +63,10 @@ final class AppSettings: ObservableObject {
         // Demo runs (screenshots / design review) must never touch the user's
         // real settings or clean history. Use an isolated defaults suite.
         let demo = CommandLine.arguments.contains("--demo")
+            || ProcessInfo.processInfo.environment["TIDYMAC_DEMO"] == "1"
         let store: UserDefaults
         if demo {
-            let suiteName = "com.qingyu.clean.demo"
+            let suiteName = "com.tidymac.clean.demo"
             let suite = UserDefaults(suiteName: suiteName) ?? .standard
             suite.removePersistentDomain(forName: suiteName)
             store = suite

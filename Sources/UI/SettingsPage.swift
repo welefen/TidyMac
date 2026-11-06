@@ -20,7 +20,7 @@ struct SettingsPage: View {
                 statisticsSection
                 aboutSection
 
-                Text("清羽不会上传任何扫描数据。所有分析均在本机完成。")
+                Text("TidyMac 不会上传任何扫描数据。所有分析均在本机完成。")
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(maxWidth: .infinity)
@@ -190,7 +190,7 @@ struct SettingsPage: View {
         panel.canCreateDirectories = false
         panel.title = "选择要排除的文件或文件夹"
         panel.prompt = "排除"
-        panel.message = "这些内容将不会被清羽扫描或清理。"
+        panel.message = "这些内容将不会被 TidyMac 扫描或清理。"
         panel.begin { response in
             guard response == .OK else { return }
             for url in panel.urls {
@@ -218,7 +218,7 @@ struct SettingsPage: View {
                             .font(.system(size: 12.5, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text(FullDiskAccess.hasAccess()
-                             ? "清羽可以完整扫描缓存、邮件附件与备份。"
+                             ? "TidyMac 可以完整扫描缓存、邮件附件与备份。"
                              : "未开启时部分目录无法读取，扫描结果可能不完整。")
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.textSecondary)
@@ -320,7 +320,7 @@ struct SettingsPage: View {
                     .foregroundStyle(Theme.textOnAccent)
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text("清羽 Qingyu Clean")
+                Text("TidyMac")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
                 Text("轻净如羽，焕然一新  ·  v1.0.0  ·  macOS 14+")
