@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct SidebarView: View {
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+    }
+
     @EnvironmentObject private var app: AppState
     @State private var hoveredPage: AppPage?
 
@@ -189,9 +193,11 @@ struct SidebarView: View {
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(app.page == .settings ? Theme.textPrimary : Theme.textSecondary)
                 Spacer()
-                Text("v1.0")
+                Text("v\(appVersion)")
                     .font(.system(size: 9.5))
                     .foregroundStyle(Theme.textTertiary)
+                    .lineLimit(1)
+                    .fixedSize()
             }
             .padding(.horizontal, 11)
             .frame(height: 36)
