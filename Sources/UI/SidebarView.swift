@@ -64,7 +64,7 @@ struct SidebarView: View {
 
     private var brand: some View {
         HStack(spacing: 8) {
-            AppBrandIcon(size: 44)
+            AppBrandIcon(size: 42)
                 .shadow(color: Theme.mint.opacity(0.20), radius: 10, y: 4)
             VStack(alignment: .leading, spacing: 1) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
@@ -91,17 +91,20 @@ struct SidebarView: View {
             Button {
                 updates.installDownloadedUpdate()
             } label: {
-                HStack(spacing: 3) {
+                HStack(spacing: 2.5) {
                     Text("v\(appVersion)")
                         .font(.system(size: 8.5, weight: .semibold))
+                        .lineLimit(1)
+                        .fixedSize()
                     Image(systemName: "arrow.down.circle.fill")
                         .font(.system(size: 8.5, weight: .bold))
                 }
                 .foregroundStyle(Theme.mint)
-                .padding(.horizontal, 5)
+                .padding(.horizontal, 4)
                 .padding(.vertical, 2.5)
                 .background(Capsule().fill(Theme.mint.opacity(0.12)))
                 .overlay(Capsule().strokeBorder(Theme.mint.opacity(0.30), lineWidth: 0.8))
+                .fixedSize()
             }
             .buttonStyle(.plain)
             .help(L("有新版本 v%@，点击安装", version))
@@ -118,6 +121,8 @@ struct SidebarView: View {
             Text("v\(appVersion)")
                 .font(.system(size: 8.5))
                 .foregroundStyle(Theme.textTertiary)
+                .lineLimit(1)
+                .fixedSize()
         }
     }
 
