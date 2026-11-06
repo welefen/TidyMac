@@ -256,6 +256,9 @@ enum UninstallerEngine {
         var appRemoved = false
         do {
             try SafetyPolicy.validate(app.url, context: .appUninstall)
+            if ToolsSupport.requiresAdministrator(for: app.url) {
+                progress(0.02, L("等待管理员授权…"))
+            }
             let measured = ToolsSupport.measureForRemoval(app.url)
             try ToolsSupport.removeItem(at: app.url, moveToTrash: moveToTrash)
             removedCount += 1

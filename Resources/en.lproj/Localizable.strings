@@ -464,3 +464,6 @@
 "轻净如羽，焕然一新。一款为 macOS 打造的智能清理与空间管理工具。" = "Feather-light, fresh and clean. A smart cleaner and space manager for macOS.";
 "轻净如羽，焕然一新。\nmacOS 智能清理与空间管理工具" = "Feather-light, fresh and clean.\nA smart cleaner and space manager for macOS";
 "作者：" = "Author: ";
+"等待管理员授权…" = "Waiting for administrator authorization…";
+"\n卸载此 App Store 应用需要输入管理员密码。" = "\nUninstalling this App Store app requires an administrator password.";
+"管理员授权超时" = "Administrator authorization timed out";

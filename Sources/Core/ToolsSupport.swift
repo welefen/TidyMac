@@ -56,15 +56,26 @@ enum ToolsSupport {
                 && [NSFileWriteNoPermissionError, NSFileReadNoPermissionError,
                     NSFileWriteVolumeReadOnlyError].contains(nsError.code))
                 || (nsError.domain == NSPOSIXErrorDomain && [Int(EACCES), Int(EPERM)].contains(nsError.code))
-            guard permissionDenied, needsAdministrator(for: url) else { throw error }
-            try removeWithAdministrator(url, moveToTrash: moveToTrash)
+            guard permissionDenied, requiresAdministrator(for: url) else { throw error }
+            // macOS may have moved the item itself (then returned an error) or
+            // another process may have raced us. Never ask for authorization
+            // for a path that no longer exists.
+            if !fileManager.fileExists(atPath: url.path) { return }
+            do {
+                try removeWithAdministrator(url, moveToTrash: moveToTrash)
+            } catch {
+                // If the privileged move completed but a later chown failed,
+                // treat the app as removed instead of leaving a stuck failure.
+                if !fileManager.fileExists(atPath: url.path) { return }
+                throw error
+            }
         }
     }
 
     /// App Store and pkg-installed applications are owned by root. They cannot
     /// be moved by the current user, so the only way to uninstall them without
     /// using Finder is to ask macOS for administrator authorization.
-    private static func needsAdministrator(for url: URL) -> Bool {
+    static func requiresAdministrator(for url: URL) -> Bool {
         let path = standardizedPath(url)
         guard pathExtensionIsApp(path) else { return false }
         guard path.hasPrefix("/Applications/")
@@ -120,7 +131,16 @@ enum ToolsSupport {
         process.standardError = stderr
         do {
             try process.run()
-            process.waitUntilExit()
+            let deadline = Date().addingTimeInterval(180)
+            while process.isRunning && Date() < deadline {
+                Thread.sleep(forTimeInterval: 0.1)
+            }
+            if process.isRunning {
+                process.terminate()
+                throw PrivilegedRemovalError.failed(L("管理员授权超时"))
+            }
+        } catch let error as PrivilegedRemovalError {
+            throw error
         } catch {
             throw PrivilegedRemovalError.failed(error.localizedDescription)
         }

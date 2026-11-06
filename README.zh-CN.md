@@ -155,8 +155,8 @@ build/tidymac-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自�
 
 - `build/TidyMac.app` — 可直接运行的应用
 - `build/tidymac-cli` — 无界面诊断/自检工具
-- `dist/TidyMac-1.0.16.dmg` — 磁盘映像（拖入「应用程序」安装）
-- `dist/TidyMac-1.0.16.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
+- `dist/TidyMac-1.0.17.dmg` — 磁盘映像（拖入「应用程序」安装）
+- `dist/TidyMac-1.0.17.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
 - `dist/SHA256SUMS.txt` — 校验和
 
 ## 验证结果
