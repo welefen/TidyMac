@@ -26,7 +26,7 @@ struct TidyMacApp: App {
                     NSApp.orderFrontStandardAboutPanel(options: [
                         .applicationName: "TidyMac",
                         .applicationVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "",
-                        .credits: NSAttributedString(string: "轻净如羽，焕然一新。\n一款为 macOS 打造的智能清理与空间管理工具。")
+                        .credits: NSAttributedString(string: L("轻净如羽，焕然一新。\n一款为 macOS 打造的智能清理与空间管理工具。"))
                     ])
                 }
             }
