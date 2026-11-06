@@ -109,6 +109,13 @@ build/qingyu-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自�
 ./scripts/package.sh
 ```
 
+构建产物：
+
+- `build/Qingyu.app` — 可直接运行的应用
+- `build/qingyu-cli` — 无界面诊断/自检工具
+- `dist/Qingyu-1.0.0.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
+- `dist/SHA256SUMS.txt` — 校验和
+
 ## 验证结果
 
 - `./build.sh`：Swift 5 模式、39 个源文件，无 warning 构建通过（arm64 / macOS 14+）
