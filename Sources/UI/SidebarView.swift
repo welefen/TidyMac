@@ -132,6 +132,7 @@ struct SidebarView: View {
                         .offset(x: -1)
                 }
             }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { isHovering in
@@ -205,6 +206,7 @@ struct SidebarView: View {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(app.page == .settings ? Theme.cardElevated : Color.clear)
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

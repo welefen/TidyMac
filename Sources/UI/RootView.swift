@@ -10,6 +10,7 @@ struct RootView: View {
 
             ZStack {
                 AuroraBackground()
+                    .allowsHitTesting(false)
                 pageContent
                     .transition(.opacity)
                     .id(app.page)
