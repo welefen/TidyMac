@@ -5,7 +5,7 @@
 Default feed URL:
 
 ```text
-https://raw.githubusercontent.com/welefen/TidyMac/main/updates/latest.json
+https://api.github.com/repos/welefen/TidyMac/contents/updates/latest.json?ref=main
 ```
 
 ## Release a new version

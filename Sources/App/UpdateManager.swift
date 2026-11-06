@@ -31,7 +31,8 @@ enum UpdatePhase: Equatable {
 final class UpdateManager: ObservableObject {
     static let shared = UpdateManager()
 
-    static let defaultFeedURL = URL(string: "https://raw.githubusercontent.com/welefen/TidyMac/main/updates/latest.json")!
+    static let defaultFeedURL = URL(string: "https://api.github.com/repos/welefen/TidyMac/contents/updates/latest.json?ref=main")!
+    static let fallbackFeedURL = URL(string: "https://raw.githubusercontent.com/welefen/TidyMac/main/updates/latest.json")!
 
     @Published private(set) var phase: UpdatePhase = .idle
     @Published private(set) var currentVersion: String = {
@@ -137,14 +138,23 @@ final class UpdateManager: ObservableObject {
         if let token = ProcessInfo.processInfo.environment["TIDYMAC_UPDATE_TOKEN"], !token.isEmpty {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            throw UpdateError.feedUnavailable
-        }
+        request.setValue("application/vnd.github.raw", forHTTPHeaderField: "Accept")
         do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw UpdateError.feedUnavailable
+            }
             return try JSONDecoder().decode(UpdateManifest.self, from: data)
         } catch {
-            throw UpdateError.invalidManifest
+            // API rate limits and CDN hiccups: fall back to the public raw file.
+            var fallback = URLRequest(url: Self.fallbackFeedURL)
+            fallback.timeoutInterval = 15
+            fallback.cachePolicy = .reloadIgnoringLocalCacheData
+            let (data, response) = try await URLSession.shared.data(for: fallback)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw UpdateError.feedUnavailable
+            }
+            return try JSONDecoder().decode(UpdateManifest.self, from: data)
         }
     }
 
