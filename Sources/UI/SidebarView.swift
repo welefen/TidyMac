@@ -152,7 +152,6 @@ struct SidebarView: View {
             }
             .buttonStyle(.plain)
             .onHover { hoveringUpdate = $0 }
-            .help(L("有新版本 v%@，点击安装", version))
             .accessibilityLabel(L("有新版本 v%@，点击安装", version))
         case .downloading:
             HStack(spacing: 3) {
