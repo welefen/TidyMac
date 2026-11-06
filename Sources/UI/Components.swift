@@ -81,12 +81,11 @@ struct ProgressRing: View {
     var size: CGFloat = 220
     var tone: AccentTone = .mint
     var showsGlow = true
-    var trackOpacity: Double = 0.06
 
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.white.opacity(trackOpacity),
+                .stroke(Theme.ringTrack,
                         style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
             Circle()
                 .trim(from: 0, to: CGFloat(max(0.001, min(1, progress))))
@@ -344,7 +343,7 @@ struct StorageBar: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.07))
+                Capsule().fill(Theme.storageTrack)
                 Capsule()
                     .fill(Theme.gradient(tone))
                     .frame(width: max(4, proxy.size.width * min(1, max(0, usedFraction))))
@@ -470,7 +469,7 @@ struct ShimmerModifier: ViewModifier {
         content
             .overlay(
                 GeometryReader { proxy in
-                    LinearGradient(colors: [.clear, Color.white.opacity(0.09), .clear],
+                    LinearGradient(colors: [.clear, Theme.shimmerHighlight, .clear],
                                    startPoint: .leading, endPoint: .trailing)
                         .frame(width: proxy.size.width * 0.65)
                         .offset(x: phase * proxy.size.width)
@@ -570,7 +569,7 @@ struct AppIconView: View {
             .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.10), lineWidth: 0.5)
+                    .strokeBorder(Theme.stroke, lineWidth: 0.5)
             )
     }
 }

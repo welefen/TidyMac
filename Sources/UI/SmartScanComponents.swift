@@ -706,7 +706,7 @@ struct ScanItemLine: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(hovering ? Color.white.opacity(0.035) : Color.clear)
+        .background(hovering ? Theme.subtleFill : Color.clear)
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
     }

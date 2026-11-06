@@ -1,7 +1,9 @@
 import SwiftUI
+import AppKit
 
 struct RootView: View {
     @EnvironmentObject private var app: AppState
+    @EnvironmentObject private var settings: AppSettings
 
     var body: some View {
         HStack(spacing: 0) {
@@ -19,6 +21,32 @@ struct RootView: View {
         }
         .background(Theme.background)
         .ignoresSafeArea()
+        .preferredColorScheme(preferredColorScheme)
+        .onAppear { applyWindowAppearance(settings.appearance) }
+        .onChange(of: settings.appearance) { _, appearance in
+            applyWindowAppearance(appearance)
+        }
+    }
+
+    private var preferredColorScheme: ColorScheme? {
+        switch settings.appearance {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+
+    private func applyWindowAppearance(_ appearance: AppAppearance) {
+        let nsAppearance: NSAppearance?
+        switch appearance {
+        case .system: nsAppearance = nil
+        case .light: nsAppearance = NSAppearance(named: .aqua)
+        case .dark: nsAppearance = NSAppearance(named: .darkAqua)
+        }
+        NSApp.appearance = nsAppearance
+        for window in NSApp.windows {
+            window.appearance = nsAppearance
+        }
     }
 
     @ViewBuilder

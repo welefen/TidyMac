@@ -14,6 +14,7 @@ struct SettingsPage: View {
                     TagBadge(text: "v1.0.0", tone: .mint)
                 }
 
+                appearanceSection
                 behaviorSection
                 exclusionSection
                 securitySection
@@ -37,6 +38,28 @@ struct SettingsPage: View {
             Button("重置", role: .destructive) { settings.resetStatistics() }
         } message: {
             Text("将清空累计释放空间、清理次数与历史记录，此操作不可撤销。")
+        }
+    }
+
+    // MARK: - Appearance
+
+    private var appearanceSection: some View {
+        settingsCard(title: "外观", symbol: "circle.lefthalf.filled", tone: .blue) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    ForEach(AppAppearance.allCases) { option in
+                        FilterPill(title: option.title,
+                                   isSelected: settings.appearance == option,
+                                   tone: .blue) {
+                            settings.appearance = option
+                        }
+                    }
+                    Spacer(minLength: 8)
+                    Text("跟随系统时会自动随 macOS 深色/浅色外观切换")
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+            }
         }
     }
 
@@ -165,7 +188,7 @@ struct SettingsPage: View {
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(width: 22, height: 22)
-                    .background(Circle().fill(Color.white.opacity(0.04)))
+                    .background(Circle().fill(Theme.subtleFill))
             }
             .buttonStyle(.plain)
         }

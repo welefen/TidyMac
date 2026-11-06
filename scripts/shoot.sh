@@ -9,6 +9,7 @@ OUT_DIR="${TIDYMAC_SHOTS:-$ROOT/screenshots}"
 PAGE="${1:-overview}"
 STATE="${2:-}"
 NAME="${3:-$PAGE}"
+APPEARANCE="${4:-}"
 
 mkdir -p "$OUT_DIR" "$ROOT/.build"
 if [[ ! -x "$ROOT/.build/windowid" || "$ROOT/scripts/windowid.swift" -nt "$ROOT/.build/windowid" ]]; then
@@ -37,6 +38,9 @@ export TIDYMAC_DEMO=1
 export TIDYMAC_PAGE="$PAGE"
 if [[ -n "$STATE" ]]; then
   export TIDYMAC_DEMO_STATE="$STATE"
+fi
+if [[ -n "$APPEARANCE" ]]; then
+  export TIDYMAC_APPEARANCE="$APPEARANCE"
 fi
 
 "$BINARY" >"$ROOT/.build/shoot.out.log" 2>"$ROOT/.build/shoot.err.log" &

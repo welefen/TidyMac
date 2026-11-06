@@ -13,7 +13,6 @@ struct TidyMacApp: App {
                 .environmentObject(appState)
                 .environmentObject(settings)
                 .frame(minWidth: Theme.windowMinWidth, minHeight: Theme.windowMinHeight)
-                .preferredColorScheme(.dark)
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentMinSize)
@@ -85,8 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.styleMask.insert(.fullSizeContentView)
-        window.backgroundColor = NSColor(Theme.background)
-        window.appearance = NSAppearance(named: .darkAqua)
+        window.backgroundColor = .windowBackgroundColor
         window.minSize = NSSize(width: Theme.windowMinWidth, height: Theme.windowMinHeight)
         window.setContentSize(NSSize(width: 1200, height: 780))
         window.center()

@@ -103,9 +103,7 @@ struct DashboardHeroCard: View {
 
     private var heroBackground: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: 0x16222F), Color(hex: 0x0F1722), Color(hex: 0x0B1119)],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
+            Theme.heroGradient
             Circle()
                 .fill(Theme.mint.opacity(0.20))
                 .frame(width: 340, height: 340)
@@ -408,7 +406,7 @@ struct DashboardQuickToolCard: View {
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(Theme.textTertiary)
                         .frame(width: 26, height: 26)
-                        .background(Circle().fill(Color.white.opacity(0.05)))
+                        .background(Circle().fill(Theme.subtleFill))
                         .overlay(Circle().strokeBorder(Theme.stroke, lineWidth: 1))
                 }
                 Spacer(minLength: 12)

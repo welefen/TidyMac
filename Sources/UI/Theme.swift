@@ -1,37 +1,83 @@
 import SwiftUI
+import AppKit
+
+// MARK: - Adaptive color helpers
+
+extension Color {
+    /// A color that follows the macOS appearance (light / dark).
+    static func adaptive(light: UInt32,
+                         dark: UInt32,
+                         lightAlpha: Double = 1,
+                         darkAlpha: Double = 1) -> Color {
+        Color(nsColor: NSColor(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            return NSColor(srgbHex: isDark ? dark : light,
+                           alpha: CGFloat(isDark ? darkAlpha : lightAlpha))
+        })
+    }
+
+    init(hex: UInt32, alpha: Double = 1) {
+        self.init(.sRGB,
+                  red: Double((hex >> 16) & 0xFF) / 255,
+                  green: Double((hex >> 8) & 0xFF) / 255,
+                  blue: Double(hex & 0xFF) / 255,
+                  opacity: alpha)
+    }
+
+    init(hexString: String) {
+        var text = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text.hasPrefix("#") { text.removeFirst() }
+        let value = UInt32(text, radix: 16) ?? 0
+        self.init(hex: value)
+    }
+}
+
+extension NSColor {
+    convenience init(srgbHex: UInt32, alpha: CGFloat = 1) {
+        self.init(srgbRed: CGFloat((srgbHex >> 16) & 0xFF) / 255,
+                  green: CGFloat((srgbHex >> 8) & 0xFF) / 255,
+                  blue: CGFloat(srgbHex & 0xFF) / 255,
+                  alpha: alpha)
+    }
+}
 
 // MARK: - Design tokens
 
 enum Theme {
     // Surfaces
-    static let background = Color(hex: 0x070A0F)
-    static let backgroundLift = Color(hex: 0x0A1019)
-    static let sidebar = Color(hex: 0x090D14)
-    static let panel = Color(hex: 0x101722)
-    static let card = Color(hex: 0x141C28)
-    static let cardElevated = Color(hex: 0x19222F)
-    static let cardHover = Color(hex: 0x1B2533)
-    static let field = Color(hex: 0x0E141D)
+    static let background = Color.adaptive(light: 0xF3F6FA, dark: 0x070A0F)
+    static let backgroundLift = Color.adaptive(light: 0xFFFFFF, dark: 0x0A1019)
+    static let sidebar = Color.adaptive(light: 0xEEF2F8, dark: 0x090D14)
+    static let panel = Color.adaptive(light: 0xFFFFFF, dark: 0x101722)
+    static let card = Color.adaptive(light: 0xFFFFFF, dark: 0x141C28)
+    static let cardElevated = Color.adaptive(light: 0xFFFFFF, dark: 0x19222F)
+    static let cardHover = Color.adaptive(light: 0xF4F8FD, dark: 0x1B2533)
+    static let field = Color.adaptive(light: 0xF1F4F9, dark: 0x0E141D)
 
     // Lines
-    static let stroke = Color.white.opacity(0.07)
-    static let strokeStrong = Color.white.opacity(0.13)
+    static let stroke = Color.adaptive(light: 0x101828, dark: 0xFFFFFF, lightAlpha: 0.08, darkAlpha: 0.07)
+    static let strokeStrong = Color.adaptive(light: 0x101828, dark: 0xFFFFFF, lightAlpha: 0.15, darkAlpha: 0.13)
+    static let cardShadow = Color.adaptive(light: 0x142033, dark: 0x000000, lightAlpha: 0.07, darkAlpha: 0)
+    static let ringTrack = Color.adaptive(light: 0x0E1726, dark: 0xFFFFFF, lightAlpha: 0.09, darkAlpha: 0.06)
+    static let storageTrack = Color.adaptive(light: 0x0E1726, dark: 0xFFFFFF, lightAlpha: 0.09, darkAlpha: 0.07)
+    static let subtleFill = Color.adaptive(light: 0x0E1726, dark: 0xFFFFFF, lightAlpha: 0.045, darkAlpha: 0.05)
+    static let shimmerHighlight = Color.adaptive(light: 0x0E1726, dark: 0xFFFFFF, lightAlpha: 0.045, darkAlpha: 0.09)
 
     // Text
-    static let textPrimary = Color(hex: 0xF2F5FA)
-    static let textSecondary = Color(hex: 0x9BA8BA)
-    static let textTertiary = Color(hex: 0x68758A)
+    static let textPrimary = Color.adaptive(light: 0x171D27, dark: 0xF2F5FA)
+    static let textSecondary = Color.adaptive(light: 0x5B6778, dark: 0x9BA8BA)
+    static let textTertiary = Color.adaptive(light: 0x8793A4, dark: 0x68758A)
     static let textOnAccent = Color(hex: 0x06110E)
 
     // Tones
-    static let mint = Color(hex: 0x5CE8C4)
-    static let blue = Color(hex: 0x4BA3FF)
-    static let purple = Color(hex: 0xA78BFA)
-    static let orange = Color(hex: 0xFFB86B)
-    static let pink = Color(hex: 0xFF7AB8)
-    static let yellow = Color(hex: 0xFFD86B)
-    static let teal = Color(hex: 0x4DD6E8)
-    static let red = Color(hex: 0xFF6B6B)
+    static let mint = Color.adaptive(light: 0x0FAF8E, dark: 0x5CE8C4)
+    static let blue = Color.adaptive(light: 0x1F7BE5, dark: 0x4BA3FF)
+    static let purple = Color.adaptive(light: 0x7A5AF8, dark: 0xA78BFA)
+    static let orange = Color.adaptive(light: 0xE0862A, dark: 0xFFB86B)
+    static let pink = Color.adaptive(light: 0xE2558F, dark: 0xFF7AB8)
+    static let yellow = Color.adaptive(light: 0xC99512, dark: 0xFFD86B)
+    static let teal = Color.adaptive(light: 0x0E9FB5, dark: 0x4DD6E8)
+    static let red = Color.adaptive(light: 0xE04B4B, dark: 0xFF6B6B)
 
     // Layout
     static let sidebarWidth: CGFloat = 238
@@ -74,7 +120,7 @@ enum Theme {
     }
 
     static func softGradient(_ tone: AccentTone) -> LinearGradient {
-        LinearGradient(colors: [tint(tone).opacity(0.22), secondaryTint(tone).opacity(0.08)],
+        LinearGradient(colors: [tint(tone).opacity(0.20), secondaryTint(tone).opacity(0.07)],
                        startPoint: .topLeading,
                        endPoint: .bottomTrailing)
     }
@@ -91,37 +137,25 @@ enum Theme {
     }
 
     static var brandGradient: LinearGradient {
-        LinearGradient(colors: [Color(hex: 0x8AF5DC), Color(hex: 0x5CE8C4), Color(hex: 0x4BA3FF)],
-                       startPoint: .topLeading,
-                       endPoint: .bottomTrailing)
+        LinearGradient(colors: [mint, blue], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 
     static var backgroundGradient: LinearGradient {
-        LinearGradient(colors: [Color(hex: 0x070A0F), Color(hex: 0x0A1019)],
-                       startPoint: .top, endPoint: .bottom)
+        LinearGradient(colors: [background, backgroundLift], startPoint: .top, endPoint: .bottom)
+    }
+
+    static var heroGradient: LinearGradient {
+        LinearGradient(colors: [
+            Color.adaptive(light: 0xFFFFFF, dark: 0x16222F),
+            Color.adaptive(light: 0xF4FBF8, dark: 0x0F1722),
+            Color.adaptive(light: 0xEDF6FF, dark: 0x0B1119)
+        ], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 
     static let titleFont = Font.system(size: 27, weight: .bold, design: .rounded)
     static let sectionFont = Font.system(size: 15, weight: .semibold)
     static let bodyFont = Font.system(size: 13, weight: .regular)
     static let numericFont = Font.system(size: 32, weight: .bold, design: .rounded).monospacedDigit()
-}
-
-extension Color {
-    init(hex: UInt32, alpha: Double = 1) {
-        self.init(.sRGB,
-                  red: Double((hex >> 16) & 0xFF) / 255,
-                  green: Double((hex >> 8) & 0xFF) / 255,
-                  blue: Double(hex & 0xFF) / 255,
-                  opacity: alpha)
-    }
-
-    init(hexString: String) {
-        var text = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
-        if text.hasPrefix("#") { text.removeFirst() }
-        let value = UInt32(text, radix: 16) ?? 0
-        self.init(hex: value)
-    }
 }
 
 // MARK: - Backgrounds
@@ -162,6 +196,7 @@ extension View {
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(fill)
+                    .shadow(color: Theme.cardShadow, radius: 18, x: 0, y: 6)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)

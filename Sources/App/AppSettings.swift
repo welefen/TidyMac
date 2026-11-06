@@ -1,6 +1,22 @@
 import Foundation
 import Combine
 
+enum AppAppearance: String, CaseIterable, Identifiable, Sendable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .system: return "跟随系统"
+        case .light: return "浅色"
+        case .dark: return "深色"
+        }
+    }
+}
+
 @MainActor
 final class AppSettings: ObservableObject {
     static let shared = AppSettings()
@@ -15,6 +31,7 @@ final class AppSettings: ObservableObject {
         static let history = "settings.history"
         static let showSystemApps = "settings.showSystemApps"
         static let reduceMotion = "settings.reduceMotion"
+        static let appearance = "settings.appearance"
     }
 
     @Published var moveToTrash: Bool {
@@ -57,6 +74,10 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(reduceMotion, forKey: Keys.reduceMotion) }
     }
 
+    @Published var appearance: AppAppearance {
+        didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) }
+    }
+
     private let defaults: UserDefaults
 
     private init() {
@@ -82,7 +103,8 @@ final class AppSettings: ObservableObject {
             Keys.totalFreedBytes: 0,
             Keys.cleanCount: 0,
             Keys.showSystemApps: false,
-            Keys.reduceMotion: false
+            Keys.reduceMotion: false,
+            Keys.appearance: AppAppearance.system.rawValue
         ])
         moveToTrash = defaults.bool(forKey: Keys.moveToTrash)
         confirmBeforeClean = defaults.bool(forKey: Keys.confirmBeforeClean)
@@ -92,6 +114,7 @@ final class AppSettings: ObservableObject {
         lastCleanDate = defaults.object(forKey: Keys.lastCleanDate) as? Date
         showSystemApps = defaults.bool(forKey: Keys.showSystemApps)
         reduceMotion = defaults.bool(forKey: Keys.reduceMotion)
+        appearance = AppAppearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         if let data = defaults.data(forKey: Keys.history),
            let decoded = try? JSONDecoder().decode([CleanHistoryEntry].self, from: data) {
             history = decoded
@@ -113,6 +136,12 @@ final class AppSettings: ObservableObject {
                 CleanHistoryEntry(date: calendar.date(byAdding: .day, value: -18, to: now) ?? now,
                                   freedBytes: 6_720_000_000, itemCount: 28)
             ]
+        }
+
+        // Demo screenshot / QA override.
+        if let raw = ProcessInfo.processInfo.environment["TIDYMAC_APPEARANCE"],
+           let parsed = AppAppearance(rawValue: raw.lowercased()) {
+            appearance = parsed
         }
     }
 

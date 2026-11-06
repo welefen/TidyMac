@@ -4,7 +4,7 @@
 
 ![TidyMac App Icon](Resources/AppIcon.png)
 
-TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向。所有分析都在本机完成，**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
+TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向。支持浅色 / 深色外观并跟随系统，所有分析都在本机完成，**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
 
 ## 功能
 
@@ -32,6 +32,7 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - 支持选择任意目录重新分析
 
 ### 设置与安全
+- 浅色 / 深色 / 跟随系统三种外观，设置中即时切换，全局自适应
 - 排除列表（文件 / 文件夹）
 - 完全磁盘访问权限引导
 - 累计释放空间、清理次数与历史
@@ -55,7 +56,11 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 | --- | --- |
 | ![空间透镜](screenshots/spacelens.png) | ![设置](screenshots/settings.png) |
 
-> 截图均使用 `--demo` 演示数据，不涉及真实用户文件。扫描引导页与空结果页见 `screenshots/smartscan-idle.png`、`screenshots/smartscan-empty.png`。
+| 总览 · 浅色 | 设置 · 浅色 |
+| --- | --- |
+| ![总览浅色](screenshots/overview-light.png) | ![设置浅色](screenshots/settings-light.png) |
+
+> 截图均使用 `--demo` 演示数据，不涉及真实用户文件。浅色截图通过演示模式强制浅色外观生成；扫描引导页与空结果页见 `screenshots/smartscan-idle.png`、`screenshots/smartscan-empty.png`。
 
 ## 快速开始
 
