@@ -155,8 +155,8 @@ build/tidymac-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自�
 
 - `build/TidyMac.app` — 可直接运行的应用
 - `build/tidymac-cli` — 无界面诊断/自检工具
-- `dist/TidyMac-1.0.15.dmg` — 磁盘映像（拖入「应用程序」安装）
-- `dist/TidyMac-1.0.15.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
+- `dist/TidyMac-1.0.16.dmg` — 磁盘映像（拖入「应用程序」安装）
+- `dist/TidyMac-1.0.16.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
 - `dist/SHA256SUMS.txt` — 校验和
 
 ## 验证结果
@@ -200,7 +200,7 @@ Resources/    Info.plist、AppIcon.icns
 ## 已知限制
 
 - 未开启「完全磁盘访问权限」时，Safari、Mail 等目录读取会受限，扫描结果可能不完整（应用内会提示）
-- 卸载 root 拥有的应用时，移入废纸篓可能因权限失败，会明确提示
+- App Store / root 拥有的应用会请求管理员授权，授权后移入废纸篓并修正所有者
 - 首次真实扫描 Xcode DerivedData 等大目录可能需要数秒至数十秒
 - 当前为本地 ad-hoc 签名构建，未做公证；分发给其他 Mac 时需在「系统设置 → 隐私与安全性」中允许
 - 空间透镜为按需深度扫描，超大目录建议选择子目录分析

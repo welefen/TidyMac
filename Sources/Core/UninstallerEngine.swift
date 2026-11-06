@@ -253,12 +253,14 @@ enum UninstallerEngine {
         var step = 0
 
         step += 1
+        var appRemoved = false
         do {
             try SafetyPolicy.validate(app.url, context: .appUninstall)
             let measured = ToolsSupport.measureForRemoval(app.url)
             try ToolsSupport.removeItem(at: app.url, moveToTrash: moveToTrash)
             removedCount += 1
             freedBytes += measured
+            appRemoved = true
         } catch {
             failures.append(CleanFailure(path: app.url.path,
                                          reason: ToolsSupport.failureReason(error)))
@@ -266,21 +268,25 @@ enum UninstallerEngine {
         progress(0.05 + 0.90 * Double(step) / Double(max(1, totalSteps)),
                  L("正在删除应用主程序…"))
 
-        for leftover in selectedLeftovers {
-            if Task.isCancelled { break }
-            step += 1
-            do {
-                try SafetyPolicy.validate(leftover.url, context: .leftover)
-                let measured = ToolsSupport.measureForRemoval(leftover.url)
-                try ToolsSupport.removeItem(at: leftover.url, moveToTrash: moveToTrash)
-                removedCount += 1
-                freedBytes += measured
-            } catch {
-                failures.append(CleanFailure(path: leftover.url.path,
-                                             reason: ToolsSupport.failureReason(error)))
+        // If the app bundle itself could not be removed (e.g. administrator
+        // authorization was cancelled), keep its preferences/caches intact too.
+        if appRemoved {
+            for leftover in selectedLeftovers {
+                if Task.isCancelled { break }
+                step += 1
+                do {
+                    try SafetyPolicy.validate(leftover.url, context: .leftover)
+                    let measured = ToolsSupport.measureForRemoval(leftover.url)
+                    try ToolsSupport.removeItem(at: leftover.url, moveToTrash: moveToTrash)
+                    removedCount += 1
+                    freedBytes += measured
+                } catch {
+                    failures.append(CleanFailure(path: leftover.url.path,
+                                                 reason: ToolsSupport.failureReason(error)))
+                }
+                progress(0.05 + 0.90 * Double(step) / Double(max(1, totalSteps)),
+                         L("正在删除残留文件… \(step - 1)/\(selectedLeftovers.count)"))
             }
-            progress(0.05 + 0.90 * Double(step) / Double(max(1, totalSteps)),
-                     L("正在删除残留文件… \(step - 1)/\(selectedLeftovers.count)"))
         }
 
         let action = moveToTrash ? L("已移到废纸篓") : L("已删除")

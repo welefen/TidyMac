@@ -155,8 +155,8 @@ Build artifacts:
 
 - `build/TidyMac.app` — runnable app
 - `build/tidymac-cli` — headless diagnostic/self-test tool
-- `dist/TidyMac-1.0.15.dmg` — disk image (drag into Applications)
-- `dist/TidyMac-1.0.15.zip` — distribution ZIP (ad-hoc signed; unzip and drag into Applications)
+- `dist/TidyMac-1.0.16.dmg` — disk image (drag into Applications)
+- `dist/TidyMac-1.0.16.zip` — distribution ZIP (ad-hoc signed; unzip and drag into Applications)
 - `dist/SHA256SUMS.txt` — checksums
 
 ## Verification
@@ -200,7 +200,7 @@ Resources/    Info.plist, AppIcon.icns
 ## Known Limitations
 
 - Without Full Disk Access, Safari, Mail and similar folders are restricted and scan results may be incomplete (the app shows a reminder)
-- Moving root-owned apps to the Trash may fail because of permissions; the failure is reported clearly
+- App Store / root-owned apps ask for administrator authorization and are moved to the Trash with the correct owner
 - The first real scan of large locations such as Xcode DerivedData may take seconds to tens of seconds
 - The current build is locally ad-hoc signed and not notarized; other Macs must allow it in **System Settings → Privacy & Security**
 - Space Lens scans on demand; for very large folders, analyze a subfolder instead
