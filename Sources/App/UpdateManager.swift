@@ -31,7 +31,7 @@ enum UpdatePhase: Equatable {
 final class UpdateManager: ObservableObject {
     static let shared = UpdateManager()
 
-    static let defaultFeedURL = URL(string: "https://cdn.jsdelivr.net/gh/welefen/TidyMac@main/updates/latest.json")!
+    static let defaultFeedURL = URL(string: "https://raw.githubusercontent.com/welefen/TidyMac/main/updates/latest.json")!
 
     @Published private(set) var phase: UpdatePhase = .idle
     @Published private(set) var currentVersion: String = {

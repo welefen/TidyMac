@@ -5,7 +5,7 @@
 Default feed URL:
 
 ```text
-https://cdn.jsdelivr.net/gh/welefen/TidyMac@main/updates/latest.json
+https://raw.githubusercontent.com/welefen/TidyMac/main/updates/latest.json
 ```
 
 ## Release a new version
@@ -14,7 +14,7 @@ https://cdn.jsdelivr.net/gh/welefen/TidyMac@main/updates/latest.json
 2. Run `./scripts/publish_update.sh --push`.
 3. The script builds the app, writes `updates/latest.json`, copies the ZIP, commits and pushes.
 
-The GitHub repository must be **public** for unauthenticated in-app downloads. The default feed uses jsDelivr as a public CDN mirror of the GitHub repository because raw.githubusercontent.com can be slow or blocked on some networks.
+The GitHub repository must be **public** for unauthenticated in-app downloads. If raw.githubusercontent.com is blocked, point `TIDYMAC_UPDATE_FEED` at a CDN mirror such as jsDelivr.
 For a private repository, set `TIDYMAC_UPDATE_FEED` to a public mirror that serves the
 same JSON, or add an authenticated proxy. Never embed a GitHub token in the app.
 The app verifies the ZIP SHA-256 and the bundle identifier/version before installing.
