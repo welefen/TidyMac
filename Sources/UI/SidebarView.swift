@@ -126,33 +126,14 @@ struct SidebarView: View {
                         }
                     }
                 }
-                .overlay(alignment: .bottom) {
-                    if hoveringUpdate {
-                        Text(L("新版本立即安装"))
-                            .font(.system(size: 9.5, weight: .medium))
-                            .foregroundStyle(Theme.textPrimary)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(Theme.cardElevated)
-                                    .shadow(color: .black.opacity(0.14), radius: 7, y: 3)
-                            )
-                            .overlay(Capsule().strokeBorder(Theme.stroke, lineWidth: 0.8))
-                            .fixedSize()
-                            .offset(y: 25)
-                            .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
-                            .allowsHitTesting(false)
-                            .zIndex(20)
-                    }
-                }
                 .scaleEffect(hoveringUpdate ? 1.04 : 1)
                 .animation(.easeOut(duration: 0.16), value: hoveringUpdate)
                 .fixedSize()
             }
             .buttonStyle(.plain)
             .onHover { hoveringUpdate = $0 }
-            .accessibilityLabel(L("有新版本 v%@，点击安装", version))
+            .help(L("有新版本 v%@，点击下载安装", version))
+            .accessibilityLabel(L("有新版本 v%@，点击下载安装", version))
         case .downloading:
             HStack(spacing: 3) {
                 ProgressView()

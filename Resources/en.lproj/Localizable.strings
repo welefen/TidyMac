@@ -460,3 +460,4 @@
 "正在安装…" = "Installing…";
 "v%@ 已下载" = "v%@ downloaded";
 "新版本立即安装" = "Install update now";
+"有新版本 v%@，点击下载安装" = "v%@ is available — click to download and install";
