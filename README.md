@@ -200,4 +200,6 @@ Resources/    Info.plist、AppIcon.icns
 
 ## License
 
-仅用于学习与个人使用。CleanMyMac 是 MacPaw 的商标，本项目与之无关联。
+MIT License
+
+仅用于学习与个人使用
