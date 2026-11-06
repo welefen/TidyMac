@@ -180,6 +180,7 @@ Resources/    Info.plist、AppIcon.icns
 - 当前为本地 ad-hoc 签名构建，未做公证；分发给其他 Mac 时需在「系统设置 → 隐私与安全性」中允许
 - 空间透镜为按需深度扫描，超大目录建议选择子目录分析
 - 卸载器不列出 `/Applications/Utilities` 等嵌套应用；`~/Library/Containers` 残留受安全策略保护，不会出现在可清理列表
+- `/System/Applications` 与 Apple 自带应用受 macOS 系统完整性保护（SIP），仅可在卸载器中查看，无法卸载；可在设置中关闭「显示系统应用」
 - 未开启完全磁盘访问权限时，`~/Library/Mail`、`~/.Trash` 等受 TCC 保护的位置会被静默跳过
 
 ## License
