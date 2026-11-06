@@ -63,24 +63,25 @@ struct SidebarView: View {
     // MARK: Brand
 
     private var brand: some View {
-        HStack(spacing: 8) {
+        HStack(alignment: .top, spacing: 8) {
             AppBrandIcon(size: 42)
                 .shadow(color: Theme.mint.opacity(0.20), radius: 10, y: 4)
             VStack(alignment: .leading, spacing: 1) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("TidyMac")
-                        .font(.system(size: 19, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.textPrimary)
-                        .lineLimit(1)
-                        .fixedSize()
-                    versionBadge
-                }
+                Text("TidyMac")
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                    .fixedSize()
                 Text("SMART CLEAN")
                     .font(.system(size: 7.5, weight: .semibold))
                     .tracking(1.6)
                     .foregroundStyle(Theme.textTertiary)
+                    .lineLimit(1)
+                    .fixedSize()
             }
-            Spacer()
+            Spacer(minLength: 4)
+            versionBadge
+                .padding(.top, 2)
         }
     }
 
