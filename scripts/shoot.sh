@@ -10,6 +10,7 @@ PAGE="${1:-overview}"
 STATE="${2:-}"
 NAME="${3:-$PAGE}"
 APPEARANCE="${4:-}"
+LANGUAGE="${5:-}"
 
 mkdir -p "$OUT_DIR" "$ROOT/.build"
 if [[ ! -x "$ROOT/.build/windowid" || "$ROOT/scripts/windowid.swift" -nt "$ROOT/.build/windowid" ]]; then
@@ -43,7 +44,11 @@ if [[ -n "$APPEARANCE" ]]; then
   export TIDYMAC_APPEARANCE="$APPEARANCE"
 fi
 
-"$BINARY" >"$ROOT/.build/shoot.out.log" 2>"$ROOT/.build/shoot.err.log" &
+if [[ -n "$LANGUAGE" ]]; then
+  "$BINARY" -AppleLanguages "($LANGUAGE)" >"$ROOT/.build/shoot.out.log" 2>"$ROOT/.build/shoot.err.log" &
+else
+  "$BINARY" >"$ROOT/.build/shoot.out.log" 2>"$ROOT/.build/shoot.err.log" &
+fi
 PID=$!
 sleep 3.4
 
