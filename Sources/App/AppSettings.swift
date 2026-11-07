@@ -176,13 +176,33 @@ final class AppSettings: ObservableObject {
     }
 
     func addExclusion(_ rawPath: String) {
-        let path = SafetyPolicy.normalized(HomePaths.expand(rawPath).path)
-        guard !path.isEmpty, !excludedPaths.contains(path) else { return }
-        excludedPaths.append(path)
+        addExclusions([rawPath])
+    }
+
+    /// Normalizes and appends the given paths in one batch. Returns the paths that
+    /// were actually new, which lets callers offer a precise undo.
+    @discardableResult
+    func addExclusions(_ rawPaths: [String]) -> [String] {
+        var paths = excludedPaths
+        var added: [String] = []
+        for raw in rawPaths {
+            let path = SafetyPolicy.normalized(HomePaths.expand(raw).path)
+            guard !path.isEmpty, !paths.contains(path) else { continue }
+            paths.append(path)
+            added.append(path)
+        }
+        if !added.isEmpty { excludedPaths = paths }
+        return added
     }
 
     func removeExclusion(_ path: String) {
-        excludedPaths.removeAll { $0 == path }
+        removeExclusions([path])
+    }
+
+    func removeExclusions(_ rawPaths: [String]) {
+        let removing = Set(rawPaths)
+        let kept = excludedPaths.filter { !removing.contains($0) }
+        if kept.count != excludedPaths.count { excludedPaths = kept }
     }
 
     func isExcluded(_ url: URL) -> Bool {

@@ -68,6 +68,9 @@ enum Theme {
     static let textSecondary = Color.adaptive(light: 0x5B6778, dark: 0x9BA8BA)
     static let textTertiary = Color.adaptive(light: 0x8793A4, dark: 0x68758A)
     static let textOnAccent = Color(hex: 0x06110E)
+    /// Foreground for solid mint fills. White in light mode (matches the update
+    /// badge reference); dark in dark mode, where mint is much brighter.
+    static let textOnMint = Color.adaptive(light: 0xFFFFFF, dark: 0x06110E)
 
     // Tones
     static let mint = Color.adaptive(light: 0x0FAF8E, dark: 0x5CE8C4)

@@ -6,7 +6,7 @@
 
 ![TidyMac App Icon](Resources/AppIcon.png)
 
-TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk, uninstalls apps together with leftovers, finds large files, and shows where your disk space went with Space Lens. It supports light/dark appearance and follows the system by default. Everything is analyzed locally, cleaned items are **moved to the Trash by default**, and sensitive locations such as system folders, Keychains, and the Photos library are hard-protected.
+TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk, uninstalls apps together with leftovers, finds large files, and shows where your disk space went with Space Lens. It supports light/dark appearance and follows the system by default. All file analysis happens locally; the only network telemetry is anonymous usage events (see [Anonymous Analytics](#anonymous-analytics)). Cleaned items are **moved to the Trash by default**, and sensitive locations such as system folders, Keychains, and the Photos library are hard-protected.
 
 ## Features
 
@@ -17,6 +17,7 @@ TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk
 - Safari / Chrome / Firefox / Edge web caches
 - Mail attachments and iOS device backups (off by default)
 - Results grouped by category, selectable per item, with safety level and path; a confirmation dialog appears before cleaning
+- Hover a result to exclude its folder from future scans and cleanups; the exclusion can be undone right from the results page
 - Cleaned files are moved to the Trash by default and can be restored; permanent deletion can be enabled in Settings
 
 ### Uninstaller
@@ -36,7 +37,7 @@ TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk
 ### Automatic Updates
 - Checks `updates/latest.json` in the GitHub repository via the GitHub Contents API, with `raw.githubusercontent.com` as fallback
 - Downloads the new ZIP automatically and verifies its SHA-256 and bundle identity
-- Checks and downloads automatically on every launch; when ready, the version number in the sidebar shows a prompt — click it to install and relaunch
+- Checks and downloads automatically on every launch; when ready, the mint update badge beside the TidyMac title expands into an Update button on hover — click it to install and relaunch
 - Update assets live in `updates/`; publish with `./scripts/publish_update.sh --push`
 
 > Automatic updates require a **public GitHub repository**. For a private repository, configure a public mirror or proxy; never embed a GitHub token in the app.
@@ -46,9 +47,19 @@ TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk
 - Follows the system language by default; unsupported languages fall back to English
 - Switching language restarts the app automatically
 
+### Anonymous Analytics
+- Uses the official [Aptabase Swift SDK](https://github.com/aptabase/aptabase-swift) (privacy-first, open source). The App Key `A-US-4062145019` selects the US region endpoint `https://us.aptabase.com`
+- Anonymous usage events are reported by default; there are no cookies, device IDs or advertising identifiers
+- Every app session gets a random numeric `sessionId` that expires after an hour of inactivity
+- System properties are attached by the SDK: app version/build, macOS version, locale, Mac model and SDK version
+- **Never reported:** file paths, file names, file contents or scan result details
+- Chinese and English currently share Aptabase; the provider layer makes it easy to switch one language to another service later
+- Events (no pre-registration needed): `app_start`, `app_end`, `page_view`, `scan_start`, `scan_cancel`, `scan_complete`, `exclude_item`, `clean_start`, `clean_complete`, `uninstall_start`, `uninstall_complete`, `large_files_scan`, `large_files_clean`, `space_lens_scan`
+
 ### Settings & Safety
 - Light / Dark / Follow System appearance, switched live and applied globally
 - Exclusion list for files and folders
+- Anonymous usage analytics via the official Aptabase SDK
 - Full Disk Access guidance
 - Total space freed, cleanup count and history
 - Every deletion goes through `SafetyPolicy` validation

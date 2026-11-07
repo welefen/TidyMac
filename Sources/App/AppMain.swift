@@ -110,6 +110,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.center()
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        MainActor.assumeIsolated {
+            Analytics.shared.track(.appEnd, [
+                "duration_ms": .int(Analytics.shared.sessionDurationMilliseconds)
+            ])
+            // Best effort: anything still queued is persisted and retried on the
+            // next launch, so quitting never blocks for long.
+            Analytics.shared.flush(timeout: 1.5)
+        }
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
     }

@@ -143,6 +143,10 @@ final class SpaceLensViewModel: ObservableObject {
                 self.scanError = "未能读取该目录，可能是权限不足或目录为空。"
             }
             self.path = [node]
+            Analytics.shared.track(.spaceLensScan, [
+                "child_count": .int(Int64(node.childCount)),
+                "bytes_scanned": .int(node.byteCount)
+            ])
         }
     }
 

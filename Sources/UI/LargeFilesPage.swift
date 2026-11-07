@@ -89,6 +89,7 @@ final class LargeFilesViewModel: ObservableObject {
                 self.hasScanned = true
                 self.scanProgress = 1
                 self.scanStatus = "扫描完成"
+                self.trackScan()
             }
             return
         }
@@ -120,7 +121,23 @@ final class LargeFilesViewModel: ObservableObject {
             self.scanProgress = 1
             self.scanStatus = "扫描完成"
             self.permissionDenied = files.isEmpty && permissionHint
+            self.trackScan()
         }
+    }
+
+    private func trackScan() {
+        Analytics.shared.track(.largeFilesScan, [
+            "file_count": .int(Int64(allFiles.count)),
+            "total_bytes": .int(allFiles.reduce(0) { $0 + $1.byteCount })
+        ])
+    }
+
+    private func trackClean(_ report: CleanReport) {
+        Analytics.shared.track(.largeFilesClean, [
+            "file_count": .int(Int64(report.removedCount)),
+            "freed_bytes": .int(report.freedBytes),
+            "failure_count": .int(Int64(report.failures.count))
+        ])
     }
 
     func rescan(isDemo: Bool, permissionHint: Bool) {
@@ -178,6 +195,7 @@ final class LargeFilesViewModel: ObservableObject {
                                           failures: [],
                                           completedAt: Date(),
                                           movedToTrash: true)
+                if let report = self.report { self.trackClean(report) }
             }
             return
         }
@@ -190,6 +208,7 @@ final class LargeFilesViewModel: ObservableObject {
             self.allFiles.removeAll { removedIDs.contains($0.id) }
             self.isTrashing = false
             self.report = result
+            self.trackClean(result)
         }
     }
 

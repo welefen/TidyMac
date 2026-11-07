@@ -15,6 +15,17 @@ struct SmartScanPage: View {
             phaseContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .overlay(alignment: .bottom) {
+            if let notice = app.exclusionNotice {
+                ScanExclusionBanner(notice: notice,
+                                    onUndo: { app.undoExclusion() },
+                                    onDismiss: { app.dismissExclusionNotice() })
+                    .padding(.horizontal, Theme.pagePadding)
+                    .padding(.bottom, 74)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.22), value: app.exclusionNotice?.id)
         .animation(.easeInOut(duration: 0.25), value: app.phase)
     }
 

@@ -467,3 +467,11 @@
 "等待管理员授权…" = "Waiting for administrator authorization…";
 "\n卸载此 App Store 应用需要输入管理员密码。" = "\nUninstalling this App Store app requires an administrator password.";
 "管理员授权超时" = "Administrator authorization timed out";
+"加入排除列表，以后不再扫描和清理" = "Add to exclusions so it won't be scanned or cleaned again";
+"已加入排除列表，以后扫描和清理都会跳过。" = "Added to exclusions — future scans and cleanups will skip it.";
+"已排除「%@」" = "Excluded “%@”";
+"撤销" = "Undo";
+"撤销排除" = "Undo exclusion";
+"完成更新" = "Update";
+
+"扫描与清理分析均在本机完成；仅上报匿名功能统计，不含任何文件路径或内容。" = "Scanning and cleanup analysis stay on this Mac. Only anonymous usage statistics are sent — never file paths or contents.";

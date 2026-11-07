@@ -6,7 +6,7 @@
 
 ![TidyMac App Icon](Resources/AppIcon.png)
 
-TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向。支持浅色 / 深色外观并跟随系统，所有分析都在本机完成，**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
+TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向。支持浅色 / 深色外观并跟随系统，所有文件分析都在本机完成，仅上报匿名功能使用统计（详见[匿名使用统计](#匿名使用统计)）；**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
 
 ## 功能
 
@@ -17,6 +17,7 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - Safari / Chrome / Firefox / Edge 网页缓存
 - 邮件附件、iOS 设备备份（默认不勾选）
 - 扫描结果按类别分组、可逐项勾选、显示安全等级与路径；一键清理前二次确认
+- 悬停扫描结果即可将对应目录加入排除列表，无需前往设置；结果页支持直接撤销
 - 清理默认移入废纸篓，可恢复；可在设置中切换永久删除
 
 ### 卸载器
@@ -36,7 +37,7 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 ### 自动更新
 - 应用内通过 GitHub Contents API 检查 `updates/latest.json`，raw.githubusercontent.com 作为兜底
 - 发现新版本后自动下载 ZIP，校验 SHA-256 与 Bundle 信息
-- 每次启动自动检查并下载；下载完成后侧边栏版本号会出现提示，点击即可安装并重启
+- 每次启动自动检查并下载；下载完成后 TidyMac 标题旁会出现浅绿色更新按钮，悬停展开「完成更新」，点击即可安装并重启
 - 更新资源位于 `updates/`，发布脚本：`./scripts/publish_update.sh --push`
 
 > 自动更新要求 GitHub 仓库为 **公开仓库**。私有仓库需要配置公开镜像或代理，不要将 GitHub Token 写入应用。
@@ -46,9 +47,19 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - 默认跟随系统；不支持的系统语言自动回退到英文
 - 设置中切换后应用自动重新启动生效
 
+### 匿名使用统计
+- 直接使用官方 [Aptabase Swift SDK](https://github.com/aptabase/aptabase-swift)（隐私优先的开源分析服务），App Key `A-US-4062145019` 对应美国区端点 `https://us.aptabase.com`
+- 默认开启上报匿名功能事件；不使用 cookie、设备 ID 或广告标识
+- 每次启动由 SDK 生成随机数字 `sessionId`，闲置 1 小时后自动更换
+- SDK 自动附带系统属性：应用版本/构建号、macOS 版本、语言、Mac 机型和 SDK 版本
+- **绝不上报：** 文件路径、文件名、文件内容或扫描结果明细
+- 中英文暂时共用 Aptabase；Provider 层已封装，后续英文可切换为其他服务
+- 事件（无需提前注册）：`app_start`、`app_end`、`page_view`、`scan_start`、`scan_cancel`、`scan_complete`、`exclude_item`、`clean_start`、`clean_complete`、`uninstall_start`、`uninstall_complete`、`large_files_scan`、`large_files_clean`、`space_lens_scan`
+
 ### 设置与安全
 - 浅色 / 深色 / 跟随系统三种外观，设置中即时切换，全局自适应
 - 排除列表（文件 / 文件夹）
+- 通过官方 Aptabase SDK 上报匿名使用统计
 - 完全磁盘访问权限引导
 - 累计释放空间、清理次数与历史
 - 所有删除操作经过 `SafetyPolicy` 校验

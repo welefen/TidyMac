@@ -6,6 +6,7 @@ struct SidebarView: View {
 
     private var appVersion: String { updates.currentVersion }
     @State private var hoveredPage: AppPage?
+    @State private var hoveringUpdateBadge = false
 
     private var mainPages: [AppPage] { [.overview, .smartScan] }
     private var toolPages: [AppPage] { [.uninstaller, .largeFiles, .spaceLens] }
@@ -67,7 +68,7 @@ struct SidebarView: View {
             AppBrandIcon(size: 42)
                 .shadow(color: Theme.mint.opacity(0.20), radius: 10, y: 4)
             VStack(alignment: .leading, spacing: 1) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                HStack(alignment: .center, spacing: 6) {
                     Text("TidyMac")
                         .font(.system(size: 19, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.textPrimary)
@@ -89,36 +90,10 @@ struct SidebarView: View {
     @ViewBuilder
     private var versionBadge: some View {
         switch updates.phase {
+        case .available(let version), .downloading(let version):
+            downloadingBadge(version: version)
         case .ready(let version):
-            Button {
-                updates.installDownloadedUpdate()
-            } label: {
-                HStack(spacing: 2.5) {
-                    Text("v\(appVersion)")
-                        .font(.system(size: 8.5, weight: .semibold))
-                        .lineLimit(1)
-                        .fixedSize()
-                    Image(systemName: "arrow.down.circle.fill")
-                        .font(.system(size: 8.5, weight: .bold))
-                }
-                .foregroundStyle(Theme.mint)
-                .padding(.horizontal, 4)
-                .padding(.vertical, 2.5)
-                .background(Capsule().fill(Theme.mint.opacity(0.12)))
-                .overlay(Capsule().strokeBorder(Theme.mint.opacity(0.30), lineWidth: 0.8))
-                .fixedSize()
-            }
-            .buttonStyle(.plain)
-            .help(L("有新版本 v%@，点击下载安装", version))
-            .accessibilityLabel(L("有新版本 v%@，点击下载安装", version))
-        case .downloading:
-            HStack(spacing: 3) {
-                ProgressView()
-                    .controlSize(.mini)
-                Text("v\(appVersion)")
-                    .font(.system(size: 8.5))
-                    .foregroundStyle(Theme.textTertiary)
-            }
+            updateBadge(version: version)
         default:
             Text("v\(appVersion)")
                 .font(.system(size: 8.5))
@@ -126,6 +101,77 @@ struct SidebarView: View {
                 .lineLimit(1)
                 .fixedSize()
         }
+    }
+
+    private func downloadingBadge(version: String) -> some View {
+        ZStack {
+            Circle()
+                .fill(Theme.mint)
+            ZStack {
+                Circle()
+                    .strokeBorder(Theme.textOnMint.opacity(0.88), lineWidth: 1.1)
+                    .frame(width: 12.5, height: 12.5)
+                Image(systemName: "arrow.down")
+                    .font(.system(size: 7, weight: .heavy))
+                    .foregroundStyle(Theme.textOnMint)
+            }
+            .symbolEffect(.pulse, options: .repeating)
+        }
+        .frame(width: 22, height: 22)
+        .overlay(Circle().strokeBorder(Color.white.opacity(0.30), lineWidth: 0.8))
+        .shadow(color: Theme.mint.opacity(0.24), radius: 4, x: 0, y: 2)
+        .help(L("正在下载 v%@…", version))
+        .accessibilityLabel(L("正在下载 v%@…", version))
+    }
+
+    /// A mint update button: a small arrow circle by default that expands into a
+    /// labelled pill on hover, matching the app's primary button colour.
+    private func updateBadge(version: String) -> some View {
+        Button {
+            updates.installDownloadedUpdate()
+        } label: {
+            HStack(spacing: 0) {
+                if hoveringUpdateBadge {
+                    Text(L("完成更新"))
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(Theme.textOnMint)
+                        .lineLimit(1)
+                        .fixedSize()
+                        .padding(.horizontal, 8)
+                } else {
+                    updateBadgeGlyph()
+                }
+            }
+            .frame(height: 22)
+            .frame(minWidth: 22)
+            .background(Capsule(style: .continuous).fill(Theme.mint))
+            .overlay(
+                Capsule(style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.30), lineWidth: 0.8)
+            )
+            .shadow(color: Theme.mint.opacity(hoveringUpdateBadge ? 0.34 : 0.24),
+                    radius: hoveringUpdateBadge ? 6 : 4, x: 0, y: 2)
+            .contentShape(Capsule(style: .continuous))
+            .animation(.spring(response: 0.26, dampingFraction: 0.82), value: hoveringUpdateBadge)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            hoveringUpdateBadge = hovering
+        }
+        .help(L("有新版本 v%@，点击安装", version))
+        .accessibilityLabel(L("有新版本 v%@，点击安装", version))
+    }
+
+    private func updateBadgeGlyph() -> some View {
+        ZStack {
+            Circle()
+                .strokeBorder(Theme.textOnMint.opacity(0.88), lineWidth: 1.1)
+                .frame(width: 12.5, height: 12.5)
+            Image(systemName: "arrow.up")
+                .font(.system(size: 7, weight: .heavy))
+                .foregroundStyle(Theme.textOnMint)
+        }
+        .frame(width: 22, height: 22)
     }
 
     private func sectionLabel(_ text: String) -> some View {

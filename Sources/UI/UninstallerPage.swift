@@ -26,6 +26,7 @@ final class UninstallerViewModel: ObservableObject {
     @Published var finishedAppName = ""
 
     private var demoMode = false
+    private var uninstallMovedToTrash = true
     private var loadTask: Task<Void, Never>?
     private var leftoverTask: Task<Void, Never>?
     private var uninstallTask: Task<Void, Never>?
@@ -191,6 +192,12 @@ final class UninstallerViewModel: ObservableObject {
         uninstallStatus = "正在准备移除…"
         let chosen = selectedLeftovers
         let freed = app.byteCount + chosen.reduce(0) { $0 + $1.byteCount }
+        uninstallMovedToTrash = moveToTrash
+        Analytics.shared.track(.uninstallStart, [
+            "leftover_count": .int(Int64(chosen.count)),
+            "total_bytes": .int(freed),
+            "move_to_trash": .int(moveToTrash ? 1 : 0)
+        ])
 
         if isDemo {
             uninstallTask = Task { [weak self] in
@@ -248,6 +255,12 @@ final class UninstallerViewModel: ObservableObject {
     }
 
     private func finishUninstall(_ report: CleanReport, appID: String) {
+        Analytics.shared.track(.uninstallComplete, [
+            "removed_count": .int(Int64(report.removedCount)),
+            "freed_bytes": .int(report.freedBytes),
+            "failure_count": .int(Int64(report.failures.count)),
+            "move_to_trash": .int(uninstallMovedToTrash ? 1 : 0)
+        ])
         isUninstalling = false
         uninstallProgress = 1
         self.report = report

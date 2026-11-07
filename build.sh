@@ -29,7 +29,7 @@ done
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
 APP_SOURCES=()
-while IFS= read -r file; do APP_SOURCES+=("$file"); done < <(find Sources/App Sources/Core Sources/UI -name '*.swift' -print | sort)
+while IFS= read -r file; do APP_SOURCES+=("$file"); done < <(find Sources/App Sources/Core Sources/UI Sources/Vendor -name '*.swift' -print | sort)
 
 echo "▸ Compiling TidyMac.app (${#APP_SOURCES[@]} files)"
 SWIFT_MODULE_CACHE_PATH="$CACHE" CLANG_MODULE_CACHE_PATH="$CACHE" TMPDIR="$TMP" \
@@ -47,7 +47,7 @@ echo "▸ Built $APP"
 
 # Headless CLI for scanning, diagnostics and self-tests.
 CORE_SOURCES=()
-while IFS= read -r file; do CORE_SOURCES+=("$file"); done < <(find Sources/Core -name '*.swift' -print | sort)
+while IFS= read -r file; do CORE_SOURCES+=("$file"); done < <(find Sources/Core Sources/Vendor -name '*.swift' -print | sort)
 SWIFT_MODULE_CACHE_PATH="$CACHE" CLANG_MODULE_CACHE_PATH="$CACHE" TMPDIR="$TMP" \
   swiftc -sdk "$SDK" \
     -module-cache-path "$CACHE" \

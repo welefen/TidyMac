@@ -195,6 +195,12 @@ struct TidyMacCLI {
         check(Format.bytes(1_500_000_000).contains("GB"), "GB 格式化")
         check(Format.percent(0.5) == "50%", "百分比格式化")
 
+        // Analytics events (Aptabase SDK reports them)
+        let eventNames = AnalyticsEvent.allCases.map(\.rawValue)
+        check(Set(eventNames).count == eventNames.count, "埋点事件 ID 唯一")
+        check(AnalyticsEvent.appStart.rawValue == "app_start", "埋点启动事件名")
+        check(AnalyticsEvent.scanComplete.rawValue == "scan_complete", "埋点扫描事件名")
+
         // Safety policy
         check(throwsSafety { try SafetyPolicy.validate(URL(fileURLWithPath: "/"), context: .largeFile) },
               "禁止删除根目录")

@@ -50,6 +50,18 @@ struct LaunchOptions {
     }
 }
 
+/// A recently excluded scan item. Kept so the results screen can offer an undo
+/// and explain that the location will be skipped by future scans.
+struct ScanExclusionNotice: Identifiable, Equatable {
+    let id = UUID()
+    let itemName: String
+    let addedPaths: [String]
+    let item: ScanItem
+    let category: ScanCategory
+    let categoryIndex: Int
+    let itemIndex: Int
+}
+
 @MainActor
 final class AppState: ObservableObject {
     let settings = AppSettings.shared
@@ -65,9 +77,11 @@ final class AppState: ObservableObject {
     @Published var errorMessage: String?
     @Published var isDemo = false
     @Published var showPermissionHint = false
+    @Published var exclusionNotice: ScanExclusionNotice?
 
     private var scanTask: Task<Void, Never>?
     private var demoProgressTask: Task<Void, Never>?
+    private var exclusionNoticeTask: Task<Void, Never>?
 
     init() {
         isDemo = launchOptions.isDemo
@@ -113,10 +127,17 @@ final class AppState: ObservableObject {
             if launchOptions.autoScan {
                 Task { [weak self] in
                     try? await Task.sleep(nanoseconds: 500_000_000)
-                    self?.startSmartScan()
+                    self?.startSmartScan(trigger: "auto")
                 }
             }
         }
+
+        Analytics.shared.configure(language: settings.language, isDemo: isDemo)
+        Analytics.shared.track(.appStart, [
+            "language": .string(settings.language.analyticsCode),
+            "appearance": .string(settings.appearance.rawValue),
+            "initial_page": .string(page.rawValue)
+        ])
     }
 
     // MARK: - Derived values
@@ -158,6 +179,7 @@ final class AppState: ObservableObject {
         withAnimation(.easeInOut(duration: 0.22)) {
             self.page = page
         }
+        Analytics.shared.track(.pageView, ["page": .string(page.rawValue)])
         if page == .overview || page == .smartScan {
             refreshDisk()
         }
@@ -173,16 +195,21 @@ final class AppState: ObservableObject {
 
     // MARK: - Scanning
 
-    func startSmartScan() {
+    func startSmartScan(trigger: String = "user") {
         guard phase != .scanning && phase != .cleaning else { return }
         scanTask?.cancel()
         demoProgressTask?.cancel()
+        dismissExclusionNotice()
         cleanReport = nil
         errorMessage = nil
         scanResult = nil
         phase = .scanning
         scanProgress = ScanProgress(fraction: 0.02, status: L("正在准备扫描…"), detail: L("检查可访问的缓存位置"))
         page = .smartScan
+        Analytics.shared.track(.scanStart, [
+            "trigger": .string(trigger),
+            "excluded_count": .int(Int64(settings.excludedPaths.count))
+        ])
 
         if isDemo {
             runDemoScan()
@@ -211,6 +238,13 @@ final class AppState: ObservableObject {
                 )
                 state.phase = .results
                 state.scanProgress = ScanProgress(fraction: 1, status: L("扫描完成"))
+                let finished = state.scanResult
+                Analytics.shared.track(.scanComplete, [
+                    "item_count": .int(Int64(finished?.totalItemCount ?? 0)),
+                    "total_bytes": .int(finished?.totalBytesFound ?? 0),
+                    "category_count": .int(Int64(finished?.categories.count ?? 0)),
+                    "duration_ms": .int(Int64(Date().timeIntervalSince(started) * 1000))
+                ])
                 state.refreshDisk()
             }
         }
@@ -246,10 +280,15 @@ final class AppState: ObservableObject {
     }
 
     func cancelScan() {
+        if phase == .scanning {
+            let percent = Int((min(1, max(0, scanProgress.fraction)) * 100).rounded())
+            Analytics.shared.track(.scanCancel, ["progress_percent": .int(Int64(percent))])
+        }
         scanTask?.cancel()
         demoProgressTask?.cancel()
         scanTask = nil
         demoProgressTask = nil
+        dismissExclusionNotice()
         phase = .idle
         scanProgress = .idle
         scanResult = nil
@@ -259,6 +298,7 @@ final class AppState: ObservableObject {
     func resetScan() {
         scanTask?.cancel()
         demoProgressTask?.cancel()
+        dismissExclusionNotice()
         phase = .idle
         scanResult = nil
         cleanReport = nil
@@ -308,6 +348,84 @@ final class AppState: ObservableObject {
         return !items.isEmpty && items.allSatisfy(\.isSelected)
     }
 
+    // MARK: - Exclusions
+
+    /// Adds every URL backing the item to the exclusion list and drops the item
+    /// from the current results, so it can no longer be cleaned. `addedPaths`
+    /// remembers exactly what was new, which keeps undo safe.
+    func excludeItem(categoryID: String, itemID: String) {
+        guard phase == .results,
+              var result = scanResult,
+              let categoryIndex = result.categories.firstIndex(where: { $0.id == categoryID }),
+              let itemIndex = result.categories[categoryIndex].items.firstIndex(where: { $0.id == itemID })
+        else { return }
+
+        let category = result.categories[categoryIndex]
+        let item = category.items[itemIndex]
+
+        let targets = item.urls
+            .filter { !settings.isExcluded($0) }
+            .map(\.path)
+        let addedPaths = settings.addExclusions(targets)
+        guard !addedPaths.isEmpty else { return }
+
+        result.categories[categoryIndex].items.remove(at: itemIndex)
+        if result.categories[categoryIndex].items.isEmpty {
+            result.categories.remove(at: categoryIndex)
+        }
+        scanResult = result
+
+        Analytics.shared.track(.excludeItem, [
+            "kind": .string(item.kind.rawValue),
+            "path_count": .int(Int64(addedPaths.count)),
+            "item_bytes": .int(item.byteCount)
+        ])
+
+        presentExclusionNotice(ScanExclusionNotice(itemName: L(item.name),
+                                                   addedPaths: addedPaths,
+                                                   item: item,
+                                                   category: category,
+                                                   categoryIndex: categoryIndex,
+                                                   itemIndex: itemIndex))
+    }
+
+    func undoExclusion() {
+        guard let notice = exclusionNotice else { return }
+        settings.removeExclusions(notice.addedPaths)
+        if var result = scanResult {
+            if let index = result.categories.firstIndex(where: { $0.id == notice.category.id }) {
+                if !result.categories[index].items.contains(where: { $0.id == notice.item.id }) {
+                    let insertAt = min(notice.itemIndex, result.categories[index].items.count)
+                    result.categories[index].items.insert(notice.item, at: insertAt)
+                }
+            } else {
+                var restored = notice.category
+                restored.items = [notice.item]
+                let insertAt = min(notice.categoryIndex, result.categories.count)
+                result.categories.insert(restored, at: insertAt)
+            }
+            scanResult = result
+        }
+        dismissExclusionNotice()
+    }
+
+    func dismissExclusionNotice() {
+        exclusionNoticeTask?.cancel()
+        exclusionNoticeTask = nil
+        exclusionNotice = nil
+    }
+
+    private func presentExclusionNotice(_ notice: ScanExclusionNotice) {
+        exclusionNoticeTask?.cancel()
+        exclusionNotice = notice
+        let id = notice.id
+        exclusionNoticeTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 8_000_000_000)
+            guard !Task.isCancelled, let self, self.exclusionNotice?.id == id else { return }
+            self.dismissExclusionNotice()
+        }
+    }
+
     // MARK: - Cleaning
 
     func cleanSelected() {
@@ -315,6 +433,12 @@ final class AppState: ObservableObject {
         let items = selectedItems
         let moveToTrash = settings.moveToTrash
         let excluded = Set(settings.excludedPaths)
+        Analytics.shared.track(.cleanStart, [
+            "item_count": .int(Int64(items.count)),
+            "total_bytes": .int(items.reduce(0) { $0 + $1.byteCount }),
+            "risky_count": .int(Int64(items.filter { $0.safety == .risky }.count)),
+            "move_to_trash": .int(moveToTrash ? 1 : 0)
+        ])
         phase = .cleaning
         cleanProgress = CleanProgress(fraction: 0.02, status: L("正在清理…"))
         errorMessage = nil
@@ -353,6 +477,12 @@ final class AppState: ObservableObject {
     }
 
     private func finishClean(_ report: CleanReport) {
+        Analytics.shared.track(.cleanComplete, [
+            "removed_count": .int(Int64(report.removedCount)),
+            "freed_bytes": .int(report.freedBytes),
+            "failure_count": .int(Int64(report.failures.count)),
+            "move_to_trash": .int(report.movedToTrash ? 1 : 0)
+        ])
         cleanReport = report
         phase = .finished
         if !isDemo {

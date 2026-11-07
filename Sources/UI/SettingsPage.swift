@@ -24,7 +24,7 @@ struct SettingsPage: View {
                 statisticsSection
                 aboutSection
 
-                Text(L("TidyMac 不会上传任何扫描数据。所有分析均在本机完成。"))
+                Text(L("扫描与清理分析均在本机完成；仅上报匿名功能统计，不含任何文件路径或内容。"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(maxWidth: .infinity)

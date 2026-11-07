@@ -696,6 +696,8 @@ struct ScanItemLine: View {
 
             Spacer(minLength: 8)
 
+            excludeButton
+
             SafetyBadge(safety: item.safety, compact: true)
 
             Text(Format.bytes(item.byteCount))
@@ -709,6 +711,91 @@ struct ScanItemLine: View {
         .background(hovering ? Theme.subtleFill : Color.clear)
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
+    }
+
+    /// Revealed on row hover. The slot is always laid out so the row never jumps
+    /// when the pointer moves in and out.
+    private var excludeButton: some View {
+        Button {
+            app.excludeItem(categoryID: categoryID, itemID: item.id)
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "nosign")
+                    .font(.system(size: 9, weight: .semibold))
+                Text(L("排除"))
+                    .font(.system(size: 10, weight: .medium))
+            }
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Capsule(style: .continuous).fill(Theme.cardElevated))
+            .overlay(Capsule(style: .continuous).strokeBorder(Theme.strokeStrong, lineWidth: 1))
+            .contentShape(Capsule(style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .help(L("加入排除列表，以后不再扫描和清理"))
+        .opacity(hovering ? 1 : 0)
+        .allowsHitTesting(hovering)
+        .accessibilityHidden(!hovering)
+        .animation(.easeInOut(duration: 0.14), value: hovering)
+    }
+}
+
+/// Floating confirmation shown after excluding a scan result. It stays visible
+/// for a few seconds so the exclusion can be undone without opening Settings.
+struct ScanExclusionBanner: View {
+    let notice: ScanExclusionNotice
+    var onUndo: () -> Void
+    var onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 11) {
+            ToneIcon(symbol: "nosign", tone: .orange, size: 30)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(L("已排除「%@」", notice.itemName))
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                Text(L("已加入排除列表，以后扫描和清理都会跳过。"))
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 10)
+
+            Button(action: onUndo) {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.system(size: 9, weight: .semibold))
+                    Text(L("撤销"))
+                        .font(.system(size: 11, weight: .medium))
+                }
+            }
+            .buttonStyle(GhostButtonStyle(tone: .orange))
+            .help(L("撤销排除"))
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(Theme.textTertiary)
+                    .frame(width: 22, height: 22)
+                    .background(Circle().fill(Theme.field))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 13)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Theme.cardElevated)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Theme.strokeStrong, lineWidth: 1)
+        )
+        .shadow(color: Theme.cardShadow, radius: 16, x: 0, y: 7)
     }
 }
 
