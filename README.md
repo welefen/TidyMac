@@ -66,35 +66,25 @@ TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk
 
 ## Screenshots
 
+All screenshots are generated from `--demo` data, never touch real user files, and use a forced light appearance.
+
 | Overview | Smart Scan · Results |
 | --- | --- |
-| ![Overview](screenshots/overview.png) | ![Smart Scan results](screenshots/smartscan-results.png) |
+| ![Overview](screenshots/en/overview.png) | ![Smart Scan results](screenshots/en/smartscan-results.png) |
 
 | Scanning | Cleanup Complete |
 | --- | --- |
-| ![Scanning](screenshots/smartscan-scanning.png) | ![Cleanup complete](screenshots/smartscan-finished.png) |
+| ![Scanning](screenshots/en/smartscan-scanning.png) | ![Cleanup complete](screenshots/en/smartscan-finished.png) |
 
 | Uninstaller | Large Files |
 | --- | --- |
-| ![Uninstaller](screenshots/uninstaller.png) | ![Large Files](screenshots/large.png) |
+| ![Uninstaller](screenshots/en/uninstaller.png) | ![Large Files](screenshots/en/large.png) |
 
 | Space Lens | Settings |
 | --- | --- |
-| ![Space Lens](screenshots/spacelens.png) | ![Settings](screenshots/settings.png) |
+| ![Space Lens](screenshots/en/spacelens.png) | ![Settings](screenshots/en/settings.png) |
 
-| Overview · Light | Settings · Light |
-| --- | --- |
-| ![Overview light](screenshots/overview-light.png) | ![Settings light](screenshots/settings-light.png) |
-
-| Settings · English | Overview · English |
-| --- | --- |
-| ![Settings English](screenshots/settings-en.png) | ![Overview English](screenshots/overview-en.png) |
-
-| Smart Scan · English | Large Files · English |
-| --- | --- |
-| ![Smart Scan English](screenshots/smartscan-results-en.png) | ![Large Files English](screenshots/large-en.png) |
-
-> All screenshots use `--demo` data and never touch real user files. Light screenshots are generated with a forced light appearance; English screenshots use a system language override. See `screenshots/smartscan-idle.png` and `screenshots/smartscan-empty.png` for the scan guide and empty result states.
+> See [smartscan-idle.png](screenshots/en/smartscan-idle.png) and [smartscan-empty.png](screenshots/en/smartscan-empty.png) for the scan guide and empty result states.
 
 ## Quick Start
 

@@ -66,35 +66,25 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 
 ## 截图
 
+截图均使用 `--demo` 演示数据，不涉及真实用户文件，并统一使用浅色外观。
+
 | 总览 | 智能扫描 · 结果 |
 | --- | --- |
-| ![总览](screenshots/overview.png) | ![智能扫描结果](screenshots/smartscan-results.png) |
+| ![总览](screenshots/zh/overview.png) | ![智能扫描结果](screenshots/zh/smartscan-results.png) |
 
 | 扫描中 | 清理完成 |
 | --- | --- |
-| ![扫描中](screenshots/smartscan-scanning.png) | ![清理完成](screenshots/smartscan-finished.png) |
+| ![扫描中](screenshots/zh/smartscan-scanning.png) | ![清理完成](screenshots/zh/smartscan-finished.png) |
 
 | 卸载器 | 大文件 |
 | --- | --- |
-| ![卸载器](screenshots/uninstaller.png) | ![大文件](screenshots/large.png) |
+| ![卸载器](screenshots/zh/uninstaller.png) | ![大文件](screenshots/zh/large.png) |
 
 | 空间透镜 | 设置 |
 | --- | --- |
-| ![空间透镜](screenshots/spacelens.png) | ![设置](screenshots/settings.png) |
+| ![空间透镜](screenshots/zh/spacelens.png) | ![设置](screenshots/zh/settings.png) |
 
-| 总览 · 浅色 | 设置 · 浅色 |
-| --- | --- |
-| ![总览浅色](screenshots/overview-light.png) | ![设置浅色](screenshots/settings-light.png) |
-
-| 设置 · 英文 | 英文总览 |
-| --- | --- |
-| ![设置英文](screenshots/settings-en.png) | ![总览英文](screenshots/overview-en.png) |
-
-| 英文智能扫描 | 英文大文件 |
-| --- | --- |
-| ![智能扫描英文](screenshots/smartscan-results-en.png) | ![大文件英文](screenshots/large-en.png) |
-
-> 截图均使用 `--demo` 演示数据，不涉及真实用户文件。浅色截图通过演示模式强制浅色外观生成；英文截图通过系统语言覆盖生成。扫描引导页与空结果页见 `screenshots/smartscan-idle.png`、`screenshots/smartscan-empty.png`。
+> 扫描引导页与空结果页见 [smartscan-idle.png](screenshots/zh/smartscan-idle.png)、[smartscan-empty.png](screenshots/zh/smartscan-empty.png)。
 
 ## 快速开始
 
