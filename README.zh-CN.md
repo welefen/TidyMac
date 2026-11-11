@@ -4,9 +4,11 @@
 
 > 轻净如羽，焕然一新。一款为 macOS 打造的智能清理与空间管理工具。
 
-![TidyMac App Icon](Resources/AppIcon.png)
+<img src="Resources/AppIcon.png" width="96" alt="TidyMac App Icon">
 
 TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向。支持浅色 / 深色外观并跟随系统，所有文件分析都在本机完成，仅上报匿名功能使用统计（详见[匿名使用统计](#匿名使用统计)）；**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
+
+**下载：** [TidyMac 1.1.0（ZIP）](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.1.0.zip) · [DMG](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.1.0.dmg) — 支持 macOS 14+、Apple Silicon。
 
 ## 功能
 
