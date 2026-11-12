@@ -31,7 +31,8 @@
 "Spotify 缓存" = "Spotify Cache";
 "SwiftPM 缓存" = "SwiftPM Cache";
 "TidyMac 不会上传任何扫描数据。所有分析均在本机完成。" = "TidyMac never uploads scan data. Everything is analyzed on this Mac.";
-"TidyMac 会检查缓存、日志、开发者构建缓存、浏览器数据与旧备份，\n只推荐可以安全清理的项目，并默认移入废纸篓。" = "TidyMac checks caches, logs, developer build data, browser data and old backups. It only recommends safe-to-remove items and moves them to the Trash by default.";
+"TidyMac 会检查缓存、日志、开发者构建缓存、浏览器数据与旧备份，
+只推荐可以安全清理的项目，并默认移入废纸篓。" = "TidyMac checks caches, logs, developer build data, browser data and old backups. It only recommends safe-to-remove items and moves them to the Trash by default.";
 "TidyMac 可以完整扫描缓存、邮件附件与备份。" = "TidyMac can fully scan caches, mail attachments and backups.";
 "Xcode 文档与 API 索引缓存，可重新下载" = "Xcode Document and API Index Cache, re-downloadable";
 "Xcode 文档缓存" = "Xcode Document Cache";
@@ -376,7 +377,9 @@
 "路径无效。" = "Invalid Path.";
 "轻净如羽，焕然一新" = "Feather-light, fresh and clean";
 "轻净如羽，焕然一新  ·  v1.0.0  ·  macOS 14+" = "Feather-light and fresh  ·  v1.0.0  ·  macOS 14+";
-"轻净如羽，焕然一新。\n一款为 macOS 打造的智能清理与空间管理工具。" = "Feather-light and fresh.\nA smart cleaner and space manager for macOS.";
+"轻净如羽，焕然一新。
+一款为 macOS 打造的智能清理与空间管理工具。" = "Feather-light and fresh.
+A smart cleaner and space manager for macOS.";
 "运行中" = "Running";
 "返回上级" = "Back";
 "还没有清理记录" = "No cleanups yet";
@@ -419,11 +422,17 @@
 "最近 %d 条记录" = "Last %d records";
 "共 %d 个匹配文件" = "%d matching files";
 "%d 个匹配文件" = "%d matching files";
-"\n文件会移入废纸篓，可随时恢复。" = "\nFiles will be moved to the Trash and can be restored anytime.";
-"\n文件将被永久删除，无法恢复。" = "\nFiles will be permanently deleted and cannot be recovered.";
+"
+文件会移入废纸篓，可随时恢复。" = "
+Files will be moved to the Trash and can be restored anytime.";
+"
+文件将被永久删除，无法恢复。" = "
+Files will be permanently deleted and cannot be recovered.";
 "将移除 %@（%@）%@，合计 %@。" = "Remove %@ (%@). %@ Total %@.";
 "以及 %d 项关联文件（%@）" = "plus %d leftover files (%@)";
-"\n应用当前正在运行，建议先退出。" = "\nThe app is running. Quit it before uninstalling to release files in use.";
+"
+应用当前正在运行，建议先退出。" = "
+The app is running. Quit it before uninstalling to release files in use.";
 "更新" = "Updates";
 "尚未检查更新" = "Not checked yet";
 "正在检查更新…" = "Checking for updates…";
@@ -462,10 +471,14 @@
 "新版本立即安装" = "Install update now";
 "有新版本 v%@，点击下载安装" = "v%@ is available — click to download and install";
 "轻净如羽，焕然一新。一款为 macOS 打造的智能清理与空间管理工具。" = "Feather-light, fresh and clean. A smart cleaner and space manager for macOS.";
-"轻净如羽，焕然一新。\nmacOS 智能清理与空间管理工具" = "Feather-light, fresh and clean.\nA smart cleaner and space manager for macOS";
+"轻净如羽，焕然一新。
+macOS 智能清理与空间管理工具" = "Feather-light, fresh and clean.
+A smart cleaner and space manager for macOS";
 "作者：" = "Author: ";
 "等待管理员授权…" = "Waiting for administrator authorization…";
-"\n卸载此 App Store 应用需要输入管理员密码。" = "\nUninstalling this App Store app requires an administrator password.";
+"
+卸载此 App Store 应用需要输入管理员密码。" = "
+Uninstalling this App Store app requires an administrator password.";
 "管理员授权超时" = "Administrator authorization timed out";
 "加入排除列表，以后不再扫描和清理" = "Add to exclusions so it won't be scanned or cleaned again";
 "已加入排除列表，以后扫描和清理都会跳过。" = "Added to exclusions — future scans and cleanups will skip it.";
@@ -541,4 +554,27 @@
 "%@ 分钟" = "%@m";
 "%@ 个显示器" = "%@ displays";
 "%@ 可用 · 共 %@" = "%@ free of %@";
-"本机硬件、系统与网络信息" = "Hardware, system and network details";\n\n"公网 IP" = "Public IP";\n"查询中…" = "Looking up…";\n"硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询。" = "Hardware, system and LAN details are read locally; the public IP is looked up via Cloudflare / ipify.";\n
+"本机硬件、系统与网络信息" = "Hardware, system and network details";
+
+"公网 IP" = "Public IP";
+"查询中…" = "Looking up…";
+"硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询。" = "Hardware, system and LAN details are read locally; the public IP is looked up via Cloudflare / ipify.";
+
+"网络测速" = "Network speed test";
+"Cloudflare 快速" = "Cloudflare quick";
+"系统网络质量" = "System network quality";
+"开始测速" = "Start test";
+"准备中…" = "Preparing…";
+"正在测速…" = "Testing…";
+"正在测试延迟、下载与上传…" = "Testing latency, download and upload…";
+"正在运行系统网络质量测试（约 25 秒）…" = "Running the system network quality test (about 25 s)…";
+"尚未测速。Cloudflare 测试约消耗 16 MB 流量；系统测试约需 25 秒。" = "Not tested yet. The Cloudflare test uses about 14 MB; the system test takes about 25 s.";
+"测速失败：%@" = "Speed test failed: %@";
+"已用时 %@ 秒" = "%@ s elapsed";
+"结果仅供参考；测试流量会发送给 Cloudflare 或 Apple。" = "For reference only; test traffic is sent to Cloudflare or Apple.";
+"延迟" = "Latency";
+"上传" = "Upload";
+
+"硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询，测速流量发送给 Cloudflare 或 Apple。" = "Hardware, system and LAN details are read locally; the public IP is looked up via Cloudflare / ipify, and speed-test traffic goes to Cloudflare or Apple.";
+
+"尚未测速。Cloudflare 测试约消耗 14 MB 流量；系统测试约需 25 秒。" = "Not tested yet. The Cloudflare test uses about 14 MB; the system test takes about 25 s.";
