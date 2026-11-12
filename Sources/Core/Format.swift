@@ -24,7 +24,7 @@ enum Format {
     /// Short value split into number and unit for large display typography.
     static func bytesParts(_ value: Int64) -> (number: String, unit: String) {
         let text = bytes(value)
-        let parts = text.split(separator: " ")
+        let parts = text.split(whereSeparator: { $0.isWhitespace })
         guard parts.count >= 2 else { return (text, "") }
         return (String(parts[0]), parts.dropFirst().joined(separator: " "))
     }

@@ -14,11 +14,6 @@ struct SidebarView: View {
     var body: some View {
         ZStack(alignment: .trailing) {
             Theme.sidebar
-            LinearGradient(
-                colors: [Theme.mint.opacity(0.045), .clear, Theme.blue.opacity(0.035)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
             Rectangle()
                 .fill(Theme.stroke)
                 .frame(width: 1)
@@ -26,10 +21,10 @@ struct SidebarView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 brand
-                    .padding(.top, 52)
-                    .padding(.horizontal, 12)
+                    .padding(.top, 44)
+                    .padding(.horizontal, 10)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     ForEach(mainPages) { page in
                         navRow(page)
                     }
@@ -37,10 +32,10 @@ struct SidebarView: View {
                 .padding(.top, 28)
 
                 sectionLabel("工具")
-                    .padding(.top, 24)
-                    .padding(.bottom, 7)
+                    .padding(.top, 26)
+                    .padding(.bottom, 8)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     ForEach(toolPages) { page in
                         navRow(page)
                     }
@@ -49,14 +44,14 @@ struct SidebarView: View {
                 Spacer(minLength: 16)
 
                 storageCard
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 10)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 12)
 
                 settingsRow
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 16)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 14)
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 8)
         }
         .ignoresSafeArea()
     }
@@ -64,27 +59,16 @@ struct SidebarView: View {
     // MARK: Brand
 
     private var brand: some View {
-        HStack(spacing: 8) {
-            AppBrandIcon(size: 42)
-                .shadow(color: Theme.mint.opacity(0.20), radius: 10, y: 4)
-            VStack(alignment: .leading, spacing: 1) {
-                HStack(alignment: .center, spacing: 6) {
-                    Text("TidyMac")
-                        .font(.system(size: 19, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.textPrimary)
-                        .lineLimit(1)
-                        .fixedSize()
-                    versionBadge
-                }
-                Text("SMART CLEAN")
-                    .font(.system(size: 7.5, weight: .semibold))
-                    .tracking(1.6)
-                    .foregroundStyle(Theme.textTertiary)
-                    .lineLimit(1)
-                    .fixedSize()
-            }
-            Spacer(minLength: 0)
+        HStack(spacing: 10) {
+            AppBrandIcon(size: 32)
+            Text("TidyMac")
+                .font(Theme.wordmarkFont)
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+            Spacer(minLength: 4)
+            versionBadge
         }
+        .padding(.horizontal, 2)
     }
 
     @ViewBuilder
@@ -96,7 +80,7 @@ struct SidebarView: View {
             updateBadge(version: version)
         default:
             Text("v\(appVersion)")
-                .font(.system(size: 8.5))
+                .font(Theme.monoFont(10))
                 .foregroundStyle(Theme.textTertiary)
                 .lineLimit(1)
                 .fixedSize()
@@ -104,82 +88,60 @@ struct SidebarView: View {
     }
 
     private func downloadingBadge(version: String) -> some View {
-        ZStack {
-            Circle()
-                .fill(Theme.mint)
-            ZStack {
-                Circle()
-                    .strokeBorder(Theme.textOnMint.opacity(0.88), lineWidth: 1.1)
-                    .frame(width: 12.5, height: 12.5)
-                Image(systemName: "arrow.down")
-                    .font(.system(size: 7, weight: .heavy))
-                    .foregroundStyle(Theme.textOnMint)
-            }
-            .symbolEffect(.pulse, options: .repeating)
+        HStack(spacing: 4) {
+            Image(systemName: "arrow.down")
+                .font(.system(size: 8, weight: .semibold))
+            Text(L("下载中"))
+                .font(.system(size: 10, weight: .medium))
         }
-        .frame(width: 22, height: 22)
-        .overlay(Circle().strokeBorder(Color.white.opacity(0.30), lineWidth: 0.8))
-        .shadow(color: Theme.mint.opacity(0.24), radius: 4, x: 0, y: 2)
+        .foregroundStyle(Theme.textSecondary)
+        .padding(.horizontal, 6)
+        .frame(height: 18)
+        .background(
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(Theme.card)
+        )
         .help(L("正在下载 v%@…", version))
         .accessibilityLabel(L("正在下载 v%@…", version))
     }
 
-    /// A mint update button: a small arrow circle by default that expands into a
-    /// labelled pill on hover, matching the app's primary button colour.
+    /// Quiet update cue: a 18pt accent square with an up arrow that widens to
+    /// "Update" on hover. One easing, no glow.
     private func updateBadge(version: String) -> some View {
         Button {
             updates.installDownloadedUpdate()
         } label: {
-            HStack(spacing: 0) {
+            HStack(spacing: 4) {
+                Image(systemName: "arrow.up")
+                    .font(.system(size: 8, weight: .semibold))
                 if hoveringUpdateBadge {
-                    Text(L("完成更新"))
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(Theme.textOnMint)
+                    Text(L("更新"))
+                        .font(.system(size: 10, weight: .medium))
                         .lineLimit(1)
                         .fixedSize()
-                        .padding(.horizontal, 8)
-                } else {
-                    updateBadgeGlyph()
                 }
             }
-            .frame(height: 22)
-            .frame(minWidth: 22)
-            .background(Capsule(style: .continuous).fill(Theme.mint))
-            .overlay(
-                Capsule(style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.30), lineWidth: 0.8)
+            .foregroundStyle(Theme.textOnAccent)
+            .padding(.horizontal, hoveringUpdateBadge ? 7 : 5)
+            .frame(height: 18)
+            .background(
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(Theme.accent)
             )
-            .shadow(color: Theme.mint.opacity(hoveringUpdateBadge ? 0.34 : 0.24),
-                    radius: hoveringUpdateBadge ? 6 : 4, x: 0, y: 2)
-            .contentShape(Capsule(style: .continuous))
-            .animation(.spring(response: 0.26, dampingFraction: 0.82), value: hoveringUpdateBadge)
+            .contentShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            .animation(.easeOut(duration: 0.15), value: hoveringUpdateBadge)
         }
         .buttonStyle(.plain)
-        .onHover { hovering in
-            hoveringUpdateBadge = hovering
-        }
+        .onHover { hoveringUpdateBadge = $0 }
         .help(L("有新版本 v%@，点击安装", version))
         .accessibilityLabel(L("有新版本 v%@，点击安装", version))
     }
 
-    private func updateBadgeGlyph() -> some View {
-        ZStack {
-            Circle()
-                .strokeBorder(Theme.textOnMint.opacity(0.88), lineWidth: 1.1)
-                .frame(width: 12.5, height: 12.5)
-            Image(systemName: "arrow.up")
-                .font(.system(size: 7, weight: .heavy))
-                .foregroundStyle(Theme.textOnMint)
-        }
-        .frame(width: 22, height: 22)
-    }
-
     private func sectionLabel(_ text: String) -> some View {
         Text(L(text))
-            .font(.system(size: 10, weight: .semibold))
-            .tracking(1.4)
-            .foregroundStyle(Theme.textTertiary.opacity(0.85))
-            .padding(.leading, 11)
+            .font(.system(size: 11, weight: .medium))
+            .foregroundStyle(Theme.textTertiary)
+            .padding(.leading, 10)
     }
 
     // MARK: Navigation
@@ -190,40 +152,31 @@ struct SidebarView: View {
         return Button {
             app.navigate(to: page)
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: 9) {
                 Image(systemName: page.symbol)
-                    .font(.system(size: 13.5, weight: selected ? .semibold : .medium))
-                    .frame(width: 22)
-                    .foregroundStyle(selected ? Theme.mint : Theme.textSecondary)
+                    .font(.system(size: 14, weight: .regular))
+                    .frame(width: 20)
+                    .foregroundStyle(selected ? Theme.textPrimary : Theme.textSecondary)
                 Text(L(page.title))
-                    .font(.system(size: 13, weight: selected ? .semibold : .medium))
+                    .font(.system(size: 13, weight: selected ? .medium : .regular))
                     .foregroundStyle(selected ? Theme.textPrimary : Theme.textSecondary)
                 Spacer(minLength: 4)
                 if page == .smartScan, app.phase == .results,
                    let found = app.scanResult?.totalBytesFound, found > 0 {
-                    TagBadge(text: Format.bytes(found), tone: .mint)
+                    Text(Format.bytes(found))
+                        .font(Theme.monoFont(10.5))
+                        .foregroundStyle(Theme.textTertiary)
                 }
             }
-            .padding(.horizontal, 11)
-            .frame(height: 38)
+            .padding(.horizontal, 10)
+            .frame(height: 34)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(selected ? Theme.cardElevated
-                          : (hovered ? Theme.card.opacity(0.55) : Color.clear))
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(selected ? Theme.cardElevated : (hovered ? Theme.subtleFill : Color.clear))
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(selected ? Theme.strokeStrong : Color.clear, lineWidth: 1)
-            )
-            .overlay(alignment: .leading) {
-                if selected {
-                    Capsule()
-                        .fill(Theme.gradient(.mint))
-                        .frame(width: 3, height: 17)
-                        .offset(x: -1)
-                }
-            }
             .contentShape(Rectangle())
+            .animation(.easeOut(duration: 0.15), value: selected)
+            .animation(.easeOut(duration: 0.15), value: hovered)
         }
         .buttonStyle(.plain)
         .onHover { isHovering in
@@ -231,67 +184,67 @@ struct SidebarView: View {
         }
     }
 
-    // MARK: Bottom cards
+    // MARK: Bottom
 
     private var storageCard: some View {
         Button {
             app.navigate(to: .overview)
         } label: {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 7) {
                 HStack(spacing: 6) {
-                    Image(systemName: "internaldrive.fill")
-                        .font(.system(size: 10.5))
+                    Image(systemName: "internaldrive")
+                        .font(.system(size: 10, weight: .regular))
                         .foregroundStyle(Theme.textTertiary)
                     Text(L("存储空间"))
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 11))
                         .foregroundStyle(Theme.textSecondary)
                     Spacer()
                     Text(L("\(Format.bytes(app.disk.freeBytes)) 可用"))
-                        .font(.system(size: 9.5, weight: .medium))
-                        .foregroundStyle(Theme.mint)
+                        .font(Theme.monoFont(10))
+                        .foregroundStyle(Theme.textSecondary)
                 }
-                StorageBar(usedFraction: app.disk.usedFraction,
-                           tone: app.disk.usedFraction > 0.88 ? .orange : .mint,
-                           height: 5)
+                CapacityRuler(fraction: app.disk.usedFraction, height: 5)
                 HStack {
                     Text(L("已用 \(Format.bytes(app.disk.usedBytes))"))
                     Spacer()
                     Text(L("共 \(Format.bytes(app.disk.totalBytes))"))
                 }
-                .font(.system(size: 9))
+                .font(Theme.monoFont(9.5))
                 .foregroundStyle(Theme.textTertiary)
             }
-            .padding(11)
+            .padding(10)
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Theme.card.opacity(0.55))
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(Theme.card)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
                     .strokeBorder(Theme.stroke, lineWidth: 1)
             )
+            .contentShape(RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous))
         }
         .buttonStyle(.plain)
+        .help(L("查看总览"))
     }
 
     private var settingsRow: some View {
         Button {
             app.navigate(to: .settings)
         } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 13, weight: .medium))
-                    .frame(width: 22)
-                    .foregroundStyle(app.page == .settings ? Theme.mint : Theme.textSecondary)
+            HStack(spacing: 9) {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 14, weight: .regular))
+                    .frame(width: 20)
+                    .foregroundStyle(app.page == .settings ? Theme.textPrimary : Theme.textSecondary)
                 Text(L("设置"))
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 13, weight: app.page == .settings ? .medium : .regular))
                     .foregroundStyle(app.page == .settings ? Theme.textPrimary : Theme.textSecondary)
                 Spacer()
             }
-            .padding(.horizontal, 11)
-            .frame(height: 36)
+            .padding(.horizontal, 10)
+            .frame(height: 34)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
                     .fill(app.page == .settings ? Theme.cardElevated : Color.clear)
             )
             .contentShape(Rectangle())

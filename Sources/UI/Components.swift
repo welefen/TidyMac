@@ -2,27 +2,8 @@ import SwiftUI
 import AppKit
 
 // MARK: - Buttons
-
-
-struct SoftButtonStyle: ButtonStyle {
-    var tone: AccentTone = .mint
-    var compact = false
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: compact ? 12 : 13.5, weight: .semibold))
-            .foregroundStyle(Theme.tint(tone))
-            .padding(.horizontal, compact ? 14 : 20)
-            .padding(.vertical, compact ? 7 : 10)
-            .background(Capsule(style: .continuous).fill(Theme.softGradient(tone)))
-            .overlay(Capsule(style: .continuous)
-                .strokeBorder(Theme.tint(tone).opacity(0.28), lineWidth: 1))
-            .shadow(color: Theme.tint(tone).opacity(configuration.isPressed ? 0.04 : 0.10),
-                    radius: compact ? 6 : 10, x: 0, y: compact ? 2 : 4)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.spring(response: 0.25, dampingFraction: 0.75), value: configuration.isPressed)
-    }
-}
+//
+// Flat, one accent, 8pt corners. No capsule gradients, glows or springs.
 
 struct PrimaryButtonStyle: ButtonStyle {
     var tone: AccentTone = .mint
@@ -30,17 +11,16 @@ struct PrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: compact ? 12.5 : 14, weight: .semibold))
+            .font(.system(size: compact ? 12 : 13, weight: .medium))
             .foregroundStyle(Theme.textOnAccent)
-            .padding(.horizontal, compact ? 14 : 22)
-            .padding(.vertical, compact ? 8 : 11)
-            .background(Capsule(style: .continuous).fill(Theme.gradient(tone)))
-            .overlay(Capsule(style: .continuous).strokeBorder(Color.white.opacity(0.18), lineWidth: 1))
-            .shadow(color: Theme.tint(tone).opacity(configuration.isPressed ? 0.15 : 0.30),
-                    radius: compact ? 8 : 14, x: 0, y: compact ? 3 : 6)
-            .scaleEffect(configuration.isPressed ? 0.965 : 1)
-            .opacity(configuration.isPressed ? 0.92 : 1)
-            .animation(.spring(response: 0.25, dampingFraction: 0.72), value: configuration.isPressed)
+            .padding(.horizontal, compact ? 12 : 16)
+            .frame(height: compact ? 28 : 34)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(Theme.accent)
+                    .opacity(configuration.isPressed ? 0.85 : 1)
+            )
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -50,15 +30,38 @@ struct SecondaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: compact ? 12 : 13.5, weight: .medium))
+            .font(.system(size: compact ? 12 : 13, weight: .medium))
             .foregroundStyle(Theme.textPrimary)
-            .padding(.horizontal, compact ? 12 : 18)
-            .padding(.vertical, compact ? 7 : 10)
-            .background(Capsule(style: .continuous).fill(Theme.cardElevated))
-            .overlay(Capsule(style: .continuous).strokeBorder(Theme.strokeStrong, lineWidth: 1))
-            .opacity(configuration.isPressed ? 0.75 : 1)
-            .scaleEffect(configuration.isPressed ? 0.975 : 1)
-            .animation(.spring(response: 0.25, dampingFraction: 0.75), value: configuration.isPressed)
+            .padding(.horizontal, compact ? 12 : 16)
+            .frame(height: compact ? 28 : 34)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(Theme.cardElevated)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .strokeBorder(Theme.strokeStrong, lineWidth: 1)
+            )
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+struct SoftButtonStyle: ButtonStyle {
+    var tone: AccentTone = .mint
+    var compact = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: compact ? 12 : 13, weight: .medium))
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.horizontal, compact ? 10 : 12)
+            .frame(height: compact ? 26 : 30)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(configuration.isPressed ? Theme.subtleFill : Color.clear)
+            )
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -68,29 +71,79 @@ struct GhostButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 13, weight: .medium))
-            .foregroundStyle(Theme.tint(tone))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
             .background(
-                Capsule(style: .continuous)
-                    .fill(Theme.tint(tone).opacity(configuration.isPressed ? 0.16 : 0.0001))
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(configuration.isPressed ? Theme.subtleFill : Color.clear)
             )
             .opacity(configuration.isPressed ? 0.8 : 1)
     }
 }
 
 struct CircleIconButtonStyle: ButtonStyle {
-    var size: CGFloat = 34
+    var size: CGFloat = 30
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: 12, weight: .medium))
             .foregroundStyle(Theme.textSecondary)
             .frame(width: size, height: size)
-            .background(Circle().fill(Theme.cardElevated))
-            .overlay(Circle().strokeBorder(Theme.stroke, lineWidth: 1))
-            .scaleEffect(configuration.isPressed ? 0.93 : 1)
-            .animation(.spring(response: 0.22, dampingFraction: 0.7), value: configuration.isPressed)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(configuration.isPressed ? Theme.subtleFill : Color.clear)
+            )
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Capacity ruler (signature)
+
+/// A 6pt byte ruler with a tick every 10%. Used under capacity figures and
+/// storage summaries. This is the one place a figure gets a drawn measure.
+struct CapacityRuler: View {
+    var fraction: Double
+    var height: CGFloat = 6
+    var ticks: Int = 10
+
+    private var clamped: CGFloat { CGFloat(min(1, max(0, fraction))) }
+
+    var body: some View {
+        GeometryReader { proxy in
+            VStack(alignment: .leading, spacing: 2) {
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .fill(Theme.storageTrack)
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .fill(Theme.accent)
+                        .frame(width: max(2, proxy.size.width * clamped))
+                }
+                .frame(height: height)
+                ZStack(alignment: .leading) {
+                    ForEach(0...max(2, ticks), id: \.self) { index in
+                        Rectangle()
+                            .fill(Theme.textTertiary.opacity(0.45))
+                            .frame(width: 1, height: 3)
+                            .offset(x: max(0, min(proxy.size.width - 1,
+                                                   proxy.size.width * CGFloat(index) / CGFloat(max(2, ticks)))))
+                    }
+                }
+                .frame(height: 3)
+            }
+        }
+        .frame(height: height + 5)
+        .accessibilityHidden(true)
+    }
+}
+
+struct StorageBar: View {
+    var usedFraction: Double
+    var tone: AccentTone = .mint
+    var height: CGFloat = 6
+
+    var body: some View {
+        CapacityRuler(fraction: usedFraction, height: height)
     }
 }
 
@@ -98,47 +151,42 @@ struct CircleIconButtonStyle: ButtonStyle {
 
 struct ProgressRing: View {
     var progress: Double
-    var lineWidth: CGFloat = 14
+    var lineWidth: CGFloat = 6
     var size: CGFloat = 220
     var tone: AccentTone = .mint
-    var showsGlow = true
+    var showsGlow = false
 
     var body: some View {
         ZStack {
             Circle()
                 .stroke(Theme.ringTrack,
-                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
             Circle()
                 .trim(from: 0, to: CGFloat(max(0.001, min(1, progress))))
-                .stroke(Theme.angular(tone),
-                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .stroke(Theme.accent,
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
                 .rotationEffect(.degrees(-90))
-                .shadow(color: showsGlow ? Theme.tint(tone).opacity(0.45) : .clear,
-                        radius: showsGlow ? 18 : 0)
-                .animation(.easeInOut(duration: 0.45), value: progress)
+                .animation(.easeOut(duration: 0.25), value: progress)
         }
         .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 }
 
 // MARK: - Icons / badges
 
+/// A plain, single-weight glyph. No tile, no tint.
 struct ToneIcon: View {
     let symbol: String
     var tone: AccentTone = .mint
     var size: CGFloat = 40
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
-                .fill(Theme.softGradient(tone))
-            RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
-                .strokeBorder(Theme.tint(tone).opacity(0.18), lineWidth: 1)
-            Image(systemName: symbol)
-                .font(.system(size: size * 0.42, weight: .semibold))
-                .foregroundStyle(Theme.tint(tone))
-        }
-        .frame(width: size, height: size)
+        Image(systemName: symbol)
+            .font(.system(size: min(18, max(13, size * 0.46)), weight: .regular))
+            .foregroundStyle(Theme.textSecondary)
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
     }
 }
 
@@ -156,32 +204,30 @@ struct SafetyBadge: View {
 
     private var color: Color {
         switch safety {
-        case .safe: return Theme.mint
-        case .caution: return Theme.orange
-        case .risky: return Theme.red
+        case .safe: return Theme.textTertiary
+        case .caution: return Theme.caution
+        case .risky: return Theme.negative
         }
     }
 
     private var symbol: String {
         switch safety {
-        case .safe: return "checkmark.shield.fill"
-        case .caution: return "exclamationmark.triangle.fill"
-        case .risky: return "exclamationmark.octagon.fill"
+        case .safe: return "checkmark.shield"
+        case .caution: return "exclamationmark.triangle"
+        case .risky: return "exclamationmark.octagon"
         }
     }
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: symbol).font(.system(size: compact ? 8 : 9, weight: .bold))
+            Image(systemName: symbol)
+                .font(.system(size: 10, weight: .regular))
             if !compact {
-                Text(L(label)).font(.system(size: 10.5, weight: .semibold))
+                Text(L(label))
+                    .font(.system(size: 11, weight: .regular))
             }
         }
         .foregroundStyle(color)
-        .padding(.horizontal, compact ? 5 : 7)
-        .padding(.vertical, compact ? 2 : 4)
-        .background(Capsule().fill(color.opacity(0.12)))
-        .overlay(Capsule().strokeBorder(color.opacity(0.18), lineWidth: 0.5))
     }
 }
 
@@ -192,14 +238,8 @@ struct TagBadge: View {
 
     var body: some View {
         Text(L(text))
-            .font(.system(size: 10.5, weight: .semibold))
-            .foregroundStyle(filled ? Theme.textOnAccent : Theme.tint(tone))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                Capsule().fill(filled ? AnyShapeStyle(Theme.gradient(tone))
-                                      : AnyShapeStyle(Theme.tint(tone).opacity(0.12)))
-            )
+            .font(Theme.monoFont(10.5, weight: .medium))
+            .foregroundStyle(filled ? Theme.accent : Theme.textTertiary)
     }
 }
 
@@ -211,27 +251,25 @@ struct SelectionCheck: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(isOn || isPartial
-                      ? AnyShapeStyle(Theme.gradient(tone))
-                      : AnyShapeStyle(Color.clear))
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(isOn || isPartial ? Theme.textPrimary : Color.clear)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(isOn || isPartial ? Color.clear : Theme.strokeStrong, lineWidth: 1.3)
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .strokeBorder(isOn || isPartial ? Color.clear : Theme.strokeStrong, lineWidth: 1)
                 )
             if isOn {
                 Image(systemName: "checkmark")
-                    .font(.system(size: size * 0.52, weight: .bold))
-                    .foregroundStyle(Theme.textOnAccent)
+                    .font(.system(size: size * 0.5, weight: .semibold))
+                    .foregroundStyle(Theme.background)
             } else if isPartial {
-                RoundedRectangle(cornerRadius: 1.5)
-                    .fill(Theme.textOnAccent)
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(Theme.background)
                     .frame(width: size * 0.42, height: 2)
             }
         }
         .frame(width: size, height: size)
-        .animation(.spring(response: 0.24, dampingFraction: 0.7), value: isOn)
-        .animation(.spring(response: 0.24, dampingFraction: 0.7), value: isPartial)
+        .animation(.easeOut(duration: 0.12), value: isOn)
+        .animation(.easeOut(duration: 0.12), value: isPartial)
     }
 }
 
@@ -250,7 +288,7 @@ struct PageHeader<Trailing: View>: View {
 
     var body: some View {
         HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(L(title))
                     .font(Theme.titleFont)
                     .foregroundStyle(Theme.textPrimary)
@@ -278,19 +316,19 @@ struct SectionHeader: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(L(title))
-                .font(.system(size: 15, weight: .semibold))
+                .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
-            if let count {
-                Text(Format.itemCount(count))
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(Theme.textTertiary)
-            }
             if let subtitle {
                 Text(L(subtitle))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
             }
             Spacer()
+            if let count {
+                Text(Format.itemCount(count))
+                    .font(Theme.monoFont(11))
+                    .foregroundStyle(Theme.textTertiary)
+            }
         }
     }
 }
@@ -302,7 +340,7 @@ struct SearchField: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 12, weight: .regular))
                 .foregroundStyle(Theme.textTertiary)
             TextField(L(placeholder), text: $text)
                 .textFieldStyle(.plain)
@@ -312,19 +350,18 @@ struct SearchField: View {
                 Button {
                     text = ""
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 12))
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 12)
-        .frame(height: 36)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.field))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Theme.stroke, lineWidth: 1)
+        .padding(.horizontal, 10)
+        .frame(height: 32)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                .fill(Theme.field)
         )
     }
 }
@@ -333,60 +370,33 @@ struct FilterPill: View {
     let title: String
     var isSelected: Bool
     var tone: AccentTone = .mint
-    /// A softer selected state: tinted fill + tinted text instead of a saturated
-    /// gradient. Used by low-density controls such as the appearance picker.
     var softSelection = false
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Text(L(title))
-                .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
-                .foregroundStyle(isSelected
-                                 ? (softSelection ? Theme.tint(tone) : Theme.textOnAccent)
-                                 : Theme.textSecondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(isSelected ? Theme.textPrimary : Theme.textSecondary)
+                .padding(.horizontal, 10)
+                .frame(height: 28)
                 .background(
-                    Capsule(style: .continuous)
-                        .fill(isSelected
-                              ? (softSelection
-                                 ? AnyShapeStyle(Theme.tint(tone).opacity(0.13))
-                                 : AnyShapeStyle(Theme.gradient(tone)))
-                              : AnyShapeStyle(Theme.cardElevated))
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(isSelected ? Theme.cardElevated : Color.clear)
                 )
                 .overlay(
-                    Capsule(style: .continuous)
-                        .strokeBorder(isSelected
-                                      ? (softSelection ? Theme.tint(tone).opacity(0.30) : Color.clear)
-                                      : Theme.stroke,
-                                      lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(isSelected ? Theme.strokeStrong : Color.clear, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
+        .animation(.easeOut(duration: 0.15), value: isSelected)
     }
 }
 
-struct StorageBar: View {
-    var usedFraction: Double
-    var tone: AccentTone = .mint
-    var height: CGFloat = 6
+// MARK: - Data figures
 
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule().fill(Theme.storageTrack)
-                Capsule()
-                    .fill(Theme.gradient(tone))
-                    .frame(width: max(4, proxy.size.width * min(1, max(0, usedFraction))))
-            }
-        }
-        .frame(height: height)
-    }
-}
-
-// MARK: - Rows / tiles
-
+/// A stat is its number, its unit and its label. No icon, no card, no colour.
 struct StatTile: View {
     let title: String
     let value: String
@@ -396,33 +406,27 @@ struct StatTile: View {
     var caption: String? = nil
 
     var body: some View {
-        HStack(alignment: .top, spacing: 13) {
-            ToneIcon(symbol: symbol, tone: tone, size: 38)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(L(title))
-                    .font(.system(size: 11.5, weight: .medium))
-                    .foregroundStyle(Theme.textSecondary)
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text(L(value))
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(Theme.textPrimary)
-                    if let unit {
-                        Text(L(unit))
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(Theme.textTertiary)
-                    }
-                }
-                if let caption {
-                    Text(L(caption))
-                        .font(.system(size: 10.5))
+        VStack(alignment: .leading, spacing: 4) {
+            Text(L(title))
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textTertiary)
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(L(value))
+                    .font(Theme.figureFont(24))
+                    .foregroundStyle(Theme.textPrimary)
+                if let unit {
+                    Text(L(unit))
+                        .font(Theme.monoFont(11))
                         .foregroundStyle(Theme.textTertiary)
-                        .lineLimit(1)
                 }
             }
-            Spacer(minLength: 0)
+            if let caption {
+                Text(L(caption))
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
+                    .lineLimit(1)
+            }
         }
-        .qyPanel(padding: 15)
     }
 }
 
@@ -438,7 +442,7 @@ struct KeyValueRow: View {
                 .foregroundStyle(Theme.textTertiary)
             Spacer()
             Text(L(value))
-                .font(.system(size: 12, weight: .medium, design: mono ? .monospaced : .default))
+                .font(mono ? Theme.monoFont(12) : .system(size: 12, weight: .regular))
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
                 .truncationMode(.middle)
@@ -464,24 +468,24 @@ struct EmptyStateView: View {
     var action: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(Theme.mint.opacity(0.08))
-                    .frame(width: 84, height: 84)
+                    .strokeBorder(Theme.strokeStrong, lineWidth: 1)
+                    .frame(width: 56, height: 56)
                 Image(systemName: symbol)
-                    .font(.system(size: 30, weight: .light))
-                    .foregroundStyle(Theme.mint)
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundStyle(Theme.textTertiary)
             }
-            VStack(spacing: 5) {
+            VStack(spacing: 6) {
                 Text(L(title))
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(L(message))
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 360)
+                    .frame(maxWidth: 320)
             }
             if let actionTitle, let action {
                 Button(L(actionTitle), action: action)
@@ -490,29 +494,14 @@ struct EmptyStateView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 46)
+        .padding(.vertical, 48)
     }
 }
 
+/// Loading placeholders stay static: no looping shimmer.
 struct ShimmerModifier: ViewModifier {
-    @State private var phase: CGFloat = -1.4
-
     func body(content: Content) -> some View {
         content
-            .overlay(
-                GeometryReader { proxy in
-                    LinearGradient(colors: [.clear, Theme.shimmerHighlight, .clear],
-                                   startPoint: .leading, endPoint: .trailing)
-                        .frame(width: proxy.size.width * 0.65)
-                        .offset(x: phase * proxy.size.width)
-                }
-                .mask(content)
-            )
-            .onAppear {
-                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                    phase = 1.4
-                }
-            }
     }
 }
 
@@ -520,26 +509,25 @@ extension View {
     func shimmering() -> some View { modifier(ShimmerModifier()) }
 }
 
-// MARK: - Cards / hover
+// MARK: - Hover
 
 struct HoverLiftModifier: ViewModifier {
     @State private var hovering = false
-    var scale: CGFloat = 1.012
+    var scale: CGFloat = 1
 
     func body(content: Content) -> some View {
         content
-            .scaleEffect(hovering ? scale : 1)
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
                     .strokeBorder(hovering ? Theme.strokeStrong : Color.clear, lineWidth: 1)
             )
             .onHover { hovering = $0 }
-            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: hovering)
+            .animation(.easeOut(duration: 0.15), value: hovering)
     }
 }
 
 extension View {
-    func hoverLift(scale: CGFloat = 1.012) -> some View {
+    func hoverLift(scale: CGFloat = 1) -> some View {
         modifier(HoverLiftModifier(scale: scale))
     }
 }
