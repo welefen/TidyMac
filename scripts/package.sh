@@ -23,10 +23,19 @@ if hdiutil create \
   "$DIST/TidyMac-$VERSION.dmg" >/dev/null 2>&1; then
   echo "  DMG ready"
 else
-  # hdiutil needs privileges that are unavailable in some sandboxed/CI
-  # environments. The ZIP below is a fully functional alternative.
+  # Some sandboxed/CI environments cannot create UDZO images directly; build a
+  # hybrid HFS image first and compress it instead. The ZIP is still produced.
   rm -f "$DIST/TidyMac-$VERSION.dmg"
-  echo "  DMG creation unavailable in this environment; ZIP only."
+  HYBRID="$DIST/TidyMac-$VERSION-hybrid.dmg"
+  rm -f "$HYBRID"
+  if hdiutil makehybrid -o "$HYBRID" "$DIST/stage" -hfs -default-volume-name "TidyMac" >/dev/null 2>&1 \
+     && hdiutil convert "$HYBRID" -format UDZO -o "$DIST/TidyMac-$VERSION.dmg" >/dev/null 2>&1; then
+    rm -f "$HYBRID"
+    echo "  DMG ready (hybrid fallback)"
+  else
+    rm -f "$HYBRID" "$DIST/TidyMac-$VERSION.dmg"
+    echo "  DMG creation unavailable in this environment; ZIP only."
+  fi
 fi
 
 echo "▸ Creating ZIP"
