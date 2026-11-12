@@ -8,6 +8,8 @@ struct SystemLoadPage: View {
     @State private var expanded: Set<String> = []
     @State private var hoveredAppID: String?
     @State private var hoveredKillID: String?
+    @State private var displayedApps: [AppUsage] = []
+    @State private var isAppsListHovered = false
 
     private enum LoadSort: String, CaseIterable {
         case cpu
@@ -55,6 +57,12 @@ struct SystemLoadPage: View {
         }
         .onAppear { monitor.start(isDemo: app.isDemo) }
         .onDisappear { monitor.stop() }
+        .onChange(of: monitor.snapshot) { _ in
+            updateDisplayedApps()
+        }
+        .onChange(of: sort) { _ in
+            displayedApps = sortedApps(monitor.snapshot?.appUsages ?? [])
+        }
     }
 
     // MARK: - Overall
@@ -155,12 +163,28 @@ struct SystemLoadPage: View {
 
     // MARK: - Apps
 
-    private var sortedApps: [AppUsage] {
-        let apps = monitor.snapshot?.appUsages ?? []
+    private func sortedApps(_ apps: [AppUsage]) -> [AppUsage] {
         switch sort {
         case .cpu: return apps.sorted { $0.cpuFraction > $1.cpuFraction }
         case .memory: return apps.sorted { $0.memoryBytes > $1.memoryBytes }
         }
+    }
+
+    /// Keeps row order stable while the pointer is over the list so buttons don't move
+    /// away mid-click; values still refresh in place, and removed apps drop out.
+    private func updateDisplayedApps() {
+        guard let apps = monitor.snapshot?.appUsages else { return }
+        guard isAppsListHovered, !displayedApps.isEmpty else {
+            displayedApps = sortedApps(apps)
+            return
+        }
+        let byID = Dictionary(apps.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let existingOrder = displayedApps.map(\.id)
+        var next = existingOrder.compactMap { byID[$0] }
+        let known = Set(existingOrder)
+        let additions = apps.filter { !known.contains($0.id) }
+        next.append(contentsOf: sortedApps(additions))
+        displayedApps = next
     }
 
     private var appsCard: some View {
@@ -169,7 +193,7 @@ struct SystemLoadPage: View {
                 Text(L("各 App 占用"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
-                Text(L("%@ 个 App", "\(sortedApps.count)"))
+                Text(L("%@ 个 App", "\(displayedApps.count)"))
                     .font(Theme.monoFont(10.5))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
@@ -186,7 +210,7 @@ struct SystemLoadPage: View {
 
             tableHeader
 
-            if sortedApps.isEmpty {
+            if displayedApps.isEmpty {
                 Text(monitor.snapshot == nil ? L("正在读取…") : L("暂无可读取的 App 进程"))
                     .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textTertiary)
@@ -194,13 +218,18 @@ struct SystemLoadPage: View {
                     .padding(.vertical, 30)
             } else {
                 VStack(spacing: 0) {
-                    ForEach(sortedApps) { usage in
+                    ForEach(displayedApps) { usage in
                         appRow(usage)
                     }
+
                 }
             }
         }
         .qyPanel(padding: 0)
+        .onHover { inside in
+            isAppsListHovered = inside
+            if !inside { updateDisplayedApps() }
+        }
     }
 
     private var tableHeader: some View {
