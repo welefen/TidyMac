@@ -278,7 +278,22 @@ struct AboutPage: View {
             AboutRow(L("本机 IP"), info.ipv4, mono: true, copyText: info.ipv4),
             AboutRow(L("公网 IP"), publicIPText, mono: true, copyText: publicIP),
             AboutRow(L("MAC 地址"), info.macAddress.uppercased(), mono: true, copyText: info.macAddress.uppercased())
-        ]
+        ] + proxyRows
+    }
+
+    private var proxyRows: [AboutRow] {
+        guard info.proxy.isEnabled else { return [] }
+        var rows: [AboutRow] = []
+        if !info.proxy.summary.isEmpty {
+            rows.append(AboutRow(L("代理"), info.proxy.summary))
+        }
+        if let copyValue = info.proxy.copyValue {
+            rows.append(AboutRow(L("代理地址"), copyValue, mono: true, copyText: copyValue))
+        }
+        if let pacURL = info.proxy.pacURL {
+            rows.append(AboutRow(L("PAC 地址"), pacURL, mono: true, copyText: pacURL))
+        }
+        return rows
     }
 
     private var publicIPText: String {

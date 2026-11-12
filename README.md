@@ -52,6 +52,7 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 - Hardware: model identifier, chip, CPU core layout, memory, free/total storage, volume, display and resolution
 - System: macOS version and build, architecture, uptime
 - Network: hostname, active interface, local IPv4, MAC address (read via SystemConfiguration) and public egress IP (Cloudflare trace, ipify fallback); IP and MAC values have copy buttons
+- When a system proxy is enabled, the Network card adds proxy type (HTTP/HTTPS/SOCKS/PAC) and server address rows with copy buttons
 - Network speed test on demand: Cloudflare quick test (latency / download / upload, about 14 MB) or the macOS `networkQuality` system test
 - Hardware, system and LAN details are read locally; the public IP lookup and speed test only send requests when you load the page or press the corresponding button
 - Demo screenshot:

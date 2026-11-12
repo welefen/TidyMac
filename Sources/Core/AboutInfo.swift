@@ -51,6 +51,14 @@ enum PublicIPService {
     }
 }
 
+/// Active system proxy configuration (if any).
+struct ProxyInfo: Equatable, Sendable {
+    var isEnabled = false
+    var summary = ""
+    var copyValue: String?
+    var pacURL: String?
+}
+
 /// Static hardware, system and network facts shown on the About This Mac page.
 struct AboutInfo: Equatable, Sendable {
     var modelIdentifier: String
@@ -71,6 +79,7 @@ struct AboutInfo: Equatable, Sendable {
     var ipv4: String
     var macAddress: String
     var uptimeSeconds: TimeInterval
+    var proxy: ProxyInfo = ProxyInfo()
 
     static let empty = AboutInfo(
         modelIdentifier: "—",
@@ -134,7 +143,8 @@ struct AboutInfo: Equatable, Sendable {
             primaryInterface: network.interface,
             ipv4: network.ipv4,
             macAddress: network.macAddress,
-            uptimeSeconds: ProcessInfo.processInfo.systemUptime
+            uptimeSeconds: ProcessInfo.processInfo.systemUptime,
+            proxy: proxyInfo()
         )
     }
 
@@ -160,7 +170,10 @@ struct AboutInfo: Equatable, Sendable {
         primaryInterface: "en0",
         ipv4: "192.168.1.42",
         macAddress: "A4:83:E7:12:34:56",
-        uptimeSeconds: 3 * 86_400 + 4 * 3_600 + 12 * 60
+        uptimeSeconds: 3 * 86_400 + 4 * 3_600 + 12 * 60,
+        proxy: ProxyInfo(isEnabled: true,
+                         summary: "HTTP/HTTPS · SOCKS",
+                         copyValue: "127.0.0.1:7890 · 127.0.0.1:7891")
     )
 
     // MARK: - Network
@@ -214,6 +227,66 @@ struct AboutInfo: Equatable, Sendable {
         return NetworkSnapshot(interface: iface,
                                ipv4: addresses[iface] ?? "—",
                                macAddress: mac)
+    }
+
+    // MARK: - Proxy
+
+    private static func proxyInfo() -> ProxyInfo {
+        guard let dictionary = SCDynamicStoreCopyProxies(nil) as? [String: Any] else {
+            return ProxyInfo()
+        }
+
+        func flag(_ key: CFString) -> Bool {
+            guard let value = dictionary[key as String] else { return false }
+            if let number = value as? NSNumber { return number.boolValue }
+            if let bool = value as? Bool { return bool }
+            return false
+        }
+        func text(_ key: CFString) -> String? {
+            let value = dictionary[key as String] as? String
+            return value?.isEmpty == false ? value : nil
+        }
+        func port(_ key: CFString) -> String? {
+            guard let number = dictionary[key as String] as? NSNumber else { return nil }
+            let value = number.intValue
+            return value > 0 ? "\(value)" : nil
+        }
+
+        var groups: [(label: String, endpoint: String)] = []
+        if flag(kSCPropNetProxiesHTTPEnable), let host = text(kSCPropNetProxiesHTTPProxy) {
+            groups.append(("HTTP", host + (port(kSCPropNetProxiesHTTPPort).map { ":" + $0 } ?? "")))
+        }
+        if flag(kSCPropNetProxiesHTTPSEnable), let host = text(kSCPropNetProxiesHTTPSProxy) {
+            groups.append(("HTTPS", host + (port(kSCPropNetProxiesHTTPSPort).map { ":" + $0 } ?? "")))
+        }
+        if flag(kSCPropNetProxiesSOCKSEnable), let host = text(kSCPropNetProxiesSOCKSProxy) {
+            groups.append(("SOCKS", host + (port(kSCPropNetProxiesSOCKSPort).map { ":" + $0 } ?? "")))
+        }
+
+        var endpointOrder: [String] = []
+        var labelsByEndpoint: [String: [String]] = [:]
+        for group in groups {
+            if labelsByEndpoint[group.endpoint] == nil { endpointOrder.append(group.endpoint) }
+            labelsByEndpoint[group.endpoint, default: []].append(group.label)
+        }
+
+        let pacURL = flag(kSCPropNetProxiesProxyAutoConfigEnable)
+            ? text(kSCPropNetProxiesProxyAutoConfigURLString)
+            : nil
+        let autoDiscovery = flag(kSCPropNetProxiesProxyAutoDiscoveryEnable)
+
+        var parts = endpointOrder.map { endpoint in
+            labelsByEndpoint[endpoint]!.joined(separator: "/")
+        }
+        if pacURL != nil { parts.append("PAC") }
+        if autoDiscovery { parts.append(L("自动发现")) }
+
+        let enabled = !parts.isEmpty
+        let copyValue: String? = endpointOrder.isEmpty ? nil : endpointOrder.joined(separator: " · ")
+        return ProxyInfo(isEnabled: enabled,
+                         summary: parts.joined(separator: " · "),
+                         copyValue: copyValue,
+                         pacURL: pacURL)
     }
 
     private static func hardwareAddress(for interface: String) -> String? {
