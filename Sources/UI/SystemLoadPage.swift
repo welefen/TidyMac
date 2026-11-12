@@ -7,6 +7,7 @@ struct SystemLoadPage: View {
     @State private var sort: LoadSort = .cpu
     @State private var expanded: Set<String> = []
     @State private var hoveredAppID: String?
+    @State private var hoveredKillID: String?
 
     private enum LoadSort: String, CaseIterable {
         case cpu
@@ -231,10 +232,44 @@ struct SystemLoadPage: View {
                 Image(nsImage: AppIconStore.icon(for: usage.bundlePath))
                     .resizable()
                     .frame(width: 22, height: 22)
-                Text(app.isDemo ? usage.name : AppNameStore.name(for: usage.bundlePath, fallback: usage.name))
+                let displayName = app.isDemo ? usage.name : AppNameStore.name(for: usage.bundlePath, fallback: usage.name)
+                Text(displayName)
                     .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
+                if isHovered, let pid = killPID {
+                    Button {
+                        terminateApp(usage, pid: pid)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 9.5, weight: .semibold))
+                            .foregroundStyle(Theme.textTertiary)
+                            .frame(width: 20, height: 20)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .onHover { inside in
+                        hoveredKillID = inside ? usage.id : nil
+                    }
+                    .overlay(alignment: .top) {
+                        if hoveredKillID == usage.id {
+                            Text(L("结束「%@」", displayName))
+                                .font(.system(size: 10.5, weight: .medium))
+                                .foregroundStyle(Theme.background)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 4)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                        .fill(Theme.textPrimary.opacity(0.92))
+                                )
+                                .fixedSize()
+                                .offset(y: -26)
+                                .allowsHitTesting(false)
+                                .transition(.opacity)
+                        }
+                    }
+                    .animation(.easeOut(duration: 0.12), value: hoveredKillID)
+                }
                 Spacer(minLength: 8)
                 Text(percent(usage.cpuFraction))
                     .font(Theme.monoFont(11.5, weight: .medium))
@@ -250,22 +285,6 @@ struct SystemLoadPage: View {
                     .font(Theme.monoFont(10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(width: 64, alignment: .trailing)
-                ZStack {
-                    if isHovered, let pid = killPID {
-                        Button {
-                            terminateApp(usage, pid: pid)
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 9.5, weight: .semibold))
-                                .foregroundStyle(Theme.textTertiary)
-                                .frame(width: 22, height: 22)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .help(L("退出应用"))
-                    }
-                }
-                .frame(width: 22)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 8.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary.opacity(expandable ? 1 : 0))
@@ -315,7 +334,7 @@ struct SystemLoadPage: View {
                             Text("PID \(proc.pid)")
                                 .font(Theme.monoFont(9.5))
                                 .foregroundStyle(Theme.textTertiary.opacity(0.8))
-                                .frame(width: 64 + 14 + 22, alignment: .trailing)
+                                .frame(width: 64 + 14, alignment: .trailing)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
