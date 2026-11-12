@@ -6,6 +6,7 @@ struct SystemLoadPage: View {
     @StateObject private var monitor = SystemLoadMonitor()
     @State private var sort: LoadSort = .cpu
     @State private var expanded: Set<String> = []
+    @State private var hoveredAppID: String?
 
     private enum LoadSort: String, CaseIterable {
         case cpu
@@ -223,46 +224,69 @@ struct SystemLoadPage: View {
     private func appRow(_ usage: AppUsage) -> some View {
         let isExpanded = expanded.contains(usage.id)
         let expandable = usage.processCount > 1
+        let isHovered = hoveredAppID == usage.id
+        let killPID = killPID(for: usage)
         return VStack(spacing: 0) {
-            Button {
+            HStack(spacing: 10) {
+                Image(nsImage: AppIconStore.icon(for: usage.bundlePath))
+                    .resizable()
+                    .frame(width: 22, height: 22)
+                Text(app.isDemo ? usage.name : AppNameStore.name(for: usage.bundlePath, fallback: usage.name))
+                    .font(.system(size: 12.5, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                Text(percent(usage.cpuFraction))
+                    .font(Theme.monoFont(11.5, weight: .medium))
+                    .monospacedDigit()
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(width: 64, alignment: .trailing)
+                Text(Format.bytes(usage.memoryBytes))
+                    .font(Theme.monoFont(11.5))
+                    .monospacedDigit()
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(width: 84, alignment: .trailing)
+                Text("\(usage.processCount)")
+                    .font(Theme.monoFont(10.5))
+                    .foregroundStyle(Theme.textTertiary)
+                    .frame(width: 64, alignment: .trailing)
+                ZStack {
+                    if isHovered, let pid = killPID {
+                        Button {
+                            terminateApp(usage, pid: pid)
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 9.5, weight: .semibold))
+                                .foregroundStyle(Theme.textTertiary)
+                                .frame(width: 22, height: 22)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .help(L("退出应用"))
+                    }
+                }
+                .frame(width: 22)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 8.5, weight: .medium))
+                    .foregroundStyle(Theme.textTertiary.opacity(expandable ? 1 : 0))
+                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                    .frame(width: 14)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 9)
+            .contentShape(Rectangle())
+            .background(isHovered || isExpanded ? Theme.subtleFill : Color.clear)
+            .onTapGesture {
                 guard expandable else { return }
                 if isExpanded { expanded.remove(usage.id) } else { expanded.insert(usage.id) }
-            } label: {
-                HStack(spacing: 10) {
-                    Image(nsImage: AppIconStore.icon(for: usage.bundlePath))
-                        .resizable()
-                        .frame(width: 22, height: 22)
-                    Text(app.isDemo ? usage.name : AppNameStore.name(for: usage.bundlePath, fallback: usage.name))
-                        .font(.system(size: 12.5, weight: .medium))
-                        .foregroundStyle(Theme.textPrimary)
-                        .lineLimit(1)
-                    Spacer(minLength: 8)
-                    Text(percent(usage.cpuFraction))
-                        .font(Theme.monoFont(11.5, weight: .medium))
-                        .monospacedDigit()
-                        .foregroundStyle(Theme.textSecondary)
-                        .frame(width: 64, alignment: .trailing)
-                    Text(Format.bytes(usage.memoryBytes))
-                        .font(Theme.monoFont(11.5))
-                        .monospacedDigit()
-                        .foregroundStyle(Theme.textSecondary)
-                        .frame(width: 84, alignment: .trailing)
-                    Text("\(usage.processCount)")
-                        .font(Theme.monoFont(10.5))
-                        .foregroundStyle(Theme.textTertiary)
-                        .frame(width: 64, alignment: .trailing)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 8.5, weight: .medium))
-                        .foregroundStyle(Theme.textTertiary.opacity(expandable ? 1 : 0))
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                        .frame(width: 14)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 9)
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
-            .background(isExpanded ? Theme.subtleFill : Color.clear)
+            .onHover { inside in
+                if inside {
+                    hoveredAppID = usage.id
+                } else if hoveredAppID == usage.id {
+                    hoveredAppID = nil
+                }
+            }
 
             if isExpanded {
                 VStack(spacing: 0) {
@@ -291,7 +315,7 @@ struct SystemLoadPage: View {
                             Text("PID \(proc.pid)")
                                 .font(Theme.monoFont(9.5))
                                 .foregroundStyle(Theme.textTertiary.opacity(0.8))
-                                .frame(width: 64 + 14, alignment: .trailing)
+                                .frame(width: 64 + 14 + 22, alignment: .trailing)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
@@ -301,6 +325,34 @@ struct SystemLoadPage: View {
             }
 
             DividerLine()
+        }
+    }
+
+    /// The main process of an app we are allowed to terminate: same user, not TidyMac itself,
+    /// and not a system app under /System.
+    private func killPID(for usage: AppUsage) -> pid_t? {
+        guard !app.isDemo else { return nil }
+        guard let running = NSWorkspace.shared.runningApplications.first(where: {
+            $0.bundleURL?.path == usage.bundlePath
+        }) else { return nil }
+        guard running.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return nil }
+        guard let path = running.bundleURL?.path, !path.hasPrefix("/System/") else { return nil }
+        return running.processIdentifier
+    }
+
+    private func terminateApp(_ usage: AppUsage, pid: pid_t) {
+        guard let running = NSRunningApplication(processIdentifier: pid) else { return }
+        if !running.terminate() {
+            running.forceTerminate()
+        }
+        // Some apps (or processes without an event loop) ignore a graceful quit.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            if !running.isTerminated {
+                running.forceTerminate()
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                monitor.refreshNow()
+            }
         }
     }
 

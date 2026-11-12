@@ -103,6 +103,14 @@ final class SystemLoadMonitor: ObservableObject {
         }
     }
 
+    /// Requests an immediate sample (used after terminating an app).
+    func refreshNow() {
+        queue.async { [weak self] in
+            guard let self, self.timer != nil else { return }
+            self.sample()
+        }
+    }
+
     func stop() {
         queue.async { [weak self] in
             guard let self else { return }

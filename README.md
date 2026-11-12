@@ -42,6 +42,7 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 - Live CPU and memory overview: overall usage, core count, memory pressure and swap
 - Per-app CPU and memory, aggregated across helper processes, with expandable process details
 - Two-second refresh; only processes readable by the current user are counted
+- Hover an app to end it; system apps, TidyMac itself and other apps that cannot be terminated do not show the end button
 - Captured from demo data:
 
 <img src="screenshots/en/systemload.png" width="720" alt="System Load">
