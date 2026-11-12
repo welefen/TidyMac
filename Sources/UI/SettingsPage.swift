@@ -10,10 +10,8 @@ struct SettingsPage: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 20) {
-                PageHeader(title: "设置", subtitle: "清理偏好、排除项与安全策略") {
-                    TagBadge(text: "v\(updates.currentVersion)", tone: .mint)
-                }
+            VStack(alignment: .leading, spacing: 18) {
+                PageHeader(title: "设置", subtitle: "清理偏好、排除项与安全策略")
 
                 appearanceSection
                 languageSection
@@ -28,7 +26,7 @@ struct SettingsPage: View {
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 4)
+                    .padding(.top, 6)
                     .padding(.bottom, 12)
             }
             .padding(.horizontal, Theme.pagePadding)
@@ -47,22 +45,18 @@ struct SettingsPage: View {
     // MARK: - Appearance
 
     private var appearanceSection: some View {
-        settingsCard(title: "外观", symbol: "circle.lefthalf.filled", tone: .blue) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    ForEach(AppAppearance.allCases) { option in
-                        FilterPill(title: option.title,
-                                   isSelected: settings.appearance == option,
-                                   tone: .blue,
-                                   softSelection: true) {
-                            settings.appearance = option
-                        }
+        settingsCard(title: "外观") {
+            HStack(alignment: .center, spacing: 10) {
+                ForEach(AppAppearance.allCases) { option in
+                    FilterPill(title: option.title,
+                               isSelected: settings.appearance == option) {
+                        settings.appearance = option
                     }
-                    Spacer(minLength: 8)
-                    Text(L("跟随系统时会自动随 macOS 深色/浅色外观切换"))
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(Theme.textTertiary)
                 }
+                Spacer(minLength: 12)
+                Text(L("跟随系统时会自动随 macOS 深色/浅色外观切换"))
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(Theme.textTertiary)
             }
         }
     }
@@ -70,20 +64,18 @@ struct SettingsPage: View {
     // MARK: - Language
 
     private var languageSection: some View {
-        settingsCard(title: L("语言"), symbol: "globe", tone: .teal) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
+        settingsCard(title: "语言") {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .center, spacing: 10) {
                     ForEach(AppLanguage.allCases) { option in
                         FilterPill(title: option.title,
-                                   isSelected: settings.language == option,
-                                   tone: .teal,
-                                   softSelection: true) {
+                                   isSelected: settings.language == option) {
                             guard settings.language != option else { return }
                             settings.applyLanguage(option)
                             restartForLanguageChange()
                         }
                     }
-                    Spacer(minLength: 8)
+                    Spacer(minLength: 12)
                     Text(L("跟随系统时使用 macOS 首选语言；不支持的语言会自动使用英文。"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(Theme.textTertiary)
@@ -111,31 +103,29 @@ struct SettingsPage: View {
     // MARK: - Updates
 
     private var updatesSection: some View {
-        settingsCard(title: L("更新"), symbol: "arrow.down.circle", tone: .blue) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("TidyMac \(updates.currentVersion)")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(updates.statusText)
-                            .font(.system(size: 11.5))
-                            .foregroundStyle(updateStatusColor)
-                            .fixedSize(horizontal: false, vertical: true)
+        settingsCard(title: "更新") {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("TidyMac \(updates.currentVersion)")
+                        .font(.system(size: 12.5, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(updates.statusText)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(updateStatusColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 12)
+                if case .ready = updates.phase {
+                    Button(updateActionTitle) {
+                        updates.installDownloadedUpdate()
                     }
-                    Spacer(minLength: 12)
-                    if case .ready = updates.phase {
-                        Button(updateActionTitle) {
-                            updates.installDownloadedUpdate()
-                        }
-                        .buttonStyle(SoftButtonStyle(tone: .mint, compact: true))
-                    } else {
-                        Button(updateActionTitle) {
-                            Task { await updates.check(manual: true) }
-                        }
-                        .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
-                        .disabled(updateActionDisabled)
+                    .buttonStyle(PrimaryButtonStyle(compact: true))
+                } else {
+                    Button(updateActionTitle) {
+                        Task { await updates.check(manual: true) }
                     }
+                    .buttonStyle(SecondaryButtonStyle(compact: true))
+                    .disabled(updateActionDisabled)
                 }
             }
         }
@@ -166,43 +156,40 @@ struct SettingsPage: View {
     }
 
     private var updateStatusColor: Color {
-        if case .failed = updates.phase { return Theme.orange }
-        if case .upToDate = updates.phase { return Theme.mint }
+        if case .failed = updates.phase { return Theme.negative }
+        if case .upToDate = updates.phase { return Theme.accent }
         return Theme.textSecondary
     }
 
     // MARK: - Behavior
 
     private var behaviorSection: some View {
-        settingsCard(title: "清理行为", symbol: "slider.horizontal.3", tone: .mint) {
+        settingsCard(title: "清理行为") {
             VStack(spacing: 0) {
                 toggleRow("清理时移到废纸篓",
                           "最安全的方式，文件可在废纸篓中恢复。关闭后将永久删除。",
-                          isOn: $settings.moveToTrash,
-                          tone: .mint)
+                          isOn: $settings.moveToTrash)
                 DividerLine().padding(.vertical, 12)
                 toggleRow("清理前再次确认",
                           "在执行清理前显示确认弹窗，并列出将删除的内容大小。",
-                          isOn: $settings.confirmBeforeClean,
-                          tone: .mint)
+                          isOn: $settings.confirmBeforeClean)
                 if !settings.moveToTrash {
                     DividerLine().padding(.vertical, 12)
-                    warningRow(symbol: "exclamationmark.triangle.fill",
-                               text: "永久删除模式已开启：清理后的文件不会进入废纸篓。")
+                    warningRow(text: "永久删除模式已开启：清理后的文件不会进入废纸篓。")
                 }
             }
         }
     }
 
     private func toggleRow(_ title: String, _ subtitle: String,
-                           isOn: Binding<Bool>, tone: AccentTone) -> some View {
+                           isOn: Binding<Bool>) -> some View {
         HStack(alignment: .center, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(L(title))
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(L(subtitle))
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 11))
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -210,7 +197,7 @@ struct SettingsPage: View {
             Toggle("", isOn: isOn)
                 .labelsHidden()
                 .toggleStyle(.switch)
-                .tint(Theme.tint(tone))
+                .tint(Theme.accent)
                 .controlSize(.small)
         }
     }
@@ -218,25 +205,26 @@ struct SettingsPage: View {
     // MARK: - Exclusions
 
     private var exclusionSection: some View {
-        settingsCard(title: "排除列表", symbol: "hand.raised.fill", tone: .orange) {
-            VStack(alignment: .leading, spacing: 12) {
+        settingsCard(title: "排除列表") {
+            VStack(alignment: .leading, spacing: 10) {
                 Text(L("排除的文件或文件夹不会被智能扫描清理，也不会出现在结果中。"))
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 11))
                     .foregroundStyle(Theme.textSecondary)
 
                 if settings.excludedPaths.isEmpty {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 8) {
                         Image(systemName: "tray")
+                            .font(.system(size: 12))
                             .foregroundStyle(Theme.textTertiary)
                         Text(L("暂无排除项"))
-                            .font(.system(size: 12))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(Theme.textTertiary)
                         Spacer()
                     }
                     .padding(.vertical, 10)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 10)
                     .background(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
                             .fill(Theme.field)
                     )
                 } else {
@@ -246,14 +234,6 @@ struct SettingsPage: View {
                             exclusionRow(path)
                         }
                     }
-                    .background(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Theme.field)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .strokeBorder(Theme.stroke, lineWidth: 1)
-                    )
                 }
 
                 HStack(spacing: 10) {
@@ -262,29 +242,30 @@ struct SettingsPage: View {
                     } label: {
                         Label("添加文件夹…", systemImage: "plus")
                     }
-                    .buttonStyle(SecondaryButtonStyle(tone: .orange, compact: true))
+                    .buttonStyle(SecondaryButtonStyle(compact: true))
 
                     Button {
                         settings.addExclusion(HomePaths.url("Library/Caches").path)
                     } label: {
                         Label("添加示例：用户缓存", systemImage: "shippingbox")
                     }
-                    .buttonStyle(GhostButtonStyle(tone: .orange))
+                    .buttonStyle(GhostButtonStyle())
                     .font(.system(size: 11.5))
 
                     Spacer()
                 }
+                .padding(.top, 2)
             }
         }
     }
 
     private func exclusionRow(_ path: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: "folder.fill")
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.orange.opacity(0.9))
+        HStack(spacing: 9) {
+            Image(systemName: "folder")
+                .font(.system(size: 11, weight: .regular))
+                .foregroundStyle(Theme.textTertiary)
             Text(displayPath(path))
-                .font(.system(size: 12))
+                .font(Theme.monoFont(10.5))
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
                 .truncationMode(.middle)
@@ -293,15 +274,14 @@ struct SettingsPage: View {
                 settings.removeExclusion(path)
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: 9.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(width: 22, height: 22)
-                    .background(Circle().fill(Theme.subtleFill))
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
+        .padding(.vertical, 7)
     }
 
     private func displayPath(_ raw: String) -> String {
@@ -333,20 +313,15 @@ struct SettingsPage: View {
     // MARK: - Security
 
     private var securitySection: some View {
-        settingsCard(title: "权限与安全", symbol: "lock.shield.fill", tone: .blue) {
+        settingsCard(title: "权限与安全") {
             VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .fill((FullDiskAccess.hasAccess() ? Theme.mint : Theme.orange).opacity(0.12))
-                            .frame(width: 34, height: 34)
-                        Image(systemName: FullDiskAccess.hasAccess() ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(FullDiskAccess.hasAccess() ? Theme.mint : Theme.orange)
-                    }
-                    VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 10) {
+                    Image(systemName: FullDiskAccess.hasAccess() ? "checkmark.shield" : "exclamationmark.shield")
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(FullDiskAccess.hasAccess() ? Theme.accent : Theme.caution)
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(L(FullDiskAccess.hasAccess() ? "完全磁盘访问权限已启用" : "建议开启完全磁盘访问权限"))
-                            .font(.system(size: 12.5, weight: .semibold))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                         Text(FullDiskAccess.hasAccess()
                              ? "TidyMac 可以完整扫描缓存、邮件附件与备份。"
@@ -356,38 +331,34 @@ struct SettingsPage: View {
                     }
                     Spacer()
                     Button("打开系统设置") { FullDiskAccess.openPrivacySettings() }
-                        .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
+                        .buttonStyle(SecondaryButtonStyle(compact: true))
                 }
 
-                HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Theme.blue)
-                        .padding(.top, 1)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(L("列表中找不到 TidyMac？"))
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Theme.textSecondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L("列表中找不到 TidyMac？"))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                    HStack(alignment: .top, spacing: 8) {
                         Text(L("点击列表下方的 +，选择 TidyMac.app；或点击「在 Finder 中显示」，把应用拖入列表。开启开关后请重新启动 TidyMac。"))
                             .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
                             .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 8)
+                        Button("在 Finder 中显示") { AppPermissionActions.revealApplicationInFinder() }
+                            .buttonStyle(SecondaryButtonStyle(compact: true))
                     }
-                    Spacer(minLength: 8)
-                    Button("在 Finder 中显示") { AppPermissionActions.revealApplicationInFinder() }
-                        .buttonStyle(SecondaryButtonStyle(tone: .blue, compact: true))
                 }
-                .padding(10)
+                .padding(11)
                 .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
                         .fill(Theme.field)
                 )
 
                 DividerLine()
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Label("安全保护始终开启", systemImage: "lock.fill")
-                        .font(.system(size: 11.5, weight: .semibold))
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(L("安全保护始终开启"))
+                        .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                     Text(L("系统目录、钥匙串、照片图库、邮件数据库、iCloud 文档等路径受到硬性保护，任何清理操作都会先通过安全策略校验。"))
                         .font(.system(size: 11))
@@ -398,9 +369,9 @@ struct SettingsPage: View {
                 DividerLine()
 
                 HStack {
-                    VStack(alignment: .leading, spacing: 3) {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(L("在卸载器中显示系统应用"))
-                            .font(.system(size: 12.5, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                         Text(L("仅用于查看系统组件占用；受 SIP 保护的系统应用无法卸载。"))
                             .font(.system(size: 11))
@@ -410,7 +381,7 @@ struct SettingsPage: View {
                     Toggle("", isOn: $settings.showSystemApps)
                         .labelsHidden()
                         .toggleStyle(.switch)
-                        .tint(Theme.mint)
+                        .tint(Theme.accent)
                         .controlSize(.small)
                 }
             }
@@ -420,11 +391,16 @@ struct SettingsPage: View {
     // MARK: - Statistics
 
     private var statisticsSection: some View {
-        settingsCard(title: "使用统计", symbol: "chart.bar.fill", tone: .purple) {
-            HStack(spacing: 12) {
-                statistic("累计释放", Format.bytes(settings.totalFreedBytes), "externaldrive.fill", .mint)
-                statistic("清理次数", L("\(settings.cleanCount) 次"), "sparkles", .blue)
-                statistic("上次清理", Format.date(settings.lastCleanDate), "clock.fill", .purple)
+        settingsCard(title: "使用统计") {
+            HStack(alignment: .top, spacing: 0) {
+                statistic("累计释放", Format.bytes(settings.totalFreedBytes))
+                Rectangle().fill(Theme.stroke).frame(width: 1, height: 34)
+                    .padding(.horizontal, 26)
+                statistic("清理次数", L("\(settings.cleanCount) 次"))
+                Rectangle().fill(Theme.stroke).frame(width: 1, height: 34)
+                    .padding(.horizontal, 26)
+                statistic("上次清理", Format.date(settings.lastCleanDate))
+                Spacer(minLength: 0)
             }
             HStack {
                 Text(L("统计数据仅保存在本机。"))
@@ -432,93 +408,77 @@ struct SettingsPage: View {
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
                 Button("重置统计") { showResetAlert = true }
-                    .buttonStyle(GhostButtonStyle(tone: .red))
+                    .buttonStyle(GhostButtonStyle())
                     .font(.system(size: 11.5))
             }
+            .padding(.top, 2)
         }
     }
 
-    private func statistic(_ title: String, _ value: String, _ symbol: String, _ tone: AccentTone) -> some View {
-        HStack(spacing: 10) {
-            ToneIcon(symbol: symbol, tone: tone, size: 30)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(L(title))
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(Theme.textTertiary)
-                Text(L(value))
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(Theme.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-            Spacer(minLength: 0)
+    private func statistic(_ title: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(L(title))
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textTertiary)
+            Text(L(value))
+                .font(Theme.monoFont(14, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
-        .padding(11)
-        .background(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(Theme.field)
-        )
-        .frame(maxWidth: .infinity)
+        .frame(minWidth: 120, alignment: .leading)
     }
 
     // MARK: - About
 
     private var aboutSection: some View {
-        HStack(spacing: 14) {
-            AppBrandIcon(size: 46)
+        HStack(spacing: 13) {
+            AppBrandIcon(size: 42)
             VStack(alignment: .leading, spacing: 3) {
                 Text("TidyMac")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(L("轻净如羽，焕然一新  ·  v%@  ·  macOS 14+", updates.currentVersion))
-                    .font(.system(size: 11))
+                    .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
             }
             Spacer()
             Text("Made for macOS")
-                .font(.system(size: 10, weight: .medium))
+                .font(.system(size: 10))
                 .foregroundStyle(Theme.textTertiary)
-                .padding(.horizontal, 9)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(Theme.cardElevated))
         }
         .qyPanel(padding: 16)
     }
 
     // MARK: - Cards
 
-    private func settingsCard<Content: View>(title: String, symbol: String, tone: AccentTone,
+    private func settingsCard<Content: View>(title: String,
                                              @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 9) {
-                ToneIcon(symbol: symbol, tone: tone, size: 27)
-                Text(L(title))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer()
-            }
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L(title))
+                .font(.system(size: 12.5, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
             content()
         }
         .qyPanel(padding: 18)
     }
 
-    private func warningRow(symbol: String, text: String) -> some View {
+    private func warningRow(text: String) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: symbol)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(Theme.orange)
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 11, weight: .regular))
+                .foregroundStyle(Theme.caution)
             Text(L(text))
-                .font(.system(size: 11.5))
-                .foregroundStyle(Theme.orange)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.caution)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 11)
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(Theme.orange.opacity(0.08))
+            RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                .fill(Theme.cardElevated)
         )
     }
 }

@@ -30,27 +30,17 @@ enum AppSortOption: String, CaseIterable, Identifiable {
 // MARK: - Leftover styling
 
 extension LeftoverKind {
-    var tone: AccentTone {
-        switch self {
-        case .applicationSupport: return .orange
-        case .caches: return .blue
-        case .preferences: return .purple
-        case .savedState: return .teal
-        case .logs: return .yellow
-        case .containers: return .pink
-        case .other: return .mint
-        }
-    }
+    var tone: AccentTone { .mint }
 
     var symbol: String {
         switch self {
-        case .applicationSupport: return "folder.fill"
-        case .caches: return "shippingbox.fill"
+        case .applicationSupport: return "folder"
+        case .caches: return "shippingbox"
         case .preferences: return "slider.horizontal.3"
         case .savedState: return "macwindow"
-        case .logs: return "doc.text.fill"
-        case .containers: return "cube.fill"
-        case .other: return "archivebox.fill"
+        case .logs: return "doc.text"
+        case .containers: return "cube"
+        case .other: return "archivebox"
         }
     }
 }
@@ -65,10 +55,7 @@ func relativeUsageText(_ date: Date?) -> String {
 
 /// Deterministic accent used for demo apps that have no bundled icon on disk.
 func appAccentTone(for name: String) -> AccentTone {
-    let palette: [AccentTone] = [.mint, .blue, .purple, .orange, .pink, .teal, .yellow, .red]
-    guard !name.isEmpty else { return palette[0] }
-    let sum = name.unicodeScalars.reduce(0) { $0 + Int($1.value) }
-    return palette[sum % palette.count]
+    .mint
 }
 
 // MARK: - App icon / glyph
@@ -78,18 +65,17 @@ struct AppGlyphView: View {
     var size: CGFloat = 44
 
     var body: some View {
-        let tone = appAccentTone(for: app.name)
         if FileManager.default.fileExists(atPath: app.url.path) {
             AppIconView(path: app.url.path, size: size)
         } else {
             ZStack {
                 RoundedRectangle(cornerRadius: size * 0.24, style: .continuous)
-                    .fill(Theme.softGradient(tone))
+                    .fill(Theme.field)
                 RoundedRectangle(cornerRadius: size * 0.24, style: .continuous)
-                    .strokeBorder(Theme.tint(tone).opacity(0.24), lineWidth: 1)
+                    .strokeBorder(Theme.stroke, lineWidth: 1)
                 Text(String(app.name.prefix(1)))
-                    .font(.system(size: size * 0.44, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.tint(tone))
+                    .font(.system(size: size * 0.4, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
             }
             .frame(width: size, height: size)
         }
@@ -104,21 +90,20 @@ struct DangerButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: compact ? 12.5 : 13.5, weight: .semibold))
-            .foregroundStyle(Theme.tint(tone))
-            .padding(.horizontal, compact ? 14 : 18)
-            .padding(.vertical, compact ? 8 : 10)
+            .font(.system(size: compact ? 12 : 13, weight: .medium))
+            .foregroundStyle(Theme.negative)
+            .padding(.horizontal, compact ? 12 : 16)
+            .frame(height: compact ? 28 : 34)
             .background(
-                Capsule(style: .continuous)
-                    .fill(Theme.tint(tone).opacity(configuration.isPressed ? 0.26 : 0.13))
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(configuration.isPressed ? Theme.subtleFill : Theme.cardElevated)
             )
             .overlay(
-                Capsule(style: .continuous)
-                    .strokeBorder(Theme.tint(tone).opacity(0.35), lineWidth: 1)
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .strokeBorder(Theme.negative.opacity(0.35), lineWidth: 1)
             )
-            .opacity(configuration.isPressed ? 0.9 : 1)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.spring(response: 0.25, dampingFraction: 0.75), value: configuration.isPressed)
+            .opacity(configuration.isPressed ? 0.8 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -135,28 +120,28 @@ struct AppListRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 11) {
-                AppGlyphView(app: app, size: 38)
+                AppGlyphView(app: app, size: 36)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(L(app.name))
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: 12.5, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
-                    HStack(spacing: 5) {
+                    HStack(spacing: 6) {
                         Text("v\(app.version)")
                         if app.isSystem {
                             HStack(spacing: 2) {
-                                Image(systemName: "lock.fill")
-                                    .font(.system(size: 7.5, weight: .bold))
+                                Image(systemName: "lock")
+                                    .font(.system(size: 8))
                                 Text(L("系统"))
-                                    .font(.system(size: 9.5, weight: .semibold))
+                                    .font(.system(size: 10))
                             }
                             .foregroundStyle(Theme.textTertiary)
                         }
                         if isRunning {
                             Text(L("运行中"))
-                                .font(.system(size: 9.5, weight: .semibold))
-                                .foregroundStyle(Theme.orange)
+                                .font(.system(size: 10))
+                                .foregroundStyle(Theme.caution)
                         }
                     }
                     .font(.system(size: 10.5))
@@ -168,35 +153,26 @@ struct AppListRow: View {
 
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(Format.bytes(app.byteCount))
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(Theme.monoFont(11.5, weight: .medium))
                         .monospacedDigit()
-                        .foregroundStyle(isSelected ? Theme.mint : Theme.textSecondary)
+                        .foregroundStyle(Theme.textSecondary)
                     Text(relativeUsageText(app.lastUsed))
-                        .font(.system(size: 9.5))
+                        .font(.system(size: 10))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
                 }
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 9)
+            .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill(isSelected ? Theme.cardElevated
-                          : (hovering ? Theme.card.opacity(0.75) : Color.clear))
+                RoundedRectangle(cornerRadius: Theme.cornerSmall + 2, style: .continuous)
+                    .fill(isSelected ? Theme.cardElevated : (hovering ? Theme.subtleFill : Color.clear))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.cornerSmall + 2, style: .continuous)
                     .strokeBorder(isSelected ? Theme.strokeStrong : Color.clear, lineWidth: 1)
             )
-            .overlay(alignment: .leading) {
-                if isSelected {
-                    Capsule()
-                        .fill(Theme.gradient(.mint))
-                        .frame(width: 3, height: 26)
-                        .offset(x: -1)
-                }
-            }
-            .contentShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
@@ -206,24 +182,24 @@ struct AppListRow: View {
 struct AppListSkeletonRow: View {
     var body: some View {
         HStack(spacing: 11) {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Theme.cardElevated)
-                .frame(width: 38, height: 38)
+                .frame(width: 36, height: 36)
             VStack(alignment: .leading, spacing: 6) {
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
                     .fill(Theme.cardElevated)
-                    .frame(width: 118, height: 10)
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .frame(width: 118, height: 9)
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
                     .fill(Theme.cardElevated.opacity(0.65))
                     .frame(width: 72, height: 8)
             }
             Spacer(minLength: 6)
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .fill(Theme.cardElevated.opacity(0.8))
-                .frame(width: 46, height: 10)
+                .frame(width: 46, height: 9)
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 9)
+        .padding(.vertical, 8)
         .shimmering()
     }
 }
@@ -237,30 +213,30 @@ struct LeftoverRowView: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 10) {
-                SelectionCheck(isOn: item.isSelected, tone: .mint, size: 18)
-                ToneIcon(symbol: item.kind.symbol, tone: item.kind.tone, size: 26)
+                SelectionCheck(isOn: item.isSelected, size: 17)
+                ToneIcon(symbol: item.kind.symbol, tone: item.kind.tone, size: 16)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(L(item.name))
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(HomePaths.relativePath(item.url))
-                        .font(.system(size: 9.5, design: .monospaced))
+                        .font(Theme.monoFont(9.5))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }
                 Spacer(minLength: 8)
                 Text(Format.bytes(item.byteCount))
-                    .font(.system(size: 11.5, weight: .semibold))
+                    .font(Theme.monoFont(11, weight: .medium))
                     .monospacedDigit()
                     .foregroundStyle(item.isSelected ? Theme.textSecondary : Theme.textTertiary)
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
             .background(
-                RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(hovering ? Theme.cardHover : Color.clear)
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(hovering ? Theme.subtleFill : Color.clear)
             )
             .contentShape(Rectangle())
         }
@@ -279,11 +255,11 @@ struct MiniMetric: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(L(title))
-                .font(.system(size: 9.5, weight: .medium))
+                .font(.system(size: 11))
                 .foregroundStyle(Theme.textTertiary)
             Text(L(value))
-                .font(.system(size: 12.5, weight: .semibold,
-                              design: mono ? .monospaced : .rounded))
+                .font(mono ? Theme.monoFont(12.5, weight: .medium)
+                           : .system(size: 12.5, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -304,13 +280,13 @@ struct MetricDivider: View {
 struct RunningAppWarning: View {
     var body: some View {
         HStack(spacing: 9) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Theme.orange)
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.caution)
             VStack(alignment: .leading, spacing: 1) {
                 Text(L("应用当前正在运行"))
-                    .font(.system(size: 11.5, weight: .semibold))
-                    .foregroundStyle(Theme.orange)
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundStyle(Theme.caution)
                 Text(L("建议先退出应用后再卸载，以释放被占用的文件"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textSecondary)
@@ -319,14 +295,19 @@ struct RunningAppWarning: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 9)
+        .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Theme.orange.opacity(0.10))
+            RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                .fill(Theme.card)
         )
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(Theme.caution)
+                .frame(width: 2)
+        }
         .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Theme.orange.opacity(0.22), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                .strokeBorder(Theme.stroke, lineWidth: 1)
         )
     }
 }
@@ -337,7 +318,6 @@ struct UninstallResultBanner: View {
     var dismiss: () -> Void
 
     private var hasFailure: Bool { !report.failures.isEmpty }
-    private var tint: Color { hasFailure ? Theme.orange : Theme.mint }
 
     private var message: String {
         if hasFailure {
@@ -349,11 +329,12 @@ struct UninstallResultBanner: View {
 
     var body: some View {
         HStack(spacing: 11) {
-            ToneIcon(symbol: hasFailure ? "exclamationmark.triangle.fill" : "checkmark.circle.fill",
-                     tone: hasFailure ? .orange : .mint, size: 32)
+            Image(systemName: hasFailure ? "exclamationmark.triangle" : "checkmark.circle")
+                .font(.system(size: 15, weight: .regular))
+                .foregroundStyle(hasFailure ? Theme.caution : Theme.accent)
             VStack(alignment: .leading, spacing: 2) {
                 Text(hasFailure ? "部分项目未能移除" : L("已卸载 \(appName)"))
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(L(message))
                     .font(.system(size: 11))
@@ -363,22 +344,22 @@ struct UninstallResultBanner: View {
             Spacer(minLength: 8)
             Button(action: dismiss) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(width: 22, height: 22)
-                    .background(Circle().fill(Theme.field))
+                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Theme.field))
             }
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 13)
         .padding(.vertical, 9)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(tint.opacity(0.09))
+            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                .fill(Theme.card)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(tint.opacity(0.22), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                .strokeBorder(Theme.stroke, lineWidth: 1)
         )
     }
 }

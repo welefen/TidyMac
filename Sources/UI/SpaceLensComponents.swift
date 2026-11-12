@@ -4,10 +4,10 @@ import AppKit
 // MARK: - Palette
 
 enum SpaceLensPalette {
-    static let tones: [AccentTone] = [.mint, .blue, .purple, .orange, .pink, .teal, .yellow, .blue]
-
-    static func tone(at index: Int) -> AccentTone {
-        tones[abs(index) % tones.count]
+    /// One accent hue, stepped down for quieter cells.
+    static func opacity(at index: Int) -> Double {
+        let steps: [Double] = [0.92, 0.72, 0.58, 0.46, 0.36, 0.28, 0.22, 0.18]
+        return steps[abs(index) % steps.count]
     }
 }
 
@@ -121,14 +121,15 @@ struct SpaceTreemapView: View {
             let rects = SquarifiedTreemap.layout(values: sizedChildren.map(\.byteCount),
                                                  in: CGRect(origin: .zero, size: proxy.size))
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Theme.field.opacity(0.5))
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(Theme.field.opacity(0.4))
                 ForEach(sizedChildren.indices, id: \.self) { index in
                     if index < rects.count {
                         let padded = Self.paddedRect(rects[index])
                         TreemapCellView(node: sizedChildren[index],
                                         size: padded.size,
-                                        tone: SpaceLensPalette.tone(at: index),
+                                        accentOpacity: SpaceLensPalette.opacity(at: index),
+                                        isLeading: index == 0,
                                         isEnterable: sizedChildren[index].canDrillInLens) {
                             onEnter(sizedChildren[index])
                         }
@@ -150,29 +151,37 @@ struct SpaceTreemapView: View {
 private struct TreemapCellView: View {
     let node: SpaceNode
     let size: CGSize
-    let tone: AccentTone
+    let accentOpacity: Double
+    let isLeading: Bool
     let isEnterable: Bool
     var onEnter: () -> Void
 
     @State private var hovering = false
 
+    private var fill: Color {
+        isLeading
+            ? Theme.accent.opacity(hovering ? min(1, accentOpacity + 0.06) : accentOpacity)
+            : Theme.field.opacity(hovering ? 0.85 : 0.5)
+    }
+
+    private var labelColor: Color {
+        isLeading ? Theme.textOnAccent : Theme.textPrimary
+    }
+
+    private var secondaryLabelColor: Color {
+        isLeading ? Theme.textOnAccent.opacity(0.75) : Theme.textTertiary
+    }
+
     var body: some View {
         ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: min(9, min(size.width, size.height) * 0.18),
+            RoundedRectangle(cornerRadius: min(7, min(size.width, size.height) * 0.16),
                              style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [Theme.tint(tone).opacity(hovering ? 0.56 : 0.36),
-                                 Theme.tint(tone).opacity(hovering ? 0.34 : 0.18)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            RoundedRectangle(cornerRadius: min(9, min(size.width, size.height) * 0.18),
+                .fill(fill)
+            RoundedRectangle(cornerRadius: min(7, min(size.width, size.height) * 0.16),
                              style: .continuous)
-                .strokeBorder(Theme.tint(tone).opacity(hovering ? 0.75 : 0.38), lineWidth: 1)
+                .strokeBorder(isLeading ? Color.clear : Theme.stroke, lineWidth: 1)
             label
-                .padding(size.width >= 130 ? 9 : 6)
+                .padding(size.width >= 130 ? 8 : 6)
         }
         .frame(width: size.width, height: size.height)
         .contentShape(Rectangle())
@@ -180,7 +189,7 @@ private struct TreemapCellView: View {
         .onTapGesture {
             if isEnterable { onEnter() }
         }
-        .animation(.easeInOut(duration: 0.16), value: hovering)
+        .animation(.easeOut(duration: 0.14), value: hovering)
     }
 
     @ViewBuilder
@@ -188,21 +197,20 @@ private struct TreemapCellView: View {
         if size.width >= 130 && size.height >= 62 {
             VStack(alignment: .leading, spacing: 3) {
                 Text(L(node.name))
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(labelColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 Text(Format.bytes(node.byteCount))
-                    .font(.system(size: 10.5, weight: .medium))
-                    .monospacedDigit()
-                    .foregroundStyle(Theme.textPrimary.opacity(0.72))
+                    .font(Theme.monoFont(10))
+                    .foregroundStyle(secondaryLabelColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
         } else if size.width >= 58 && size.height >= 30 {
             Text(L(node.name))
-                .font(.system(size: 10.5, weight: .semibold))
-                .foregroundStyle(Theme.textPrimary)
+                .font(.system(size: 10.5, weight: .medium))
+                .foregroundStyle(labelColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.62)
         } else {
@@ -219,20 +227,20 @@ struct SpaceLensBreadcrumb: View {
 
     var body: some View {
         HStack(spacing: 5) {
-            Image(systemName: "house.fill")
+            Image(systemName: "house")
                 .font(.system(size: 9.5))
                 .foregroundStyle(Theme.textTertiary)
             ForEach(Array(path.enumerated()), id: \.offset) { index, node in
                 if index > 0 {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 8, weight: .regular))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Button {
                     onSelect(index)
                 } label: {
                     Text(L(node.name))
-                        .font(.system(size: 12, weight: index == path.count - 1 ? .semibold : .medium))
+                        .font(.system(size: 12, weight: index == path.count - 1 ? .medium : .regular))
                         .foregroundStyle(index == path.count - 1 ? Theme.textPrimary : Theme.textSecondary)
                         .lineLimit(1)
                 }
@@ -240,7 +248,7 @@ struct SpaceLensBreadcrumb: View {
             }
             Spacer(minLength: 8)
         }
-        .frame(height: 26)
+        .frame(height: 24)
     }
 }
 
@@ -251,49 +259,32 @@ struct LensStatCard: View {
     let value: String
     var unit: String? = nil
     var caption: String? = nil
-    let symbol: String
-    let tone: AccentTone
 
     var body: some View {
-        HStack(spacing: 10) {
-            ToneIcon(symbol: symbol, tone: tone, size: 30)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(L(title))
-                    .font(.system(size: 9.5, weight: .medium))
-                    .foregroundStyle(Theme.textTertiary)
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text(L(value))
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(Theme.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                    if let unit {
-                        Text(L(unit))
-                            .font(.system(size: 9.5, weight: .medium))
-                            .foregroundStyle(Theme.textTertiary)
-                    }
-                }
-                if let caption {
-                    Text(L(caption))
-                        .font(.system(size: 9.5))
+        VStack(alignment: .leading, spacing: 3) {
+            Text(L(title))
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textTertiary)
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(L(value))
+                    .font(Theme.figureFont(24))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                if let unit {
+                    Text(L(unit))
+                        .font(Theme.monoFont(11))
                         .foregroundStyle(Theme.textTertiary)
-                        .lineLimit(1)
                 }
             }
-            Spacer(minLength: 0)
+            if let caption {
+                Text(L(caption))
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(Theme.textTertiary)
+                    .lineLimit(1)
+            }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 13, style: .continuous)
-                .fill(Theme.card)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 13, style: .continuous)
-                .strokeBorder(Theme.stroke, lineWidth: 1)
-        )
     }
 }
 
@@ -301,7 +292,6 @@ struct LensStatCard: View {
 
 struct SpaceRankRowView: View {
     let node: SpaceNode
-    let tone: AccentTone
     let fraction: Double
     let isLast: Bool
     let isHovered: Bool
@@ -310,13 +300,15 @@ struct SpaceRankRowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                ToneIcon(symbol: node.isDirectory ? "folder.fill" : "doc.fill",
-                         tone: tone, size: 30)
+            HStack(spacing: 11) {
+                Image(systemName: node.isDirectory ? "folder" : "doc")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(Theme.textTertiary)
+                    .frame(width: 18)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(L(node.name))
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 12.5, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(L(subtitle))
@@ -324,50 +316,50 @@ struct SpaceRankRowView: View {
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
                 }
-                .frame(width: 164, alignment: .leading)
+                .frame(width: 168, alignment: .leading)
 
-                StorageBar(usedFraction: fraction, tone: tone, height: 5)
-                    .frame(width: 128)
+                CapacityRuler(fraction: fraction, height: 5)
+                    .frame(width: 132)
 
                 Text(Format.percent(fraction))
-                    .font(.system(size: 10.5, weight: .medium))
-                    .monospacedDigit()
+                    .font(Theme.monoFont(10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(width: 38, alignment: .trailing)
 
                 Spacer(minLength: 8)
 
                 Text(Format.bytes(node.byteCount))
-                    .font(.system(size: 12, weight: .semibold))
-                    .monospacedDigit()
+                    .font(Theme.monoFont(11.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                     .frame(width: 80, alignment: .trailing)
 
                 Button(action: onReveal) {
                     Image(systemName: "folder")
-                        .font(.system(size: 10.5, weight: .semibold))
+                        .font(.system(size: 10.5, weight: .regular))
                         .foregroundStyle(Theme.textSecondary)
                         .frame(width: 24, height: 24)
-                        .background(Circle().fill(Theme.field))
-                        .overlay(Circle().strokeBorder(Theme.stroke, lineWidth: 1))
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(isHovered ? Theme.field : Color.clear)
+                        )
                 }
                 .buttonStyle(.plain)
                 .frame(width: 30)
                 .help("在 Finder 中显示")
-                .opacity(isHovered ? 1 : 0.45)
+                .opacity(isHovered ? 1 : 0)
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.system(size: 9, weight: .regular))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(width: 10)
                     .opacity(node.canDrillInLens ? (isHovered ? 1 : 0.5) : 0)
             }
             .padding(.horizontal, 14)
-            .frame(height: 46)
+            .frame(height: 44)
             .background(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
                     .fill(isHovered ? Theme.cardHover : Color.clear)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 5)
             )
             .contentShape(Rectangle())
             .onTapGesture {
@@ -376,7 +368,7 @@ struct SpaceRankRowView: View {
 
             if !isLast {
                 DividerLine()
-                    .padding(.leading, 56)
+                    .padding(.leading, 43)
                     .padding(.trailing, 14)
             }
         }
@@ -399,21 +391,19 @@ struct SpaceLensScanningView: View {
     var onCancel: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            ProgressRing(progress: max(progress, 0.03), lineWidth: 10, size: 108, tone: .mint)
-                .overlay(
-                    Text(Format.percent(progress))
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(Theme.textPrimary)
-                )
-            VStack(spacing: 4) {
+        VStack(spacing: 14) {
+            Text(Format.percent(progress))
+                .font(Theme.monoFont(44, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+            CapacityRuler(fraction: progress, height: 5)
+                .frame(width: 260)
+            VStack(spacing: 3) {
                 Text(L(status))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
+                    .font(.system(size: 12.5, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
                 Text(L("正在分析目录大小，可以随时取消"))
-                    .font(.system(size: 11))
+                    .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
             }
             Button("取消扫描", action: onCancel)

@@ -20,9 +20,9 @@ enum SpaceRootOption: String, CaseIterable, Identifiable {
 
     var symbol: String {
         switch self {
-        case .home: return "house.fill"
-        case .downloads: return "arrow.down.circle.fill"
-        case .applications: return "square.grid.2x2.fill"
+        case .home: return "house"
+        case .downloads: return "arrow.down.circle"
+        case .applications: return "square.grid.2x2"
         }
     }
 
@@ -275,19 +275,25 @@ struct SpaceLensPage: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: "folder.fill")
-                    .font(.system(size: 10.5, weight: .semibold))
+                Image(systemName: "folder")
+                    .font(.system(size: 10.5, weight: .regular))
                 Text(L(model.rootLabel))
                     .font(.system(size: 12, weight: .medium))
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.system(size: 8, weight: .medium))
             }
             .foregroundStyle(Theme.textSecondary)
-            .padding(.horizontal, 12)
-            .frame(height: 36)
-            .background(Capsule(style: .continuous).fill(Theme.cardElevated))
-            .overlay(Capsule(style: .continuous).strokeBorder(Theme.strokeStrong, lineWidth: 1))
+            .padding(.horizontal, 10)
+            .frame(height: 30)
+            .background(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(Theme.cardElevated)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(Theme.stroke, lineWidth: 1)
+            )
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -301,17 +307,11 @@ struct SpaceLensPage: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 11, weight: .medium))
                 Text(L("重新扫描"))
-                    .font(.system(size: 12, weight: .medium))
             }
-            .foregroundStyle(Theme.textSecondary)
-            .padding(.horizontal, 13)
-            .frame(height: 36)
-            .background(Capsule(style: .continuous).fill(Theme.cardElevated))
-            .overlay(Capsule(style: .continuous).strokeBorder(Theme.strokeStrong, lineWidth: 1))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SecondaryButtonStyle(compact: true))
         .disabled(model.isScanning)
         .opacity(model.isScanning ? 0.5 : 1)
     }
@@ -347,26 +347,40 @@ struct SpaceLensPage: View {
     private func statsRow(_ current: SpaceNode) -> some View {
         let total = Format.bytesParts(current.byteCount)
         let largestParts = Format.bytesParts(model.largestChild?.byteCount ?? 0)
-        return HStack(spacing: 12) {
+        return HStack(spacing: 0) {
             LensStatCard(title: "当前目录总大小",
                          value: total.number,
                          unit: total.unit,
-                         caption: current.name,
-                         symbol: "internaldrive.fill",
-                         tone: .mint)
+                         caption: current.name)
+
+            Rectangle().fill(Theme.stroke).frame(width: 1, height: 40)
+                .padding(.horizontal, 22)
+
             LensStatCard(title: "目录数量",
                          value: "\(model.directoryCount)",
                          unit: "个",
-                         caption: L("共 \(current.children.count) 个项目"),
-                         symbol: "folder.fill",
-                         tone: .blue)
+                         caption: L("共 \(current.children.count) 个项目"))
+
+            Rectangle().fill(Theme.stroke).frame(width: 1, height: 40)
+                .padding(.horizontal, 22)
+
             LensStatCard(title: "最大项目",
                          value: largestParts.number,
                          unit: largestParts.unit,
-                         caption: model.largestChild?.name ?? "—",
-                         symbol: "arrow.up.right.circle.fill",
-                         tone: .purple)
+                         caption: model.largestChild.map { L($0.name) } ?? "—")
+
+            Spacer(minLength: 0)
         }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                .fill(Theme.card)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                .strokeBorder(Theme.stroke, lineWidth: 1)
+        )
     }
 
     // MARK: Treemap
@@ -375,7 +389,7 @@ struct SpaceLensPage: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Text(L("空间分布"))
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(L("点击色块进入下一层"))
                     .font(.system(size: 10.5))
@@ -388,7 +402,7 @@ struct SpaceLensPage: View {
             SpaceTreemapView(node: current) { node in
                 model.enter(node)
             }
-            .frame(height: 234)
+            .frame(height: 220)
         }
         .qyPanel(padding: 14)
     }
@@ -399,7 +413,7 @@ struct SpaceLensPage: View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
                 Text(L("空间排行"))
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(L("点击目录进入"))
                     .font(.system(size: 10.5))
@@ -418,7 +432,6 @@ struct SpaceLensPage: View {
                 LazyVStack(spacing: 0) {
                     ForEach(Array(model.childrenSorted.enumerated()), id: \.element.id) { index, node in
                         SpaceRankRowView(node: node,
-                                         tone: SpaceLensPalette.tone(at: index),
                                          fraction: fraction(of: node, in: current),
                                          isLast: index == model.childrenSorted.count - 1,
                                          isHovered: hoveredRankID == node.id,
@@ -436,12 +449,6 @@ struct SpaceLensPage: View {
                     }
                 }
                 .padding(.vertical, 3)
-            }
-            .overlay(alignment: .bottom) {
-                LinearGradient(colors: [Color.clear, Theme.card],
-                               startPoint: .top, endPoint: .bottom)
-                    .frame(height: 16)
-                    .allowsHitTesting(false)
             }
         }
         .qyPanel(padding: 0)
@@ -475,7 +482,7 @@ struct SpaceLensPage: View {
 
     private func emptyContent(_ current: SpaceNode) -> some View {
         VStack {
-            EmptyStateView(symbol: model.scanError == nil ? "folder" : "lock.shield.fill",
+            EmptyStateView(symbol: model.scanError == nil ? "folder" : "lock.shield",
                            title: model.scanError == nil ? "此目录没有可分析的项目" : "无法读取该目录",
                            message: model.scanError ?? "该目录为空，或其中的项目没有可统计的磁盘占用。",
                            actionTitle: model.canGoBack ? "返回上级" : "重新扫描") {
@@ -500,7 +507,7 @@ struct SpaceLensPage: View {
 
     private var initialContent: some View {
         VStack {
-            EmptyStateView(symbol: "circle.hexagongrid.fill",
+            EmptyStateView(symbol: "circle.hexagongrid",
                            title: "选择一个目录开始分析",
                            message: "空间透镜会把目录大小画成色块，帮助你一眼看出空间被什么占用。",
                            actionTitle: "扫描主目录") {

@@ -357,14 +357,14 @@ enum LargeFileKind: String, CaseIterable, Hashable, Sendable, Identifiable {
 
     var symbol: String {
         switch self {
-        case .video: return "film.fill"
-        case .image: return "photo.fill"
+        case .video: return "film"
+        case .image: return "photo"
         case .archive: return "doc.zipper"
-        case .document: return "doc.text.fill"
-        case .diskImage: return "externaldrive.fill"
+        case .document: return "doc.text"
+        case .diskImage: return "externaldrive"
         case .audio: return "waveform"
         case .code: return "chevron.left.forwardslash.chevron.right"
-        case .other: return "doc.fill"
+        case .other: return "doc"
         }
     }
 }

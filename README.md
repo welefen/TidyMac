@@ -63,7 +63,6 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 ### Settings & Safety
 - Light / Dark / Follow System appearance, switched live and applied globally
 - Exclusion list for files and folders
-- Anonymous usage analytics via the official Aptabase SDK
 - Full Disk Access guidance
 - Total space freed, cleanup count and history
 - Every deletion goes through `SafetyPolicy` validation

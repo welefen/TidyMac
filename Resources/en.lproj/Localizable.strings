@@ -85,7 +85,7 @@
 "分析已取消，显示部分结果" = "Analysis canceled, showing some results";
 "切换语言后应用会自动重新启动。" = "The app will restart automatically after switching languages.";
 "列表中找不到 TidyMac？" = "Can't find TidyMac in the list?";
-"刚刚" = "Just";
+"刚刚" = "Just now";
 "删除后重新安装软件包时会再次下载" = "The package will be downloaded again when it is reinstalled after deletion";
 "删除后首次安装 Pod 会重新下载" = "Installing the pod for the first time after deletion will re-download";
 "删除后首次安装 Python 包会重新下载" = "The first installation of the Python package after deletion will be re-downloaded";
@@ -413,7 +413,7 @@
 "Home directories" = "Home";
 "共 %@" = "%@ total";
 "已用 %@" = "%@ used";
-"%@ 可用" = "%@ available";
+"%@ 可用" = "%@ free";
 "共 %d 项 · 耗时 %@ · 默认只选择安全项目" = "%d items · %@ · Safe items selected by default";
 "共 %d 项 · 耗时 %@" = "%d items · %@";
 "最近 %d 条记录" = "Last %d records";
@@ -475,3 +475,23 @@
 "完成更新" = "Update";
 
 "扫描与清理分析均在本机完成；仅上报匿名功能统计，不含任何文件路径或内容。" = "Scanning and cleanup analysis stay on this Mac. Only anonymous usage statistics are sent — never file paths or contents.";
+
+/* Unslop UI rewrite */
+"查看可回收空间与最近清理" = "See what can be reclaimed and recent cleanups";
+"从一次扫描开始" = "Start with one scan";
+"查清缓存、日志、旧备份与开发者垃圾占用的空间，只推荐可以安全清理的项目。" = "See how much cache, logs, old backups and developer junk take up. Only items safe to clean are recommended.";
+"通常需要 10–30 秒 · 文件默认移入废纸篓" = "Usually takes 10–30 seconds · Files go to the Trash by default";
+"可清理空间" = "Reclaimable";
+"已释放空间" = "Reclaimed";
+"已释放" = "Reclaimed";
+"默认只选择安全项目，清理时移入废纸篓。" = "Safe items are selected by default and moved to the Trash.";
+"重要项目默认不勾选，清理前会再次校验。" = "Important items are left unchecked and will be verified again before cleanup.";
+"应用" = "app";
+"下载中" = "Downloading";
+"查看总览" = "View Overview";
+"清理缓存、日志、旧备份与开发者垃圾。" = "Clean cache, logs, old backups and developer junk.";
+"运行一次扫描，查看缓存、日志、旧备份与开发者垃圾各占多少空间。" = "Run a scan to see how much space cache, logs, old backups and developer junk take up.";
+"还没有清理记录。完成一次扫描后，这里会记录释放的空间。" = "No cleanup history yet. After your first scan and cleanup, reclaimed space will be recorded here.";
+"移除应用并清理关联文件" = "Remove apps and their leftover files";
+"来自最近一次扫描" = "From last smart scan";
+"其他管理空间的方式" = "Other ways to manage space";

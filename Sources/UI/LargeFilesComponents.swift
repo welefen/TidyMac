@@ -58,18 +58,7 @@ enum LargeFileAgeFilter: String, CaseIterable, Identifiable {
 }
 
 extension LargeFileKind {
-    var tone: AccentTone {
-        switch self {
-        case .video: return .pink
-        case .image: return .purple
-        case .archive: return .orange
-        case .document: return .blue
-        case .diskImage: return .teal
-        case .audio: return .yellow
-        case .code: return .mint
-        case .other: return .blue
-        }
-    }
+    var tone: AccentTone { .mint }
 }
 
 // MARK: - Table header
@@ -87,8 +76,7 @@ struct LargeFilesTableHeader: View {
             Button(action: toggleAll) {
                 SelectionCheck(isOn: isAllSelected,
                                isPartial: isPartiallySelected,
-                               tone: .mint,
-                               size: 18)
+                               size: 17)
                     .frame(width: 20, height: 20)
                     .contentShape(Rectangle())
             }
@@ -97,25 +85,30 @@ struct LargeFilesTableHeader: View {
             .opacity(isEnabled ? 1 : 0.35)
             .help(isAllSelected ? "取消全选当前列表" : "全选当前列表")
             .accessibilityLabel(isAllSelected ? "取消全选当前列表" : "全选当前列表")
-            Color.clear.frame(width: 34, height: 1)
+
+            Color.clear.frame(width: 26, height: 1)
+
             Text(L("名称"))
                 .frame(maxWidth: .infinity, alignment: .leading)
+
             Button(action: toggleSort) {
                 HStack(spacing: 3) {
                     Text(L("大小"))
                     Image(systemName: sortDescending ? "chevron.down" : "chevron.up")
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 8, weight: .medium))
                 }
-                .font(.system(size: 10.5, weight: .semibold))
+                .font(.system(size: 10.5, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
             }
             .buttonStyle(.plain)
             .frame(width: 92, alignment: .trailing)
+
             Text(L("修改时间"))
                 .frame(width: 96, alignment: .trailing)
-            Color.clear.frame(width: 32, height: 1)
+
+            Color.clear.frame(width: 28, height: 1)
         }
-        .font(.system(size: 10.5, weight: .semibold))
+        .font(.system(size: 10.5, weight: .medium))
         .foregroundStyle(Theme.textTertiary)
         .padding(.horizontal, 14)
         .frame(height: 34)
@@ -132,18 +125,19 @@ struct LargeFileRowView: View {
     var onReveal: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            SelectionCheck(isOn: isSelected, tone: .mint, size: 19)
+        HStack(spacing: 11) {
+            SelectionCheck(isOn: isSelected, size: 17)
 
-            ToneIcon(symbol: file.kind.symbol, tone: file.kind.tone, size: 34)
+            ToneIcon(symbol: file.kind.symbol, tone: file.kind.tone, size: 17)
+                .frame(width: 22)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(L(file.name))
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 Text(HomePaths.relativePath(file.url))
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(Theme.monoFont(9.5))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -151,46 +145,40 @@ struct LargeFileRowView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(Format.bytes(file.byteCount))
-                .font(.system(size: 12, weight: .semibold))
+                .font(Theme.monoFont(11.5, weight: .medium))
                 .monospacedDigit()
-                .foregroundStyle(isSelected ? Theme.mint : Theme.textSecondary)
+                .foregroundStyle(Theme.textSecondary)
                 .frame(width: 92, alignment: .trailing)
 
             Text(Format.relativeDate(file.modifiedAt))
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 10.5))
+                .foregroundStyle(Theme.textTertiary)
                 .lineLimit(1)
                 .frame(width: 96, alignment: .trailing)
 
             Button(action: onReveal) {
                 Image(systemName: "folder")
-                    .font(.system(size: 11.5, weight: .semibold))
+                    .font(.system(size: 11, weight: .regular))
                     .foregroundStyle(Theme.textSecondary)
-                    .frame(width: 26, height: 26)
-                    .background(Circle().fill(Theme.field))
-                    .overlay(Circle().strokeBorder(Theme.stroke, lineWidth: 1))
+                    .frame(width: 24, height: 24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(isHovered ? Theme.field : Color.clear)
+                    )
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .frame(width: 32)
+            .frame(width: 28)
             .help("在 Finder 中显示")
-            .opacity(isHovered ? 1 : 0.55)
+            .opacity(isHovered || isSelected ? 1 : 0)
         }
         .padding(.horizontal, 14)
         .frame(height: 56)
         .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(isSelected ? Theme.cardElevated
-                      : (isHovered ? Theme.cardHover : Color.clear))
-                .padding(.horizontal, 6)
+            RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                .fill(isSelected ? Theme.cardElevated : (isHovered ? Theme.cardHover : Color.clear))
+                .padding(.horizontal, 5)
         )
-        .overlay(alignment: .leading) {
-            if isSelected {
-                Capsule()
-                    .fill(Theme.gradient(.mint))
-                    .frame(width: 3, height: 26)
-                    .padding(.leading, 5)
-            }
-        }
         .contentShape(Rectangle())
         .onTapGesture(perform: onToggle)
     }
@@ -203,7 +191,6 @@ struct LargeFilesResultBanner: View {
     var dismiss: () -> Void
 
     private var hasFailure: Bool { !report.failures.isEmpty }
-    private var tint: Color { hasFailure ? Theme.orange : Theme.mint }
 
     private var title: String {
         hasFailure ? "部分文件未能移入废纸篓" : "已移入废纸篓"
@@ -211,43 +198,44 @@ struct LargeFilesResultBanner: View {
 
     private var message: String {
         if hasFailure {
-return L("成功 %d 个，释放 %@。%@", report.removedCount, Format.bytes(report.freedBytes), report.failures.first?.reason ?? L("权限不足"))
+            return L("成功 %d 个，释放 %@。%@", report.removedCount, Format.bytes(report.freedBytes), report.failures.first?.reason ?? L("权限不足"))
         }
         return L("\(report.removedCount) 个文件 · 释放 \(Format.bytes(report.freedBytes))，可随时从废纸篓恢复。")
     }
 
     var body: some View {
         HStack(spacing: 11) {
-            ToneIcon(symbol: hasFailure ? "exclamationmark.triangle.fill" : "trash.fill",
-                     tone: hasFailure ? .orange : .mint, size: 30)
+            Image(systemName: hasFailure ? "exclamationmark.triangle" : "checkmark.circle")
+                .font(.system(size: 15, weight: .regular))
+                .foregroundStyle(hasFailure ? Theme.caution : Theme.accent)
             VStack(alignment: .leading, spacing: 2) {
                 Text(L(title))
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(L(message))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textSecondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
             }
             Spacer(minLength: 8)
             Button(action: dismiss) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(width: 22, height: 22)
-                    .background(Circle().fill(Theme.field))
+                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Theme.field))
             }
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 13)
-        .padding(.vertical, 8)
+        .padding(.vertical, 9)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(tint.opacity(0.09))
+            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                .fill(Theme.card)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(tint.opacity(0.22), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                .strokeBorder(Theme.stroke, lineWidth: 1)
         )
     }
 }
@@ -256,29 +244,28 @@ return L("成功 %d 个，释放 %@。%@", report.removedCount, Format.bytes(rep
 
 struct LargeFilesSkeletonRow: View {
     var body: some View {
-        HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 5, style: .continuous)
+        HStack(spacing: 11) {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
                 .fill(Theme.cardElevated)
-                .frame(width: 19, height: 19)
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .frame(width: 17, height: 17)
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
                 .fill(Theme.cardElevated)
-                .frame(width: 34, height: 34)
+                .frame(width: 20, height: 17)
             VStack(alignment: .leading, spacing: 6) {
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
                     .fill(Theme.cardElevated)
-                    .frame(width: 180, height: 10)
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .frame(width: 180, height: 9)
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
                     .fill(Theme.cardElevated.opacity(0.6))
                     .frame(width: 250, height: 8)
             }
             Spacer()
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .fill(Theme.cardElevated)
-                .frame(width: 60, height: 10)
+                .frame(width: 60, height: 9)
         }
         .padding(.horizontal, 14)
         .frame(height: 56)
-        .shimmering()
     }
 }
 
@@ -287,27 +274,28 @@ struct LargeFilesScanningState: View {
     let status: String
 
     var body: some View {
-        VStack(spacing: 14) {
-            HStack(spacing: 10) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Theme.mint)
+        VStack(spacing: 12) {
+            HStack(spacing: 8) {
+                Text(L("正在扫描"))
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
                 Text(L(status))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
                 Spacer()
                 Text(Format.percent(progress))
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(Theme.monoFont(11, weight: .medium))
                     .monospacedDigit()
-                    .foregroundStyle(Theme.mint)
+                    .foregroundStyle(Theme.textSecondary)
             }
-            StorageBar(usedFraction: progress, tone: .mint, height: 6)
+            CapacityRuler(fraction: progress, height: 5)
             Text(L("正在扫描下载、文档、桌面、影片、图片与音乐目录…"))
-                .font(.system(size: 11))
+                .font(.system(size: 10.5))
                 .foregroundStyle(Theme.textTertiary)
         }
-        .padding(20)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
         .frame(maxWidth: 460)
     }
 }

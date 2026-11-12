@@ -292,11 +292,11 @@ struct UninstallerPage: View {
     @StateObject private var model = UninstallerViewModel()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            PageHeader(title: "卸载器", subtitle: "彻底移除应用及残留") {
-                HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: 20) {
+            PageHeader(title: "卸载器", subtitle: "移除应用并清理关联文件") {
+                HStack(spacing: 8) {
                     SearchField(text: $model.searchText, placeholder: "搜索应用或 Bundle ID")
-                        .frame(width: 220)
+                        .frame(width: 216)
                     sortMenu
                     refreshButton
                 }
@@ -306,20 +306,20 @@ struct UninstallerPage: View {
                 UninstallResultBanner(report: report,
                                       appName: model.finishedAppName,
                                       dismiss: { model.dismissReport() })
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.opacity)
             }
 
-            HStack(alignment: .top, spacing: 18) {
+            HStack(alignment: .top, spacing: 20) {
                 appListPanel
                 detailPanel
             }
             .frame(maxHeight: .infinity)
         }
         .padding(.horizontal, Theme.pagePadding)
-        .padding(.top, 30)
+        .padding(.top, 28)
         .padding(.bottom, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .animation(.easeInOut(duration: 0.24), value: model.report?.completedAt)
+        .animation(.easeOut(duration: 0.18), value: model.report?.completedAt)
         .onAppear {
             guard model.apps.isEmpty else { return }
             model.load(isDemo: app.isDemo, includeSystem: settings.showSystemApps)
@@ -349,17 +349,19 @@ struct UninstallerPage: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.up.arrow.down")
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(.system(size: 10, weight: .medium))
                 Text(L(model.sort.title))
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12))
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.system(size: 8, weight: .medium))
             }
             .foregroundStyle(Theme.textSecondary)
-            .padding(.horizontal, 12)
-            .frame(height: 36)
-            .background(Capsule(style: .continuous).fill(Theme.cardElevated))
-            .overlay(Capsule(style: .continuous).strokeBorder(Theme.strokeStrong, lineWidth: 1))
+            .padding(.horizontal, 10)
+            .frame(height: 30)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                    .fill(Theme.field)
+            )
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -371,19 +373,13 @@ struct UninstallerPage: View {
             guard !model.isLoading, !model.isUninstalling else { return }
             model.refresh(includeSystem: settings.showSystemApps)
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: 5) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 10, weight: .medium))
                 Text(L("刷新"))
-                    .font(.system(size: 12, weight: .medium))
             }
-            .foregroundStyle(Theme.textSecondary)
-            .padding(.horizontal, 12)
-            .frame(height: 36)
-            .background(Capsule(style: .continuous).fill(Theme.cardElevated))
-            .overlay(Capsule(style: .continuous).strokeBorder(Theme.strokeStrong, lineWidth: 1))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SecondaryButtonStyle(tone: .mint, compact: true))
         .disabled(model.isLoading || model.isUninstalling)
         .opacity(model.isLoading || model.isUninstalling ? 0.5 : 1)
     }
@@ -394,23 +390,21 @@ struct UninstallerPage: View {
         VStack(spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(model.isLoading ? "正在加载应用" : "已安装应用")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 if !model.isLoading {
                     Text(Format.itemCount(model.filteredApps.count))
-                        .font(.system(size: 10.5, weight: .medium))
+                        .font(Theme.monoFont(10.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()
                 if model.isLoading {
-                    Text("\(Int(model.loadProgress * 100))%")
-                        .font(.system(size: 10.5, weight: .semibold))
-                        .monospacedDigit()
-                        .foregroundStyle(Theme.mint)
+                    Text(Format.percent(model.loadProgress))
+                        .font(Theme.monoFont(10.5, weight: .medium))
+                        .foregroundStyle(Theme.textTertiary)
                 } else {
                     Text(Format.bytes(model.apps.reduce(0) { $0 + $1.byteCount }))
-                        .font(.system(size: 10.5, weight: .medium))
-                        .monospacedDigit()
+                        .font(Theme.monoFont(10.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
             }
@@ -444,7 +438,7 @@ struct UninstallerPage: View {
             }
             .frame(maxHeight: .infinity)
         }
-        .frame(width: 324)
+        .frame(width: 320)
         .frame(maxHeight: .infinity)
         .qyPanel(padding: 0)
     }
@@ -453,7 +447,7 @@ struct UninstallerPage: View {
         VStack(spacing: 2) {
             HStack(spacing: 6) {
                 Text(L(model.loadStatus))
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
                 Spacer(minLength: 4)
@@ -477,43 +471,34 @@ struct UninstallerPage: View {
             detailContent(installed)
         } else {
             VStack {
-                EmptyStateView(symbol: "trash.slash.fill",
+                EmptyStateView(symbol: "trash.slash",
                                title: "选择一个应用",
                                message: "从左侧列表选择要卸载的应用，查看并移除其关联残留文件。")
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(detailBackground)
+            .qyPanel(padding: 18)
         }
-    }
-
-    private var detailBackground: some View {
-        RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
-            .fill(Theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
-                    .strokeBorder(Theme.stroke, lineWidth: 1)
-            )
     }
 
     private func detailContent(_ installed: InstalledApp) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             detailHeader(installed)
             DividerLine()
-                .padding(.vertical, 13)
-            metricsCard(installed)
+                .padding(.vertical, 14)
+            metricsRow(installed)
             if installed.isSystem {
                 systemAppNotice
-                    .padding(.top, 12)
+                    .padding(.top, 14)
             }
             if model.isRunning(installed) {
                 RunningAppWarning()
-                    .padding(.top, 12)
+                    .padding(.top, 14)
             }
             if !installed.isSystem {
                 leftoversHeader
-                    .padding(.top, 16)
-                    .padding(.bottom, 6)
+                    .padding(.top, 18)
+                    .padding(.bottom, 4)
                 leftoversBody
                 if !model.leftovers.isEmpty && !model.isLoadingLeftovers {
                     HStack(spacing: 6) {
@@ -528,24 +513,26 @@ struct UninstallerPage: View {
                 }
             }
             actionBar(installed)
-                .padding(.top, 12)
+                .padding(.top, 14)
         }
-        .padding(18)
+        .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(detailBackground)
+        .qyPanel(padding: 0)
     }
 
     private func detailHeader(_ installed: InstalledApp) -> some View {
         HStack(alignment: .top, spacing: 14) {
-            AppGlyphView(app: installed, size: 64)
+            AppGlyphView(app: installed, size: 56)
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
                     Text(L(installed.name))
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     if installed.isSystem {
-                        TagBadge(text: "系统应用", tone: .blue)
+                        Text(L("系统应用"))
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(Theme.textTertiary)
                     }
                 }
                 HStack(spacing: 6) {
@@ -553,10 +540,10 @@ struct UninstallerPage: View {
                     Text("·")
                     Text(L(installed.isSystem ? "系统安装" : "用户安装"))
                 }
-                .font(.system(size: 11.5, weight: .medium))
+                .font(.system(size: 11.5))
                 .foregroundStyle(Theme.textSecondary)
                 Text(L(installed.bundleID ?? "未知 Bundle ID"))
-                    .font(.system(size: 10.5, design: .monospaced))
+                    .font(Theme.monoFont(10.5))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -565,38 +552,30 @@ struct UninstallerPage: View {
         }
     }
 
-    private func metricsCard(_ installed: InstalledApp) -> some View {
+    private func metricsRow(_ installed: InstalledApp) -> some View {
         HStack(spacing: 0) {
-            MiniMetric(title: "占用空间", value: Format.bytes(installed.byteCount))
+            MiniMetric(title: "占用空间", value: Format.bytes(installed.byteCount), mono: true)
             MetricDivider()
             MiniMetric(title: "上次使用", value: relativeUsageText(installed.lastUsed))
             MetricDivider()
             MiniMetric(title: "关联残留",
-                       value: model.isLoadingLeftovers ? "检查中…" : Format.bytes(model.leftoverTotalBytes))
+                       value: model.isLoadingLeftovers ? "检查中…" : Format.bytes(model.leftoverTotalBytes),
+                       mono: true)
             Spacer(minLength: 0)
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Theme.field)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.stroke, lineWidth: 1)
-        )
     }
 
     private var leftoversHeader: some View {
         HStack(spacing: 8) {
             Text(L("关联文件"))
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
             if !model.leftovers.isEmpty {
                 Text(Format.itemCount(model.leftovers.count))
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(Theme.monoFont(10.5))
                     .foregroundStyle(Theme.textTertiary)
                 Text("· \(Format.bytes(model.leftoverTotalBytes))")
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(Theme.monoFont(10.5))
                     .foregroundStyle(Theme.textTertiary)
             }
             Spacer()
@@ -620,9 +599,9 @@ struct UninstallerPage: View {
                 }
             } else if model.leftovers.isEmpty {
                 HStack(spacing: 7) {
-                    Image(systemName: "checkmark.seal.fill")
+                    Image(systemName: "checkmark.seal")
                         .font(.system(size: 12))
-                        .foregroundStyle(Theme.mint)
+                        .foregroundStyle(Theme.textTertiary)
                     Text(L("未发现关联残留，将仅移除应用本体。"))
                         .font(.system(size: 11.5))
                         .foregroundStyle(Theme.textSecondary)
@@ -647,13 +626,13 @@ struct UninstallerPage: View {
 
     private var systemAppNotice: some View {
         HStack(alignment: .top, spacing: 9) {
-            Image(systemName: "lock.shield.fill")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Theme.blue)
+            Image(systemName: "lock.shield")
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(Theme.textTertiary)
                 .padding(.top, 1)
             VStack(alignment: .leading, spacing: 3) {
                 Text(L("系统应用受 SIP 保护"))
-                    .font(.system(size: 11.5, weight: .semibold))
+                    .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 Text(L("这类应用由 macOS 系统完整性保护管理，TidyMac 无法移除。此处仅用于查看系统组件占用。"))
                     .font(.system(size: 10.5))
@@ -662,40 +641,35 @@ struct UninstallerPage: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(11)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Theme.softGradient(.blue))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Theme.blue.opacity(0.16), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
+                .fill(Theme.field)
         )
     }
 
     private func actionBar(_ installed: InstalledApp) -> some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             DividerLine()
             if model.isUninstalling {
-                VStack(spacing: 7) {
+                VStack(spacing: 8) {
                     HStack(spacing: 8) {
                         Text(L(model.uninstallStatus))
-                            .font(.system(size: 11.5, weight: .medium))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(Theme.textSecondary)
                             .lineLimit(1)
                         Spacer()
                         Text(Format.percent(model.uninstallProgress))
-                            .font(.system(size: 11.5, weight: .semibold))
-                            .monospacedDigit()
-                            .foregroundStyle(Theme.mint)
+                            .font(Theme.monoFont(11.5, weight: .medium))
+                            .foregroundStyle(Theme.textTertiary)
                     }
-                    StorageBar(usedFraction: model.uninstallProgress, tone: .mint, height: 6)
+                    CapacityRuler(fraction: model.uninstallProgress, height: 5)
                 }
             } else if installed.isSystem {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(L("系统应用不可卸载"))
-                            .font(.system(size: 12.5, weight: .semibold))
+                            .font(.system(size: 12.5, weight: .medium))
                             .foregroundStyle(Theme.textSecondary)
                         Text(L("受 macOS 系统完整性保护（SIP）限制，TidyMac 只能查看占用信息。"))
                             .font(.system(size: 10.5))
@@ -704,20 +678,16 @@ struct UninstallerPage: View {
                     }
                     Spacer(minLength: 8)
                     HStack(spacing: 6) {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 10, weight: .semibold))
+                        Image(systemName: "lock")
+                            .font(.system(size: 10, weight: .medium))
                         Text(L("系统应用不可卸载"))
                     }
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 9)
-                    .background(Capsule().fill(Theme.cardElevated))
-                    .overlay(Capsule().strokeBorder(Theme.stroke, lineWidth: 1))
                 }
             } else {
                 HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text(model.selectedLeftovers.isEmpty
                              ? L("将移除应用本体")
                              : L("将移除应用及 \(model.selectedLeftovers.count) 项残留"))
@@ -725,8 +695,7 @@ struct UninstallerPage: View {
                             .foregroundStyle(Theme.textTertiary)
                             .lineLimit(1)
                         Text(L("共 \(Format.bytes(model.selectedTotalBytes))"))
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .monospacedDigit()
+                            .font(Theme.monoFont(15, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     Spacer(minLength: 8)
@@ -734,8 +703,8 @@ struct UninstallerPage: View {
                         model.showConfirm = true
                     } label: {
                         HStack(spacing: 6) {
-                            Image(systemName: "trash.slash.fill")
-                                .font(.system(size: 11, weight: .semibold))
+                            Image(systemName: "trash.slash")
+                                .font(.system(size: 11, weight: .medium))
                             Text(L("卸载应用"))
                         }
                     }
@@ -749,27 +718,26 @@ struct UninstallerPage: View {
 private struct LeftoverSkeletonRow: View {
     var body: some View {
         HStack(spacing: 10) {
-            RoundedRectangle(cornerRadius: 5, style: .continuous)
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
                 .fill(Theme.cardElevated)
-                .frame(width: 18, height: 18)
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .frame(width: 17, height: 17)
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
                 .fill(Theme.cardElevated)
                 .frame(width: 26, height: 26)
             VStack(alignment: .leading, spacing: 5) {
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
                     .fill(Theme.cardElevated)
                     .frame(width: 130, height: 9)
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
                     .fill(Theme.cardElevated.opacity(0.6))
                     .frame(width: 210, height: 7)
             }
             Spacer()
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .fill(Theme.cardElevated)
                 .frame(width: 44, height: 9)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
-        .shimmering()
     }
 }

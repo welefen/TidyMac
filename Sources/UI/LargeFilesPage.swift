@@ -269,17 +269,11 @@ struct LargeFilesPage: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 11, weight: .medium))
                 Text(L("重新扫描"))
-                    .font(.system(size: 12, weight: .medium))
             }
-            .foregroundStyle(Theme.textSecondary)
-            .padding(.horizontal, 13)
-            .frame(height: 36)
-            .background(Capsule(style: .continuous).fill(Theme.cardElevated))
-            .overlay(Capsule(style: .continuous).strokeBorder(Theme.strokeStrong, lineWidth: 1))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SecondaryButtonStyle(compact: true))
         .disabled(model.isScanning || model.isTrashing)
         .opacity(model.isScanning || model.isTrashing ? 0.5 : 1)
     }
@@ -342,19 +336,23 @@ struct LargeFilesPage: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "line.3.horizontal.decrease.circle")
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(.system(size: 10.5, weight: .regular))
                 Text(L(model.kindFilter?.title ?? "全部类型"))
                     .font(.system(size: 12, weight: .medium))
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.system(size: 8, weight: .medium))
             }
-            .foregroundStyle(model.kindFilter == nil ? Theme.textSecondary : Theme.mint)
-            .padding(.horizontal, 11)
-            .frame(height: 30)
-            .background(Capsule(style: .continuous).fill(Theme.cardElevated))
-            .overlay(Capsule(style: .continuous)
-                .strokeBorder(model.kindFilter == nil ? Theme.stroke : Theme.mint.opacity(0.35),
-                              lineWidth: 1))
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.horizontal, 10)
+            .frame(height: 28)
+            .background(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(model.kindFilter == nil ? Color.clear : Theme.cardElevated)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(model.kindFilter == nil ? Theme.stroke : Theme.strokeStrong, lineWidth: 1)
+            )
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -364,33 +362,63 @@ struct LargeFilesPage: View {
     // MARK: Summary
 
     private var summaryRow: some View {
-        HStack(spacing: 14) {
+        HStack(alignment: .top, spacing: 0) {
             let found = Format.bytesParts(model.foundBytes)
-            StatTile(title: "找到文件",
-                     value: found.number,
-                     unit: found.unit,
-                     symbol: "doc.zipper",
-                     tone: .mint,
-                     caption: L("共 \(model.filteredFiles.count) 个匹配文件"))
-                .frame(maxWidth: .infinity)
+            summaryStat(title: "找到文件",
+                        value: found.number,
+                        unit: found.unit,
+                        caption: L("共 \(model.filteredFiles.count) 个匹配文件"))
+
+            Rectangle()
+                .fill(Theme.stroke)
+                .frame(width: 1, height: 40)
+                .padding(.horizontal, 20)
 
             let selected = Format.bytesParts(model.selectedBytes)
-            StatTile(title: "已选文件",
-                     value: selected.number,
-                     unit: selected.unit,
-                     symbol: "checkmark.circle.fill",
-                     tone: .blue,
-                     caption: L("\(model.selectedFiles.count) 项待清理"))
-                .frame(maxWidth: .infinity)
+            summaryStat(title: "已选文件",
+                        value: selected.number,
+                        unit: selected.unit,
+                        caption: L("\(model.selectedFiles.count) 项待清理"),
+                        accent: model.selectedFiles.isEmpty ? false : true)
 
-            StatTile(title: "最旧文件",
-                     value: "\(model.oldestAgeDays)",
-                     unit: "天",
-                     symbol: "clock.fill",
-                     tone: .orange,
-                     caption: model.oldestFile?.name ?? "暂无文件")
-                .frame(maxWidth: .infinity)
+            Rectangle()
+                .fill(Theme.stroke)
+                .frame(width: 1, height: 40)
+                .padding(.horizontal, 20)
+
+            summaryStat(title: "最旧文件",
+                        value: "\(model.oldestAgeDays)",
+                        unit: "天",
+                        caption: model.oldestFile.map { L($0.name) } ?? "暂无文件")
+
+            Spacer(minLength: 0)
         }
+        .padding(.vertical, 4)
+    }
+
+    private func summaryStat(title: String,
+                             value: String,
+                             unit: String,
+                             caption: String,
+                             accent: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(L(title))
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textTertiary)
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Text(value)
+                    .font(Theme.figureFont(26))
+                    .foregroundStyle(accent ? Theme.accent : Theme.textPrimary)
+                Text(L(unit))
+                    .font(Theme.monoFont(11))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            Text(caption)
+                .font(.system(size: 10.5))
+                .foregroundStyle(Theme.textTertiary)
+                .lineLimit(1)
+        }
+        .frame(width: 190, alignment: .leading)
     }
 
     // MARK: List
@@ -446,12 +474,6 @@ struct LargeFilesPage: View {
             }
             .padding(.vertical, 3)
         }
-        .overlay(alignment: .bottom) {
-            LinearGradient(colors: [Color.clear, Theme.card],
-                           startPoint: .top, endPoint: .bottom)
-                .frame(height: 16)
-                .allowsHitTesting(false)
-        }
     }
 
     private var scanningState: some View {
@@ -470,7 +492,7 @@ struct LargeFilesPage: View {
     }
 
     private var permissionState: some View {
-        EmptyStateView(symbol: "lock.shield.fill",
+        EmptyStateView(symbol: "lock.shield",
                        title: "需要磁盘访问权限",
                        message: "未能读取文件列表。请在「系统设置 › 隐私与安全性 › 完全磁盘访问权限」中允许 TidyMac 访问，然后重新扫描。",
                        actionTitle: "重新扫描") {
@@ -499,14 +521,14 @@ struct LargeFilesPage: View {
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.textSecondary)
                     Text(L(model.isScanning ? "扫描完成后可勾选清理" : "选择文件后可移入废纸篓"))
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11))
                         .foregroundStyle(Theme.textTertiary)
                 } else {
                     Text(L("已选 \(model.selectedFiles.count) 项"))
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.textSecondary)
                     Text(L("共 \(Format.bytes(model.selectedBytes))"))
-                        .font(.system(size: 14.5, weight: .bold, design: .rounded))
+                        .font(Theme.monoFont(15, weight: .medium))
                         .monospacedDigit()
                         .foregroundStyle(Theme.textPrimary)
                 }
@@ -519,10 +541,9 @@ struct LargeFilesPage: View {
                     Text(L(model.isAllVisibleSelected ? "取消全选" : "全选"))
                         .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
-                        .padding(.horizontal, 10)
-                        .frame(height: 28)
-                        .background(Capsule(style: .continuous).fill(Theme.cardElevated))
-                        .overlay(Capsule(style: .continuous).strokeBorder(Theme.stroke, lineWidth: 1))
+                        .padding(.horizontal, 8)
+                        .frame(height: 26)
+                        .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Theme.field))
                 }
                 .buttonStyle(.plain)
                 .help(model.isAllVisibleSelected ? "取消全选当前列表" : L("全选当前列表中的 \(model.filteredFiles.count) 个文件"))
@@ -556,8 +577,8 @@ struct LargeFilesPage: View {
                     model.showTrashConfirm = true
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "trash.fill")
-                            .font(.system(size: 11, weight: .semibold))
+                        Image(systemName: "trash")
+                            .font(.system(size: 11, weight: .regular))
                         Text(L("移入废纸篓"))
                     }
                 }
@@ -569,4 +590,5 @@ struct LargeFilesPage: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
     }
+
 }
