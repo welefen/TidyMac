@@ -50,6 +50,7 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 
 ### About This Mac
 - Hardware: model identifier, chip, CPU core layout, memory, free/total storage, volume, display and resolution
+- Battery (on portable Macs): charge, charging state, time remaining, cycle count, health and temperature
 - System: macOS version and build, architecture, uptime
 - Network: hostname, active interface, local IPv4, MAC address (read via SystemConfiguration) and public egress IP (Cloudflare trace, ipify fallback); IP and MAC values have copy buttons
 - When a system proxy is enabled, the Network card adds proxy type (HTTP/HTTPS/SOCKS/PAC) and server address rows with copy buttons

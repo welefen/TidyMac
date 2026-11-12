@@ -25,6 +25,10 @@ struct AboutPage: View {
                     .frame(width: 392)
                 }
 
+                if info.battery.isPresent {
+                    batteryCard
+                }
+
                 Text(L("硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询。"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
@@ -135,6 +139,81 @@ struct AboutPage: View {
             rows.append(AboutRow(L("PAC 地址"), pacURL, mono: true, copyText: pacURL))
         }
         return rows
+    }
+
+    private var batteryCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(L("电池"))
+                .font(.system(size: 12.5, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.bottom, 10)
+            HStack(spacing: 0) {
+                ForEach(Array(batteryStats.enumerated()), id: \.offset) { index, stat in
+                    if index > 0 {
+                        Rectangle()
+                            .fill(Theme.stroke)
+                            .frame(width: 1, height: 28)
+                            .padding(.horizontal, 16)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(stat.label)
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textTertiary)
+                        Text(stat.value)
+                            .font(stat.mono ? Theme.monoFont(13, weight: .medium)
+                                            : .system(size: 12.5, weight: .medium))
+                            .foregroundStyle(Theme.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+        .qyPanel(padding: 16)
+    }
+
+    private var batteryStats: [(label: String, value: String, mono: Bool)] {
+        let battery = info.battery
+        var stats: [(String, String, Bool)] = [
+            (L("电量"), "\(battery.chargePercent)%", true),
+            (L("状态"), batteryStateText, false)
+        ]
+        if let minutes = batteryTimeMinutes {
+            stats.append((L("剩余时间"), batteryTimeText(minutes), true))
+        }
+        if let cycles = battery.cycleCount {
+            stats.append((L("循环次数"), L("%@ 次", "\(cycles)"), true))
+        }
+        if let health = battery.healthPercent {
+            stats.append((L("电池健康"), "\(health)%", true))
+        }
+        if let temperature = battery.temperatureCelsius {
+            stats.append((L("温度"), String(format: "%.1f°C", temperature), true))
+        }
+        return stats
+    }
+
+    private var batteryStateText: String {
+        let battery = info.battery
+        if battery.isCharging { return L("充电中") }
+        if battery.isCharged { return L("已充满") }
+        if battery.isPluggedIn { return L("已接通电源") }
+        return L("使用电池")
+    }
+
+    private var batteryTimeMinutes: Int? {
+        let battery = info.battery
+        if battery.isCharging { return battery.minutesToFull }
+        if !battery.isPluggedIn { return battery.minutesToEmpty }
+        return nil
+    }
+
+    private func batteryTimeText(_ minutes: Int) -> String {
+        let hours = minutes / 60
+        let remainder = minutes % 60
+        if hours > 0 {
+            return L("%@ 小时 %@ 分钟", "\(hours)", "\(remainder)")
+        }
+        return L("%@ 分钟", "\(max(1, remainder))")
     }
 
     private var publicIPText: String {
