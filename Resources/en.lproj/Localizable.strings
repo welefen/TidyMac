@@ -560,24 +560,8 @@ Uninstalling this App Store app requires an administrator password.";
 "查询中…" = "Looking up…";
 "硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询。" = "Hardware, system and LAN details are read locally; the public IP is looked up via Cloudflare / ipify.";
 
-"网络测速" = "Network speed test";
-"Cloudflare 快速" = "Cloudflare quick";
-"系统网络质量" = "System network quality";
-"开始测速" = "Start test";
-"准备中…" = "Preparing…";
-"正在测速…" = "Testing…";
-"正在测试延迟、下载与上传…" = "Testing latency, download and upload…";
-"正在运行系统网络质量测试（约 25 秒）…" = "Running the system network quality test (about 25 s)…";
-"尚未测速。Cloudflare 测试约消耗 16 MB 流量；系统测试约需 25 秒。" = "Not tested yet. The Cloudflare test uses about 14 MB; the system test takes about 25 s.";
-"测速失败：%@" = "Speed test failed: %@";
-"已用时 %@ 秒" = "%@ s elapsed";
-"结果仅供参考；测试流量会发送给 Cloudflare 或 Apple。" = "For reference only; test traffic is sent to Cloudflare or Apple.";
-"延迟" = "Latency";
-"上传" = "Upload";
 
-"硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询，测速流量发送给 Cloudflare 或 Apple。" = "Hardware, system and LAN details are read locally; the public IP is looked up via Cloudflare / ipify, and speed-test traffic goes to Cloudflare or Apple.";
 
-"尚未测速。Cloudflare 测试约消耗 14 MB 流量；系统测试约需 25 秒。" = "Not tested yet. The Cloudflare test uses about 14 MB; the system test takes about 25 s.";
 "代理" = "Proxy";
 "PAC 地址" = "PAC URL";
 "自动发现" = "Auto discovery";

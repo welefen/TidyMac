@@ -6,12 +6,6 @@ struct AboutPage: View {
     @State private var info = AboutInfo.empty
     @State private var publicIP: String?
     @State private var isFetchingPublicIP = false
-    @State private var speedSource: SpeedTestSource = .cloudflare
-    @State private var speedResult: SpeedTestResult?
-    @State private var speedStatus: String?
-    @State private var isSpeedTesting = false
-    @State private var speedTask: Task<Void, Never>?
-    @State private var speedStartedAt: Date?
 
     var body: some View {
         ScrollView {
@@ -31,9 +25,7 @@ struct AboutPage: View {
                     .frame(width: 392)
                 }
 
-                speedTestCard
-
-                Text(L("硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询，测速流量发送给 Cloudflare 或 Apple。"))
+                Text(L("硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询。"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -44,10 +36,6 @@ struct AboutPage: View {
         }
         .background(Theme.background)
         .onAppear(perform: reload)
-        .onDisappear {
-            speedTask?.cancel()
-            speedTask = nil
-        }
     }
 
     @MainActor
@@ -68,153 +56,6 @@ struct AboutPage: View {
     }
 
     // MARK: - Cards
-
-    // MARK: - Speed test
-
-    private var speedTestCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                Text(L("网络测速"))
-                    .font(.system(size: 12.5, weight: .medium))
-                    .foregroundStyle(Theme.textSecondary)
-                Spacer()
-                HStack(spacing: 4) {
-                    ForEach(SpeedTestSource.allCases) { source in
-                        FilterPill(title: source.title, isSelected: speedSource == source) {
-                            guard !isSpeedTesting else { return }
-                            speedSource = source
-                            speedResult = nil
-                            speedStatus = nil
-                        }
-                    }
-                }
-                .disabled(isSpeedTesting)
-                if isSpeedTesting {
-                    Button(L("取消")) { toggleSpeedTest() }
-                        .buttonStyle(SecondaryButtonStyle(compact: true))
-                } else {
-                    Button(L("开始测速")) { toggleSpeedTest() }
-                        .buttonStyle(PrimaryButtonStyle(compact: true))
-                }
-            }
-
-            if isSpeedTesting {
-                HStack(spacing: 8) {
-                    ProgressView()
-                        .controlSize(.small)
-                    Text(speedStatus ?? L("准备中…"))
-                        .font(.system(size: 11.5))
-                        .foregroundStyle(Theme.textSecondary)
-                    Spacer()
-                    TimelineView(.periodic(from: .now, by: 1)) { context in
-                        if let started = speedStartedAt {
-                            Text(L("已用时 %@ 秒", "\(Int(context.date.timeIntervalSince(started)))"))
-                                .font(Theme.monoFont(10.5))
-                                .foregroundStyle(Theme.textTertiary)
-                        }
-                    }
-                }
-            } else if let result = speedResult {
-                HStack(spacing: 0) {
-                    speedStat(L("延迟"), value: latencyValue(result.latencyMs), unit: "ms")
-                    speedDivider
-                    speedStat(L("下载"), value: mbpsValue(result.downloadMbps), unit: "Mbps")
-                    speedDivider
-                    speedStat(L("上传"), value: mbpsValue(result.uploadMbps), unit: "Mbps")
-                }
-                Text(L("结果仅供参考；测试流量会发送给 Cloudflare 或 Apple。"))
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(Theme.textTertiary)
-            } else {
-                Text(speedStatus ?? L("尚未测速。Cloudflare 测试约消耗 14 MB 流量；系统测试约需 25 秒。"))
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(speedStatus == nil ? Theme.textSecondary : Theme.negative)
-            }
-        }
-        .qyPanel(padding: 16)
-    }
-
-    private func speedStat(_ label: String, value: String, unit: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textTertiary)
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(value)
-                    .font(Theme.monoFont(24, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(unit)
-                    .font(Theme.monoFont(11))
-                    .foregroundStyle(Theme.textTertiary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var speedDivider: some View {
-        Rectangle()
-            .fill(Theme.stroke)
-            .frame(width: 1, height: 36)
-            .padding(.horizontal, 16)
-    }
-
-    private func latencyValue(_ value: Double?) -> String {
-        guard let value else { return "—" }
-        return "\(Int(value.rounded()))"
-    }
-
-    private func mbpsValue(_ value: Double?) -> String {
-        guard let value else { return "—" }
-        return String(format: value >= 100 ? "%.0f" : "%.1f", value)
-    }
-
-    private func toggleSpeedTest() {
-        if isSpeedTesting {
-            speedTask?.cancel()
-            speedTask = nil
-            isSpeedTesting = false
-            speedStartedAt = nil
-            speedStatus = nil
-            return
-        }
-
-        speedResult = nil
-        speedStatus = L("正在测速…")
-        isSpeedTesting = true
-        speedStartedAt = Date()
-        let source = speedSource
-        speedTask = Task { @MainActor in
-            var outcome: Result<SpeedTestResult, Error>?
-            do {
-                switch source {
-                case .cloudflare:
-                    speedStatus = L("正在测试延迟、下载与上传…")
-                    outcome = .success(try await SpeedTestRunner.cloudflare())
-                case .system:
-                    speedStatus = L("正在运行系统网络质量测试（约 25 秒）…")
-                    outcome = .success(try await SpeedTestRunner.systemNetworkQuality())
-                }
-            } catch {
-                outcome = .failure(error)
-            }
-
-            speedStartedAt = nil
-            isSpeedTesting = false
-            if Task.isCancelled {
-                speedStatus = nil
-                return
-            }
-            switch outcome {
-            case .success(let result):
-                speedResult = result
-                speedStatus = nil
-            case .failure(let error):
-                speedStatus = L("测速失败：%@", error.localizedDescription)
-            case .none:
-                speedStatus = nil
-            }
-        }
-    }
 
     private func card(_ title: String, rows: [AboutRow]) -> some View {
         VStack(alignment: .leading, spacing: 0) {

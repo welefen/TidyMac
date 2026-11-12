@@ -53,8 +53,7 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - 系统信息：macOS 版本与 Build、架构、运行时间
 - 网络信息：主机名、活动接口、本机 IPv4、MAC 地址（SystemConfiguration），以及出口公网 IP（Cloudflare trace，ipify 兜底）；IP 与 MAC 地址旁提供复制按钮
 - 系统开启代理时，网络卡片会显示代理类型（HTTP / HTTPS / SOCKS / PAC）与代理地址，支持复制
-- 网络测速按需运行：Cloudflare 快速测速（延迟 / 下载 / 上传，约 14 MB 流量）或 macOS `networkQuality` 系统测速
-- 硬件、系统与局域网信息均在本机读取；公网 IP 与测速仅在进入页面或点击对应按钮时发起请求
+- 硬件、系统与局域网信息均在本机读取；公网 IP 仅在进入页面或点击「刷新」时请求一次
 - 演示数据截图：
 
 <img src="screenshots/zh/about.png" width="720" alt="关于本机">
