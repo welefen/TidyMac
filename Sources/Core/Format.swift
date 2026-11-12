@@ -21,6 +21,21 @@ enum Format {
         return byteFormatter.string(fromByteCount: value)
     }
 
+    private static let memoryFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .memory
+        formatter.includesUnit = true
+        formatter.isAdaptive = true
+        formatter.allowedUnits = [.useMB, .useGB, .useTB]
+        return formatter
+    }()
+
+    /// Memory values follow the macOS convention (binary GB), e.g. 24 GB.
+    static func memory(_ value: Int64) -> String {
+        guard value > 0 else { return "0 B" }
+        return memoryFormatter.string(fromByteCount: value)
+    }
+
     /// Short value split into number and unit for large display typography.
     static func bytesParts(_ value: Int64) -> (number: String, unit: String) {
         let text = bytes(value)

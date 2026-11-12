@@ -37,6 +37,7 @@ struct LaunchOptions {
             case "large", "largefiles", "large-files": options.page = .largeFiles
             case "space", "spacelens", "space-lens": options.page = .spaceLens
             case "load", "systemload", "system-load", "metrics": options.page = .systemLoad
+            case "about", "aboutmac", "about-mac", "systeminfo": options.page = .about
             case "settings", "prefs": options.page = .settings
             default: options.page = AppPage(rawValue: rawPage.lowercased())
             }

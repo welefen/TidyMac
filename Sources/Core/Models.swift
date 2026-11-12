@@ -9,6 +9,7 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
     case largeFiles
     case spaceLens
     case systemLoad
+    case about
     case settings
 
     var id: String { rawValue }
@@ -21,6 +22,7 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .largeFiles: return L("大文件")
         case .spaceLens: return L("空间透镜")
         case .systemLoad: return L("系统负载")
+        case .about: return L("关于本机")
         case .settings: return L("设置")
         }
     }
@@ -33,6 +35,7 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .largeFiles: return L("找出最占空间的文件")
         case .spaceLens: return L("看清每一 GB 的去向")
         case .systemLoad: return L("查看整机与各 App 的 CPU、内存占用")
+        case .about: return L("本机硬件、系统与网络信息")
         case .settings: return L("清理偏好与排除项")
         }
     }
@@ -45,6 +48,7 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .largeFiles: return "doc.zipper"
         case .spaceLens: return "circle.hexagongrid.fill"
         case .systemLoad: return "gauge"
+        case .about: return "desktopcomputer"
         case .settings: return "gearshape.fill"
         }
     }

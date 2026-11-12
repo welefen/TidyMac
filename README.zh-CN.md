@@ -48,6 +48,15 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 
 <img src="screenshots/zh/systemload.png" width="720" alt="系统负载">
 
+### 关于本机
+- 硬件信息：机型标识符、芯片、CPU 核心构成、内存、磁盘可用空间、宗卷、显示器与分辨率
+- 系统信息：macOS 版本与 Build、架构、运行时间
+- 网络信息：主机名、活动接口、本机 IPv4 与 MAC 地址（通过 SystemConfiguration 读取）
+- 所有信息均在本机读取，不会上传
+- 演示数据截图：
+
+<img src="screenshots/zh/about.png" width="720" alt="关于本机">
+
 ### 自动更新
 - 应用内通过 GitHub Contents API 检查 `updates/latest.json`，raw.githubusercontent.com 作为兜底
 - 发现新版本后自动下载 ZIP，校验 SHA-256 与 Bundle 信息

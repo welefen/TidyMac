@@ -9,7 +9,7 @@ struct SidebarView: View {
     @State private var hoveringUpdateBadge = false
 
     private var mainPages: [AppPage] { [.overview, .smartScan] }
-    private var toolPages: [AppPage] { [.uninstaller, .largeFiles, .spaceLens, .systemLoad] }
+    private var toolPages: [AppPage] { [.uninstaller, .largeFiles, .spaceLens, .systemLoad, .about] }
 
     var body: some View {
         ZStack(alignment: .trailing) {

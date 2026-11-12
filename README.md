@@ -48,6 +48,15 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 
 <img src="screenshots/en/systemload.png" width="720" alt="System Load">
 
+### About This Mac
+- Hardware: model identifier, chip, CPU core layout, memory, free/total storage, volume, display and resolution
+- System: macOS version and build, architecture, uptime
+- Network: hostname, active interface, local IPv4 and MAC address (read via SystemConfiguration)
+- Everything is read locally and never uploaded
+- Demo screenshot:
+
+<img src="screenshots/en/about.png" width="720" alt="About This Mac">
+
 ### Automatic Updates
 - Checks `updates/latest.json` in the GitHub repository via the GitHub Contents API, with `raw.githubusercontent.com` as fallback
 - Downloads the new ZIP automatically and verifies its SHA-256 and bundle identity

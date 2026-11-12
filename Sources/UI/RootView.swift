@@ -66,6 +66,8 @@ struct RootView: View {
             SpaceLensPage()
         case .systemLoad:
             SystemLoadPage()
+        case .about:
+            AboutPage()
         case .settings:
             SettingsPage()
         }
