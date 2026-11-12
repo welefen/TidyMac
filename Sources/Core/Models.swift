@@ -8,6 +8,7 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
     case uninstaller
     case largeFiles
     case spaceLens
+    case systemLoad
     case settings
 
     var id: String { rawValue }
@@ -19,6 +20,7 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .uninstaller: return L("卸载器")
         case .largeFiles: return L("大文件")
         case .spaceLens: return L("空间透镜")
+        case .systemLoad: return L("系统负载")
         case .settings: return L("设置")
         }
     }
@@ -30,6 +32,7 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .uninstaller: return L("彻底移除应用及残留")
         case .largeFiles: return L("找出最占空间的文件")
         case .spaceLens: return L("看清每一 GB 的去向")
+        case .systemLoad: return L("查看整机与各 App 的 CPU、内存占用")
         case .settings: return L("清理偏好与排除项")
         }
     }
@@ -41,6 +44,7 @@ enum AppPage: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .uninstaller: return "trash.slash.fill"
         case .largeFiles: return "doc.zipper"
         case .spaceLens: return "circle.hexagongrid.fill"
+        case .systemLoad: return "gauge"
         case .settings: return "gearshape.fill"
         }
     }

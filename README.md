@@ -6,7 +6,7 @@
 
 <img src="Resources/AppIcon.png" width="96" alt="TidyMac App Icon">
 
-TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk, uninstalls apps together with leftovers, finds large files, and shows where your disk space went with Space Lens. It supports light/dark appearance and follows the system by default. All file analysis happens locally; the only network telemetry is anonymous usage events (see [Anonymous Analytics](#anonymous-analytics)). Cleaned items are **moved to the Trash by default**, and sensitive locations such as system folders, Keychains, and the Photos library are hard-protected.
+TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk, uninstalls apps together with leftovers, finds large files, shows where your disk space went with Space Lens, and monitors CPU and memory use by app. It supports light/dark appearance and follows the system by default. All file analysis happens locally; the only network telemetry is anonymous usage events (see [Anonymous Analytics](#anonymous-analytics)). Cleaned items are **moved to the Trash by default**, and sensitive locations such as system folders, Keychains, and the Photos library are hard-protected.
 
 [![Download TidyMac](https://img.shields.io/badge/Download-TidyMac%201.1.0%20for%20macOS-2ea44f?style=flat&logo=apple&logoColor=white)](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.1.0.zip)
 
@@ -37,6 +37,14 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 - Treemap visualization of your home folder
 - Breadcrumb drill-down, space ranking and usage bars
 - Re-analyze any folder you choose
+
+### System Load
+- Live CPU and memory overview: overall usage, core count, memory pressure and swap
+- Per-app CPU and memory, aggregated across helper processes, with expandable process details
+- Two-second refresh; only processes readable by the current user are counted
+- Captured from demo data:
+
+<img src="screenshots/en/systemload.png" width="720" alt="System Load">
 
 ### Automatic Updates
 - Checks `updates/latest.json` in the GitHub repository via the GitHub Contents API, with `raw.githubusercontent.com` as fallback

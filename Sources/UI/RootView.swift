@@ -64,6 +64,8 @@ struct RootView: View {
             LargeFilesPage()
         case .spaceLens:
             SpaceLensPage()
+        case .systemLoad:
+            SystemLoadPage()
         case .settings:
             SettingsPage()
         }

@@ -6,7 +6,7 @@
 
 <img src="Resources/AppIcon.png" width="96" alt="TidyMac App Icon">
 
-TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向。支持浅色 / 深色外观并跟随系统，所有文件分析都在本机完成，仅上报匿名功能使用统计（详见[匿名使用统计](#匿名使用统计)）；**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
+TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向，并实时监控各 App 的 CPU 与内存占用。支持浅色 / 深色外观并跟随系统，所有文件分析都在本机完成，仅上报匿名功能使用统计（详见[匿名使用统计](#匿名使用统计)）；**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
 
 [![Download TidyMac](https://img.shields.io/badge/Download-TidyMac%201.1.0%20for%20macOS-2ea44f?style=flat&logo=apple&logoColor=white)](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.1.0.zip)
 
@@ -37,6 +37,14 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 - Treemap 可视化主目录空间分布
 - 面包屑下钻、空间排行、占比条
 - 支持选择任意目录重新分析
+
+### 系统负载
+- 整机 CPU 与内存总览：使用率、核心数、内存压力与交换空间
+- 按 App 汇总 CPU 与内存占用，并展开查看各子进程明细
+- 每 2 秒刷新；仅统计当前用户可读取的进程
+- 演示数据截图：
+
+<img src="screenshots/zh/systemload.png" width="720" alt="系统负载">
 
 ### 自动更新
 - 应用内通过 GitHub Contents API 检查 `updates/latest.json`，raw.githubusercontent.com 作为兜底
