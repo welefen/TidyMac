@@ -51,8 +51,8 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 ### 关于本机
 - 硬件信息：机型标识符、芯片、CPU 核心构成、内存、磁盘可用空间、宗卷、显示器与分辨率
 - 系统信息：macOS 版本与 Build、架构、运行时间
-- 网络信息：主机名、活动接口、本机 IPv4 与 MAC 地址（通过 SystemConfiguration 读取）
-- 所有信息均在本机读取，不会上传
+- 网络信息：主机名、活动接口、本机 IPv4、MAC 地址（SystemConfiguration），以及出口公网 IP（Cloudflare trace，ipify 兜底）
+- 硬件、系统与局域网信息均在本机读取；公网 IP 仅在进入页面或点「刷新」时请求一次
 - 演示数据截图：
 
 <img src="screenshots/zh/about.png" width="720" alt="关于本机">

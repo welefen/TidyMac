@@ -3,6 +3,54 @@ import Darwin
 import AppKit
 import SystemConfiguration
 
+/// Resolves the machine's public (egress) address through a lightweight public endpoint.
+enum PublicIPService {
+    private static let session: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 4
+        configuration.timeoutIntervalForResource = 6
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        return URLSession(configuration: configuration)
+    }()
+
+    static func fetch() async -> String? {
+        if let address = await cloudflareTrace() { return address }
+        return await ipify()
+    }
+
+    private static func cloudflareTrace() async -> String? {
+        guard let url = URL(string: "https://1.1.1.1/cdn-cgi/trace") else { return nil }
+        guard let (data, response) = try? await session.data(from: url),
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let text = String(data: data, encoding: .utf8) else { return nil }
+        for line in text.split(separator: "\n") where line.hasPrefix("ip=") {
+            let value = String(line.dropFirst(3)).trimmingCharacters(in: .whitespacesAndNewlines)
+            if let valid = validated(value) { return valid }
+        }
+        return nil
+    }
+
+    private static func ipify() async -> String? {
+        guard let url = URL(string: "https://api.ipify.org?format=json") else { return nil }
+        guard let (data, response) = try? await session.data(from: url),
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let payload = try? JSONDecoder().decode(IPifyResponse.self, from: data) else { return nil }
+        return validated(payload.ip)
+    }
+
+    private static func validated(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.count <= 45 else { return nil }
+        let allowed = CharacterSet(charactersIn: "0123456789abcdefABCDEF.:")
+        guard trimmed.unicodeScalars.allSatisfy({ allowed.contains($0) }) else { return nil }
+        return trimmed
+    }
+
+    private struct IPifyResponse: Decodable {
+        let ip: String
+    }
+}
+
 /// Static hardware, system and network facts shown on the About This Mac page.
 struct AboutInfo: Equatable, Sendable {
     var modelIdentifier: String

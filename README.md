@@ -51,8 +51,8 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 ### About This Mac
 - Hardware: model identifier, chip, CPU core layout, memory, free/total storage, volume, display and resolution
 - System: macOS version and build, architecture, uptime
-- Network: hostname, active interface, local IPv4 and MAC address (read via SystemConfiguration)
-- Everything is read locally and never uploaded
+- Network: hostname, active interface, local IPv4, MAC address (read via SystemConfiguration) and public egress IP (Cloudflare trace, ipify fallback)
+- Hardware, system and LAN details are read locally; the public IP lookup sends a request only when the page loads or you press Refresh
 - Demo screenshot:
 
 <img src="screenshots/en/about.png" width="720" alt="About This Mac">

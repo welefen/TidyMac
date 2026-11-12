@@ -3,6 +3,8 @@ import SwiftUI
 struct AboutPage: View {
     @EnvironmentObject private var app: AppState
     @State private var info = AboutInfo.empty
+    @State private var publicIP: String?
+    @State private var isFetchingPublicIP = false
 
     var body: some View {
         ScrollView {
@@ -22,7 +24,7 @@ struct AboutPage: View {
                     .frame(width: 392)
                 }
 
-                Text(L("所有信息均在本机读取，不会上传。"))
+                Text(L("硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询。"))
                     .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -35,8 +37,21 @@ struct AboutPage: View {
         .onAppear(perform: reload)
     }
 
+    @MainActor
     private func reload() {
         info = AboutInfo.gather(isDemo: app.isDemo)
+        if app.isDemo {
+            publicIP = "203.0.113.42"
+            isFetchingPublicIP = false
+            return
+        }
+        guard !isFetchingPublicIP else { return }
+        isFetchingPublicIP = true
+        Task {
+            let address = await PublicIPService.fetch()
+            publicIP = address
+            isFetchingPublicIP = false
+        }
     }
 
     // MARK: - Cards
@@ -96,8 +111,14 @@ struct AboutPage: View {
             AboutRow(L("主机名"), info.hostName, mono: true),
             AboutRow(L("接口"), info.primaryInterface, mono: true),
             AboutRow(L("本机 IP"), info.ipv4, mono: true),
+            AboutRow(L("公网 IP"), publicIPText, mono: true),
             AboutRow(L("MAC 地址"), info.macAddress.uppercased(), mono: true)
         ]
+    }
+
+    private var publicIPText: String {
+        if let publicIP { return publicIP }
+        return isFetchingPublicIP ? L("查询中…") : "—"
     }
 
     private var coresText: String {

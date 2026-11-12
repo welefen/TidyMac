@@ -541,4 +541,4 @@
 "%@ 分钟" = "%@m";
 "%@ 个显示器" = "%@ displays";
 "%@ 可用 · 共 %@" = "%@ free of %@";
-"本机硬件、系统与网络信息" = "Hardware, system and network details";
+"本机硬件、系统与网络信息" = "Hardware, system and network details";\n\n"公网 IP" = "Public IP";\n"查询中…" = "Looking up…";\n"硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询。" = "Hardware, system and LAN details are read locally; the public IP is looked up via Cloudflare / ipify.";\n
