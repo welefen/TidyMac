@@ -151,23 +151,28 @@ struct AboutPage: View {
             VStack(spacing: 14) {
                 ForEach(Array(batteryStatRows.enumerated()), id: \.offset) { _, row in
                     HStack(spacing: 0) {
-                        ForEach(Array(row.enumerated()), id: \.offset) { index, stat in
-                            if index > 0 {
+                        ForEach(0..<3, id: \.self) { index in
+                            if index > 0, row[index] != nil {
                                 Rectangle()
                                     .fill(Theme.stroke)
                                     .frame(width: 1, height: 28)
                                     .padding(.horizontal, 16)
                             }
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(stat.label)
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(Theme.textTertiary)
-                                Text(stat.value)
-                                    .font(stat.mono ? Theme.monoFont(13, weight: .medium)
-                                                    : .system(size: 12.5, weight: .medium))
-                                    .foregroundStyle(Theme.textPrimary)
+                            if let stat = row[index] {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(stat.label)
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(Theme.textTertiary)
+                                    Text(stat.value)
+                                        .font(stat.mono ? Theme.monoFont(13, weight: .medium)
+                                                        : .system(size: 12.5, weight: .medium))
+                                        .foregroundStyle(Theme.textPrimary)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            } else {
+                                Color.clear
+                                    .frame(maxWidth: .infinity)
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                 }
@@ -176,10 +181,13 @@ struct AboutPage: View {
         .qyPanel(padding: 16)
     }
 
-    private var batteryStatRows: [[(label: String, value: String, mono: Bool)]] {
+    private var batteryStatRows: [[(label: String, value: String, mono: Bool)?]] {
         let stats = batteryStats
         return stride(from: 0, to: stats.count, by: 3).map { start in
-            Array(stats[start..<min(start + 3, stats.count)])
+            (0..<3).map { offset in
+                let index = start + offset
+                return index < stats.count ? stats[index] : nil
+            }
         }
     }
 
