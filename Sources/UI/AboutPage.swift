@@ -16,17 +16,18 @@ struct AboutPage: View {
                 }
 
                 HStack(alignment: .top, spacing: 16) {
-                    card(L("硬件"), rows: hardwareRows)
-                        .frame(maxWidth: .infinity)
+                    VStack(spacing: 16) {
+                        card(L("硬件"), rows: hardwareRows)
+                        if info.battery.isPresent {
+                            batteryCard
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .top)
                     VStack(spacing: 16) {
                         card(L("系统"), rows: systemRows)
                         card(L("网络"), rows: networkRows)
                     }
                     .frame(width: 392)
-                }
-
-                if info.battery.isPresent {
-                    batteryCard
                 }
 
                 Text(L("硬件、系统与局域网信息均在本机读取；公网 IP 通过 Cloudflare / ipify 查询。"))
@@ -147,28 +148,39 @@ struct AboutPage: View {
                 .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.bottom, 10)
-            HStack(spacing: 0) {
-                ForEach(Array(batteryStats.enumerated()), id: \.offset) { index, stat in
-                    if index > 0 {
-                        Rectangle()
-                            .fill(Theme.stroke)
-                            .frame(width: 1, height: 28)
-                            .padding(.horizontal, 16)
+            VStack(spacing: 14) {
+                ForEach(Array(batteryStatRows.enumerated()), id: \.offset) { _, row in
+                    HStack(spacing: 0) {
+                        ForEach(Array(row.enumerated()), id: \.offset) { index, stat in
+                            if index > 0 {
+                                Rectangle()
+                                    .fill(Theme.stroke)
+                                    .frame(width: 1, height: 28)
+                                    .padding(.horizontal, 16)
+                            }
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(stat.label)
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(Theme.textTertiary)
+                                Text(stat.value)
+                                    .font(stat.mono ? Theme.monoFont(13, weight: .medium)
+                                                    : .system(size: 12.5, weight: .medium))
+                                    .foregroundStyle(Theme.textPrimary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(stat.label)
-                            .font(.system(size: 11))
-                            .foregroundStyle(Theme.textTertiary)
-                        Text(stat.value)
-                            .font(stat.mono ? Theme.monoFont(13, weight: .medium)
-                                            : .system(size: 12.5, weight: .medium))
-                            .foregroundStyle(Theme.textPrimary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
         .qyPanel(padding: 16)
+    }
+
+    private var batteryStatRows: [[(label: String, value: String, mono: Bool)]] {
+        let stats = batteryStats
+        return stride(from: 0, to: stats.count, by: 3).map { start in
+            Array(stats[start..<min(start + 3, stats.count)])
+        }
     }
 
     private var batteryStats: [(label: String, value: String, mono: Bool)] {
