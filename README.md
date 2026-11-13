@@ -83,6 +83,7 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 
 ### Settings & Safety
 - Light / Dark / Follow System appearance, switched live and applied globally
+- Double-click any empty window area to toggle maximize / original size, double-click again to restore
 - Exclusion list for files and folders
 - Full Disk Access guidance
 - Total space freed, cleanup count and history

@@ -70,6 +70,7 @@ struct TidyMacApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var configuredWindows = Set<ObjectIdentifier>()
     private var keyWindowObserver: NSObjectProtocol?
+    private var zoomMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
@@ -79,6 +80,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // NSViewRepresentable inside the view tree. A representable used as a
         // background can become an invisible hit-testing layer over the window,
         // which previously made the sidebar unresponsive to mouse clicks.
+        zoomMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { event in
+            guard event.clickCount == 2,
+                  let window = event.window,
+                  let content = window.contentView,
+                  window.styleMask.contains(.resizable),
+                  !window.styleMask.contains(.fullScreen) else { return event }
+            let point = content.convert(event.locationInWindow, from: nil)
+            guard point.x >= Theme.sidebarWidth else { return event }
+            if let hit = content.hitTest(point), hit is NSClipView {
+                window.zoom(nil)
+                return nil
+            }
+            return event
+        }
+
         keyWindowObserver = NotificationCenter.default.addObserver(
             forName: NSWindow.didBecomeKeyNotification,
             object: nil,
@@ -111,6 +127,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        if let zoomMonitor {
+            NSEvent.removeMonitor(zoomMonitor)
+            self.zoomMonitor = nil
+        }
         MainActor.assumeIsolated {
             Analytics.shared.track(.appEnd, [
                 "duration_ms": .int(Analytics.shared.sessionDurationMilliseconds)

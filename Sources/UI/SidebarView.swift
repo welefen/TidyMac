@@ -14,6 +14,10 @@ struct SidebarView: View {
     var body: some View {
         ZStack(alignment: .trailing) {
             Theme.sidebar
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) {
+                    WindowZoomSupport.toggleZoom()
+                }
             Rectangle()
                 .fill(Theme.stroke)
                 .frame(width: 1)
