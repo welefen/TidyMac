@@ -89,7 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let point = content.convert(event.locationInWindow, from: nil)
             guard point.x >= Theme.sidebarWidth else { return event }
             if let hit = content.hitTest(point), hit is NSClipView {
-                window.zoom(nil)
+                WindowZoomSupport.toggleZoom()
                 return nil
             }
             return event
