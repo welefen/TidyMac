@@ -152,11 +152,17 @@ struct AboutPage: View {
                 ForEach(Array(batteryStatRows.enumerated()), id: \.offset) { _, row in
                     HStack(spacing: 0) {
                         ForEach(0..<3, id: \.self) { index in
-                            if index > 0, row[index] != nil {
-                                Rectangle()
-                                    .fill(Theme.stroke)
-                                    .frame(width: 1, height: 28)
-                                    .padding(.horizontal, 16)
+                            if index > 0 {
+                                if row[index] != nil {
+                                    Rectangle()
+                                        .fill(Theme.stroke)
+                                        .frame(width: 1, height: 28)
+                                        .padding(.horizontal, 16)
+                                } else {
+                                    Color.clear
+                                        .frame(width: 1, height: 28)
+                                        .padding(.horizontal, 16)
+                                }
                             }
                             if let stat = row[index] {
                                 VStack(alignment: .leading, spacing: 4) {
