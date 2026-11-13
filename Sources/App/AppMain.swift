@@ -38,6 +38,11 @@ struct TidyMacApp: App {
                     Task { await updater.check(manual: true) }
                 }
                 .disabled(updateCheckDisabled)
+                Button(L("反馈")) {
+                    if let url = URL(string: "https://github.com/welefen/TidyMac/issues") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
             }
             CommandGroup(replacing: .appSettings) {
                 Button("设置…") {
