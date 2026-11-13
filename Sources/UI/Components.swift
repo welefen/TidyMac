@@ -569,12 +569,20 @@ struct AppBrandIcon: View {
     var size: CGFloat = 40
 
     var body: some View {
-        Image(nsImage: NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath))
+        Image(nsImage: Self.icon)
             .resizable()
             .interpolation(.high)
             .frame(width: size, height: size)
             .accessibilityHidden(true)
     }
+
+    private static let icon: NSImage = {
+        if let url = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
+           let image = NSImage(contentsOf: url) {
+            return image
+        }
+        return NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
+    }()
 }
 
 struct AppIconView: View {
