@@ -190,7 +190,8 @@ struct AboutPage: View {
             (L("状态"), batteryStateText, false)
         ]
         if let minutes = batteryTimeMinutes {
-            stats.append((L("剩余时间"), batteryTimeText(minutes), true))
+            let label = battery.isCharging ? L("充电剩余时间") : L("电池剩余时间")
+            stats.append((label, batteryTimeText(minutes), true))
         }
         if let cycles = battery.cycleCount {
             stats.append((L("循环次数"), L("%@ 次", "\(cycles)"), true))
