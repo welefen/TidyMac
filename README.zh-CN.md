@@ -8,9 +8,9 @@
 
 TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃圾、彻底卸载应用、寻找大文件、用空间透镜看清磁盘去向，并实时监控各 App 的 CPU 与内存占用。支持浅色 / 深色外观并跟随系统，所有文件分析都在本机完成，仅上报匿名功能使用统计（详见[匿名使用统计](#匿名使用统计)）；**默认移入废纸篓**，并对系统目录、钥匙串、照片图库等路径做硬性保护。
 
-[![Download TidyMac](https://img.shields.io/badge/Download-TidyMac%201.2.1%20for%20macOS-2ea44f?style=flat&logo=apple&logoColor=white)](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.2.1.zip)
+[![Download TidyMac](https://img.shields.io/badge/Download-TidyMac%201.2.2%20for%20macOS-2ea44f?style=flat&logo=apple&logoColor=white)](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.2.2.zip)
 
-也可以下载 [DMG 磁盘映像](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.2.1.dmg)。
+也可以下载 [DMG 磁盘映像](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.2.2.dmg)。
 
 ## 功能
 
@@ -182,8 +182,8 @@ build/tidymac-cli selftest      # 安全策略 / 大小计算 / 清理逻辑自�
 
 - `build/TidyMac.app` — 可直接运行的应用
 - `build/tidymac-cli` — 无界面诊断/自检工具
-- `dist/TidyMac-1.2.1.dmg` — 磁盘映像（拖入「应用程序」安装）
-- `dist/TidyMac-1.2.1.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
+- `dist/TidyMac-1.2.2.dmg` — 磁盘映像（拖入「应用程序」安装）
+- `dist/TidyMac-1.2.2.zip` — 分发压缩包（ad-hoc 签名，解压后拖入「应用程序」）
 - `dist/SHA256SUMS.txt` — 校验和
 
 ## 验证结果
