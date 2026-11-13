@@ -40,6 +40,7 @@ extension LeftoverKind {
         case .savedState: return "macwindow"
         case .logs: return "doc.text"
         case .containers: return "cube"
+        case .backgroundItem: return "gearshape.2"
         case .other: return "archivebox"
         }
     }

@@ -162,7 +162,8 @@ enum SafetyPolicy {
         guard path != normalized(home.path) else { throw SafetyError.rootPath }
 
         let isApplicationsBundle = isDescendant(path, of: "/Applications") && path.hasSuffix(".app")
-        if isProtected(path) && !(context == .appUninstall && isApplicationsBundle) {
+        let isSystemBackgroundItem = context == .leftover && isSystemBackgroundItemPath(path)
+        if isProtected(path) && !(context == .appUninstall && isApplicationsBundle) && !isSystemBackgroundItem {
             throw SafetyError.protectedPath(path)
         }
 
@@ -179,7 +180,7 @@ enum SafetyPolicy {
                 throw SafetyError.outsideAllowedScope(path)
             }
         case .leftover:
-            guard isDescendant(path, of: normalized(home.path)) else {
+            guard isDescendant(path, of: normalized(home.path)) || isSystemBackgroundItemPath(path) else {
                 throw SafetyError.outsideAllowedScope(path)
             }
         case .appUninstall:
@@ -189,6 +190,22 @@ enum SafetyPolicy {
                 throw SafetyError.outsideAllowedScope(path)
             }
         }
+    }
+
+    /// Launch daemons, launch agents and privileged helper tools installed by
+    /// an app. These live outside the home folder but are still app leftovers.
+    static func isSystemBackgroundItemPath(_ path: String) -> Bool {
+        let p = normalized(path)
+        let roots = ["/Library/LaunchDaemons", "/Library/LaunchAgents", "/Library/PrivilegedHelperTools"]
+        for root in roots {
+            let parent = (p as NSString).deletingLastPathComponent
+            guard parent == root else { continue }
+            let name = (p as NSString).lastPathComponent
+            guard !name.isEmpty, name != ".", name != ".." else { return false }
+            if root == "/Library/PrivilegedHelperTools" { return true }
+            return name.lowercased().hasSuffix(".plist")
+        }
+        return false
     }
 
     static func isSafeToRemove(_ url: URL, context: RemovalContext) -> Bool {

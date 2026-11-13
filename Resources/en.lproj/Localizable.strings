@@ -579,3 +579,4 @@ Uninstalling this App Store app requires an administrator password.";
 "%@ 次" = "%@ cycles";
 "充电剩余时间" = "Time to full charge";
 "电池剩余时间" = "Battery time remaining";
+"后台服务" = "Background service";

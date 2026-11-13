@@ -223,7 +223,92 @@ enum UninstallerEngine {
             add(["Containers", appName], .containers)
         }
 
+        // System-wide support files and background services installed by the app.
+        if let bundleID {
+            addSystem(["Application Support", bundleID], .applicationSupport, seen: &seen, result: &result)
+            addSystem(["Preferences", "\(bundleID).plist"], .preferences, seen: &seen, result: &result)
+        }
+
+        addBackgroundItems(bundleID: bundleID, appName: appName, appURL: app.url,
+                           seen: &seen, result: &result)
+
         return result
+    }
+
+    private static func addSystem(_ components: [String], _ kind: LeftoverKind,
+                                  seen: inout Set<String>,
+                                  result: inout [LeftoverCandidate]) {
+        let root = URL(fileURLWithPath: "/Library", isDirectory: true)
+        let url = components.reduce(root) { $0.appendingPathComponent($1) }
+        guard seen.insert(ToolsSupport.standardizedPath(url)).inserted else { return }
+        result.append(LeftoverCandidate(url: url, kind: kind))
+    }
+
+    private static func addURL(_ url: URL, _ kind: LeftoverKind,
+                               seen: inout Set<String>,
+                               result: inout [LeftoverCandidate]) {
+        guard seen.insert(ToolsSupport.standardizedPath(url)).inserted else { return }
+        result.append(LeftoverCandidate(url: url, kind: kind))
+    }
+
+    private static func addBackgroundItems(bundleID: String?,
+                                           appName: String?,
+                                           appURL: URL,
+                                           seen: inout Set<String>,
+                                           result: inout [LeftoverCandidate]) {
+        let roots = [
+            HomePaths.url("Library/LaunchAgents"),
+            URL(fileURLWithPath: "/Library/LaunchAgents", isDirectory: true),
+            URL(fileURLWithPath: "/Library/LaunchDaemons", isDirectory: true)
+        ]
+        let appPath = appURL.path.lowercased()
+        let normalizedBundleID = bundleID?.lowercased()
+        let normalizedAppName = (appName?.count ?? 0) >= 3 ? appName?.lowercased() : nil
+
+        for root in roots {
+            guard let files = try? fm.contentsOfDirectory(at: root,
+                                                          includingPropertiesForKeys: nil,
+                                                          options: [.skipsHiddenFiles]) else { continue }
+            for file in files where file.pathExtension.lowercased() == "plist" {
+                guard let data = try? Data(contentsOf: file),
+                      let plist = try? PropertyListSerialization.propertyList(
+                          from: data, options: [], format: nil
+                      ) as? [String: Any] else { continue }
+
+                let label = (plist["Label"] as? String)?.lowercased()
+                let associated = (plist["AssociatedBundleIdentifiers"] as? [String])?
+                    .map { $0.lowercased() } ?? []
+                let program = (plist["Program"] as? String)
+                    ?? (plist["ProgramArguments"] as? [String])?.first
+                let programPath = program?.lowercased()
+                let fileName = file.lastPathComponent.lowercased()
+
+                var matched = false
+                if let normalizedBundleID {
+                    matched = associated.contains(normalizedBundleID)
+                        || label == normalizedBundleID
+                        || (label?.hasPrefix(normalizedBundleID + ".") ?? false)
+                        || fileName.contains(normalizedBundleID)
+                }
+                if !matched, let normalizedAppName {
+                    matched = (label?.contains(normalizedAppName) ?? false)
+                        || fileName.contains(normalizedAppName)
+                        || (programPath?.contains(normalizedAppName) ?? false)
+                }
+                if !matched, let programPath, programPath.contains(appPath) {
+                    matched = true
+                }
+                guard matched else { continue }
+
+                addURL(file, .backgroundItem, seen: &seen, result: &result)
+                if let program,
+                   program.hasPrefix("/Library/PrivilegedHelperTools/"),
+                   fm.fileExists(atPath: program) {
+                    addURL(URL(fileURLWithPath: program), .backgroundItem,
+                           seen: &seen, result: &result)
+                }
+            }
+        }
     }
 
     private static func libraryRelativeName(for url: URL) -> String {

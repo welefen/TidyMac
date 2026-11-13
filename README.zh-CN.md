@@ -27,6 +27,7 @@ TidyMac 是一个原生 SwiftUI macOS 应用：扫描系统缓存与开发者垃
 ### 卸载器
 - 扫描 `/Applications` 与 `~/Applications`，显示占用空间与最近使用时间
 - 查找应用关联的 Application Support、缓存、偏好设置、窗口状态、日志残留
+- 同时识别后台服务：用户/系统 LaunchAgents、LaunchDaemons 及 Privileged Helper Tools，归类为「后台服务」；删除前先停止任务，系统级项目会请求管理员授权
 - 支持搜索、排序、逐项选择残留；卸载前确认；失败原因清晰展示
 
 ### 大文件

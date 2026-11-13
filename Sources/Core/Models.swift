@@ -312,6 +312,7 @@ enum LeftoverKind: String, CaseIterable, Hashable, Sendable {
     case savedState
     case logs
     case containers
+    case backgroundItem
     case other
 
     var title: String {
@@ -322,6 +323,7 @@ enum LeftoverKind: String, CaseIterable, Hashable, Sendable {
         case .savedState: return L("窗口状态")
         case .logs: return L("日志")
         case .containers: return L("容器")
+        case .backgroundItem: return L("后台服务")
         case .other: return L("其他残留")
         }
     }

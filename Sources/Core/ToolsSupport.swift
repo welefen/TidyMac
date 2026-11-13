@@ -44,6 +44,7 @@ enum ToolsSupport {
     }
 
     static func removeItem(at url: URL, moveToTrash: Bool) throws {
+        unloadUserLaunchAgentIfNeeded(url)
         // Never let FileManager start its own authorization UI for root-owned
         // app bundles. Doing so and then falling back to our helper can create
         // two competing prompts and leave the UI stuck at 2%.
@@ -84,6 +85,7 @@ enum ToolsSupport {
     /// using Finder is to ask macOS for administrator authorization.
     static func requiresAdministrator(for url: URL) -> Bool {
         let path = standardizedPath(url)
+        if SafetyPolicy.isSystemBackgroundItemPath(path) { return true }
         guard pathExtensionIsApp(path) else { return false }
         guard path.hasPrefix("/Applications/")
                 || path.hasPrefix(home.appendingPathComponent("Applications").path + "/") else {
@@ -145,6 +147,7 @@ enum ToolsSupport {
 
     private static func removeWithAdministrator(_ url: URL, moveToTrash: Bool) throws {
         let source = standardizedURL(url)
+        let bootout = bootoutCommand(for: source)
         if moveToTrash {
             let trash = home.appendingPathComponent(".Trash", isDirectory: true)
             try? fileManager.createDirectory(at: trash, withIntermediateDirectories: true)
@@ -153,27 +156,62 @@ enum ToolsSupport {
                 let stamp = ISO8601DateFormatter().string(from: Date())
                     .replacingOccurrences(of: ":", with: "-")
                 let base = source.deletingPathExtension().lastPathComponent
-                destination = trash.appendingPathComponent("\(base)-\(stamp).app")
+                let ext = source.pathExtension
+                let name = ext.isEmpty ? "\(base)-\(stamp)" : "\(base)-\(stamp).\(ext)"
+                destination = trash.appendingPathComponent(name)
             }
             let script = """
             on run argv
-                set srcPath to item 1 of argv
-                set dstPath to item 2 of argv
-                set ownerSpec to item 3 of argv
-                do shell script "/bin/mv " & quoted form of srcPath & " " & quoted form of dstPath & " && /usr/sbin/chown -R " & ownerSpec & " " & quoted form of dstPath with administrator privileges
+                set bootCmd to item 1 of argv
+                set srcPath to item 2 of argv
+                set dstPath to item 3 of argv
+                set ownerSpec to item 4 of argv
+                do shell script bootCmd & "/bin/mv " & quoted form of srcPath & " " & quoted form of dstPath & " && /usr/sbin/chown -R " & ownerSpec & " " & quoted form of dstPath with administrator privileges
             end run
             """
             try runAppleScript(script,
-                               arguments: [source.path, destination.path, "\(getuid()):\(getgid())"])
+                               arguments: [bootout, source.path, destination.path, "\(getuid()):\(getgid())"])
         } else {
             let script = """
             on run argv
-                set srcPath to item 1 of argv
-                do shell script "/bin/rm -rf " & quoted form of srcPath with administrator privileges
+                set bootCmd to item 1 of argv
+                set srcPath to item 2 of argv
+                do shell script bootCmd & "/bin/rm -rf " & quoted form of srcPath with administrator privileges
             end run
             """
-            try runAppleScript(script, arguments: [source.path])
+            try runAppleScript(script, arguments: [bootout, source.path])
         }
+    }
+
+    private static let launchdRoots = ["/Library/LaunchDaemons", "/Library/LaunchAgents",
+                                       HomePaths.url("Library/LaunchAgents").path]
+
+    private static func bootoutCommand(for source: URL) -> String {
+        let uid = getuid()
+        var command = "/bin/launchctl bootout system \(shellQuote(source.path)) 2>/dev/null; "
+        command += "/bin/launchctl bootout gui/\(uid) \(shellQuote(source.path)) 2>/dev/null; "
+        if source.path.hasPrefix("/Library/PrivilegedHelperTools/") {
+            let plist = "/Library/LaunchDaemons/\(source.lastPathComponent).plist"
+            command += "/bin/launchctl bootout system \(shellQuote(plist)) 2>/dev/null; "
+        }
+        return command
+    }
+
+    private static func shellQuote(_ value: String) -> String {
+        "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+
+    private static func unloadUserLaunchAgentIfNeeded(_ url: URL) {
+        let path = standardizedPath(url)
+        let root = HomePaths.url("Library/LaunchAgents").path
+        guard path.hasPrefix(root + "/"), path.hasSuffix(".plist") else { return }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = ["bootout", "gui/\(getuid())", path]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        try? process.run()
+        process.waitUntilExit()
     }
 
     private static func runAppleScript(_ script: String, arguments: [String]) throws {
