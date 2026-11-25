@@ -64,7 +64,7 @@ final class SystemLoadMonitor: ObservableObject {
 
     /// One-second cadence × 120 samples = a two-minute trend.
     static let refreshInterval: TimeInterval = 1
-    static let historyCapacity = 120
+    static let historyCapacity = 60
 
     private let queue = DispatchQueue(label: "com.tidymac.systemload", qos: .utility)
     private var timer: DispatchSourceTimer?

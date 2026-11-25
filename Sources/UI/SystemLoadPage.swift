@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import QuartzCore
 
 struct SystemLoadPage: View {
     @EnvironmentObject private var app: AppState
@@ -91,20 +92,17 @@ struct SystemLoadPage: View {
                 .foregroundStyle(Theme.textTertiary)
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(monitor.snapshot.map { percent($0.cpuFraction) } ?? "—")
-                    .font(Theme.monoFont(40, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                    .contentTransition(.numericText())
-                    .animation(
-                        .easeOut(duration: 0.28),
-                        value: monitor.snapshot.map { percent($0.cpuFraction) } ?? "—"
-                    )
+                FadingNumber(
+                    text: monitor.snapshot.map { percent($0.cpuFraction) } ?? "—",
+                    font: Theme.monoFont(40, weight: .medium),
+                    color: Theme.textPrimary
+                )
                 Text(L("%@ 核", "\(monitor.snapshot?.coreCount ?? ProcessInfo.processInfo.activeProcessorCount)"))
                     .font(Theme.monoFont(11))
                     .foregroundStyle(Theme.textTertiary)
             }
 
-            LoadTrendChart(values: cpuHistory, color: Theme.accent, minimumSpan: 0.06)
+            TrendLayerView(values: cpuHistory, color: Theme.accent, minimumSpan: 0.06)
                 .frame(height: 32)
                 .padding(.top, 2)
 
@@ -128,17 +126,18 @@ struct SystemLoadPage: View {
 
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 let parts = monitor.snapshot.map { Format.bytesParts($0.memoryUsedBytes) }
-                Text(parts?.number ?? "—")
-                    .font(Theme.monoFont(40, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                    .contentTransition(.numericText())
-                    .animation(.easeOut(duration: 0.28), value: parts?.number ?? "—")
+                FadingNumber(
+                    text: parts?.number ?? "—",
+                    font: Theme.monoFont(40, weight: .medium),
+                    color: Theme.textPrimary
+                )
                 if let unit = parts?.unit, !unit.isEmpty {
                     Text(unit)
                         .font(Theme.monoFont(14, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
-                        .contentTransition(.numericText())
-                        .animation(.easeOut(duration: 0.28), value: unit)
+                        .id(unit)
+                        .transition(.opacity)
+                        .animation(.easeOut(duration: 0.18), value: unit)
                 }
                 if let snapshot = monitor.snapshot {
                     Text("/ " + Format.bytes(snapshot.memoryTotalBytes))
@@ -148,7 +147,7 @@ struct SystemLoadPage: View {
                 }
             }
 
-            LoadTrendChart(values: memoryHistory, color: Theme.accent.opacity(0.78), minimumSpan: 0.025)
+            TrendLayerView(values: memoryHistory, color: Theme.accent.opacity(0.78), minimumSpan: 0.025)
                 .frame(height: 32)
                 .padding(.top, 2)
 
@@ -187,7 +186,7 @@ struct SystemLoadPage: View {
 
     /// Until the two-minute window fills, name the window we actually have.
     private func trendWindowLabel(_ count: Int) -> String {
-        guard count < SystemLoadMonitor.historyCapacity else { return L("最近 2 分钟") }
+        guard count < SystemLoadMonitor.historyCapacity else { return L("最近 1 分钟") }
         let seconds = max(Int(Double(count) * SystemLoadMonitor.refreshInterval), 1)
         return L("最近 %d 秒", seconds)
     }
@@ -254,17 +253,17 @@ struct SystemLoadPage: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 let text = percent(gpu.utilizationFraction)
-                Text(text)
-                    .font(Theme.monoFont(40, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                    .contentTransition(.numericText())
-                    .animation(.easeOut(duration: 0.28), value: text)
+                FadingNumber(
+                    text: text,
+                    font: Theme.monoFont(40, weight: .medium),
+                    color: Theme.textPrimary
+                )
                 Text(L("利用率"))
                     .font(Theme.monoFont(11))
                     .foregroundStyle(Theme.textTertiary)
             }
 
-            LoadTrendChart(values: gpuHistory, color: Theme.accent, minimumSpan: 0.08)
+            TrendLayerView(values: gpuHistory, color: Theme.accent, minimumSpan: 0.08)
                 .frame(height: 32)
                 .padding(.top, 2)
 
@@ -291,14 +290,16 @@ struct SystemLoadPage: View {
                 Text(parts.number)
                     .font(Theme.monoFont(40, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
-                    .contentTransition(.numericText())
-                    .animation(.easeOut(duration: 0.28), value: parts.number)
+                    .id(parts.number)
+                    .transition(.opacity)
+                    .animation(.easeOut(duration: 0.18), value: parts.number)
                 if !parts.unit.isEmpty {
                     Text(parts.unit)
                         .font(Theme.monoFont(14, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
-                        .contentTransition(.numericText())
-                        .animation(.easeOut(duration: 0.28), value: parts.unit)
+                        .id(parts.unit)
+                        .transition(.opacity)
+                        .animation(.easeOut(duration: 0.18), value: parts.unit)
                 }
             }
 
@@ -616,144 +617,218 @@ private enum AppIconStore {
 
 /// A quiet two-minute sparkline: a hairline trend and a barely-there area wash
 /// on a neutral strip. No axes, no glow — the big figure next to it carries the value.
-private struct LoadTrendChart: View {
+/// Crossfades the previous digits out while the new value is already in place.
+/// The outgoing label is a rasterized bitmap, so the fade runs as a layer
+/// opacity animation instead of re-laying out the page every frame.
+private struct FadingNumber: View {
+    let text: String
+    let font: Font
+    let color: Color
+
+    @State private var previousText: String = ""
+    @State private var fade: Double = 0
+
+    var body: some View {
+        Text(text)
+            .font(font)
+            .foregroundStyle(color)
+            .overlay(alignment: .leading) {
+                Text(previousText)
+                    .font(font)
+                    .foregroundStyle(color)
+                    .opacity(fade)
+                    .allowsHitTesting(false)
+            }
+            .onChange(of: text) { oldValue, _ in
+                previousText = oldValue
+                fade = 1
+                withAnimation(.easeOut(duration: 0.16)) {
+                    fade = 0
+                }
+            }
+    }
+}
+
+private struct TrendLayerView: NSViewRepresentable {
     let values: [Double]
     let color: Color
     var minimumSpan: Double = 0.06
+    var interval: TimeInterval = 1
 
-    var body: some View {
-        GeometryReader { geometry in
-            let plot = normalizedPlot
-            ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 5)
-                    .fill(Theme.subtleFill)
+    func makeNSView(context: Context) -> TrendHostView {
+        TrendHostView()
+    }
 
-                TrendAreaShape(plot: plot)
-                    .fill(color.opacity(0.08))
+    func updateNSView(_ view: TrendHostView, context: Context) {
+        view.apply(values: values, color: color, minimumSpan: minimumSpan, interval: interval)
+    }
+}
 
-                TrendLineShape(plot: plot)
-                    .stroke(
-                        color,
-                        style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
-                    )
-            }
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .fill(Theme.stroke)
-                    .frame(height: 1)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 5))
-            .animation(.easeOut(duration: 0.35), value: values)
-            .frame(width: geometry.size.width, height: geometry.size.height)
+/// AppKit-backed chart so the one-second right-to-left push runs as a Core
+/// Animation transform on a rasterized curve. A SwiftUI offset animation would
+/// invalidate the whole System Load page every frame and burn CPU.
+final class TrendHostView: NSView {
+    private let contentLayer = CALayer()
+    private var currentValues: [Double] = []
+    private var currentColor: Color = Theme.accent
+    private var currentSpan: Double = 0.06
+    private var currentInterval: TimeInterval = 1
+    private var renderedSize: CGSize = .zero
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.masksToBounds = true
+        contentLayer.anchorPoint = .zero
+        contentLayer.position = .zero
+        layer?.addSublayer(contentLayer)
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    func apply(values: [Double], color: Color, minimumSpan: Double, interval: TimeInterval) {
+        currentValues = values
+        currentColor = color
+        currentSpan = minimumSpan
+        currentInterval = interval
+        if bounds.size != renderedSize {
+            render(animate: false)
+        } else {
+            render(animate: true)
         }
     }
 
-    private var normalizedPlot: TrendPlot {
-        let samples = values.isEmpty ? [0] : values
-        guard !samples.isEmpty else { return TrendPlot(values: []) }
+    override func layout() {
+        super.layout()
+        if bounds.size != renderedSize {
+            render(animate: false)
+        }
+    }
 
+    private func render(animate: Bool) {
+        let size = bounds.size
+        guard size.width > 1, size.height > 1 else { return }
+        renderedSize = size
+
+        let samples = normalized(currentValues)
+        let content = TrendCanvas(samples: samples, color: currentColor)
+            .frame(width: size.width, height: size.height)
+        let renderer = ImageRenderer(content: content)
+        let scale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
+        renderer.scale = scale
+        guard let image = renderer.cgImage else { return }
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        contentLayer.contents = image
+        contentLayer.contentsScale = scale
+        contentLayer.frame = CGRect(origin: .zero, size: size)
+        contentLayer.position = .zero
+        CATransaction.commit()
+
+        contentLayer.removeAnimation(forKey: "push")
+        guard animate else { return }
+
+        let capacity = SystemLoadMonitor.historyCapacity
+        let step = size.width / CGFloat(max(capacity - 1, 1))
+        let animation = CABasicAnimation(keyPath: "position.x")
+        animation.fromValue = step
+        animation.toValue = 0
+        animation.duration = currentInterval * 0.9
+        animation.timingFunction = CAMediaTimingFunction(name: .linear)
+        contentLayer.add(animation, forKey: "push")
+    }
+
+    private func normalized(_ values: [Double]) -> [Double] {
+        let samples = values.isEmpty ? [0] : values
         let lower = (samples.min() ?? 0) - 0.012
         let upper = (samples.max() ?? 1) + 0.012
-        let span = max(upper - lower, minimumSpan)
-
-        return TrendPlot(values: samples.map { value in
-            min(max((value - lower) / span, 0), 1)
-        })
+        let span = max(upper - lower, currentSpan)
+        return samples.map { min(max(($0 - lower) / span, 0), 1) }
     }
 }
 
-/// Fixed-length y values (0 lowest, 1 highest) that SwiftUI can interpolate
-/// between updates, so the sparkline glides instead of jumping each sample.
-private struct TrendPlot: VectorArithmetic, Equatable {
-    var values: [Double]
+private struct TrendCanvas: View {
+    let samples: [Double]
+    let color: Color
 
-    static var zero: TrendPlot { TrendPlot(values: []) }
+    var body: some View {
+        Canvas { canvas, size in
+            let rect = CGRect(origin: .zero, size: size)
+            canvas.fill(
+                Path(roundedRect: rect, cornerRadius: 5),
+                with: .color(Theme.subtleFill)
+            )
 
-    static func + (lhs: TrendPlot, rhs: TrendPlot) -> TrendPlot {
-        combine(lhs, rhs, +)
-    }
-
-    static func - (lhs: TrendPlot, rhs: TrendPlot) -> TrendPlot {
-        combine(lhs, rhs, -)
-    }
-
-    static func += (lhs: inout TrendPlot, rhs: TrendPlot) {
-        lhs = lhs + rhs
-    }
-
-    static func -= (lhs: inout TrendPlot, rhs: TrendPlot) {
-        lhs = lhs - rhs
-    }
-
-    mutating func scale(by rhs: Double) {
-        for index in values.indices {
-            values[index] *= rhs
-        }
-    }
-
-    var magnitudeSquared: Double {
-        values.reduce(0) { $0 + $1 * $1 }
-    }
-
-    private static func combine(
-        _ lhs: TrendPlot,
-        _ rhs: TrendPlot,
-        _ operation: (Double, Double) -> Double
-    ) -> TrendPlot {
-        let count = max(lhs.values.count, rhs.values.count)
-        let values = (0..<count).map { index in
-            let left = index < lhs.values.count ? lhs.values[index] : 0
-            let right = index < rhs.values.count ? rhs.values[index] : 0
-            return operation(left, right)
-        }
-        return TrendPlot(values: values)
-    }
-}
-
-private struct TrendLineShape: Shape {
-    var plot: TrendPlot
-
-    var animatableData: TrendPlot {
-        get { plot }
-        set { plot = newValue }
-    }
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        guard plot.values.count > 1 else { return path }
-
-        for (index, value) in plot.values.enumerated() {
-            let x = rect.width * CGFloat(index) / CGFloat(plot.values.count - 1)
-            let y = rect.height * (1 - CGFloat(value))
-            if index == 0 {
-                path.move(to: CGPoint(x: x, y: y))
-            } else {
-                path.addLine(to: CGPoint(x: x, y: y))
+            let capacity = SystemLoadMonitor.historyCapacity
+            let step = size.width / CGFloat(max(capacity - 1, 1))
+            let points = TrendLayout.points(samples: samples, step: step, size: size)
+            if points.count > 1 {
+                canvas.fill(
+                    TrendLayout.areaPath(points, in: size),
+                    with: .color(color.opacity(0.08))
+                )
+                canvas.stroke(
+                    TrendLayout.smoothPath(points),
+                    with: .color(color),
+                    style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
+                )
             }
+
+            var hairline = Path()
+            hairline.move(to: CGPoint(x: 0, y: size.height - 0.5))
+            hairline.addLine(to: CGPoint(x: size.width, y: size.height - 0.5))
+            canvas.stroke(hairline, with: .color(Theme.stroke), lineWidth: 1)
+        }
+    }
+}
+
+/// Newest samples sit at the right edge; older samples march left one slot
+/// per second. Offsetting the whole curve by +1 slot and animating it back to
+/// zero turns each new sample into a smooth right-to-left push.
+private enum TrendLayout {
+    static func points(samples: [Double], step: CGFloat, size: CGSize) -> [CGPoint] {
+        guard !samples.isEmpty, step > 0, size.height > 0 else { return [] }
+        let count = samples.count
+        return samples.enumerated().map { index, value in
+            let age = CGFloat(count - 1 - index)
+            return CGPoint(
+                x: size.width - age * step,
+                y: size.height * (1 - CGFloat(value))
+            )
+        }
+    }
+
+    static func smoothPath(_ points: [CGPoint]) -> Path {
+        var path = Path()
+        guard points.count > 1 else { return path }
+        path.move(to: points[0])
+
+        for index in 0..<(points.count - 1) {
+            let p0 = points[max(index - 1, 0)]
+            let p1 = points[index]
+            let p2 = points[index + 1]
+            let p3 = points[min(index + 2, points.count - 1)]
+            let control1 = CGPoint(
+                x: p1.x + (p2.x - p0.x) / 6,
+                y: p1.y + (p2.y - p0.y) / 6
+            )
+            let control2 = CGPoint(
+                x: p2.x - (p3.x - p1.x) / 6,
+                y: p2.y - (p3.y - p1.y) / 6
+            )
+            path.addCurve(to: p2, control1: control1, control2: control2)
         }
         return path
     }
-}
 
-private struct TrendAreaShape: Shape {
-    var plot: TrendPlot
-
-    var animatableData: TrendPlot {
-        get { plot }
-        set { plot = newValue }
-    }
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        guard plot.values.count > 1 else { return path }
-
-        path.move(to: CGPoint(x: 0, y: rect.height))
-        for (index, value) in plot.values.enumerated() {
-            let x = rect.width * CGFloat(index) / CGFloat(plot.values.count - 1)
-            let y = rect.height * (1 - CGFloat(value))
-            path.addLine(to: CGPoint(x: x, y: y))
+    static func areaPath(_ points: [CGPoint], in size: CGSize) -> Path {
+        guard let first = points.first, let last = points.last, points.count > 1 else {
+            return Path()
         }
-        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        var path = smoothPath(points)
+        path.addLine(to: CGPoint(x: last.x, y: size.height))
+        path.addLine(to: CGPoint(x: first.x, y: size.height))
         path.closeSubpath()
         return path
     }
