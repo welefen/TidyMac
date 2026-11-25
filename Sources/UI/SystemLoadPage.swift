@@ -139,7 +139,7 @@ struct SystemLoadPage: View {
                     color: Theme.textPrimary
                 )
                 if let snapshot = monitor.snapshot {
-                    Text("\(Format.bytes(snapshot.memoryUsedBytes)) / \(Format.bytes(snapshot.memoryTotalBytes))")
+                    Text(Format.bytes(snapshot.memoryTotalBytes))
                         .font(Theme.monoFont(11))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
