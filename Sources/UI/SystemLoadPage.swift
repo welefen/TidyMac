@@ -643,14 +643,14 @@ final class TrendHostView: NSView {
         currentSpan = minimumSpan
         currentInterval = interval
 
-        let wasFull = previousSampleCount >= SystemLoadMonitor.historyCapacity
-        let isFull = values.count >= SystemLoadMonitor.historyCapacity
+        let wasAnimatable = previousSampleCount >= 2
+        let isAnimatable = values.count >= 2
         previousSampleCount = values.count
 
         if bounds.size != renderedSize {
             render(animate: false)
         } else if valuesChanged {
-            render(animate: wasFull && isFull)
+            render(animate: wasAnimatable && isAnimatable)
         } else if styleChanged {
             render(animate: false)
         }
@@ -662,11 +662,15 @@ final class TrendHostView: NSView {
         renderedSize = size
 
         let step = size.width / CGFloat(SystemLoadMonitor.displayCapacity)
-        let isFull = currentValues.count >= SystemLoadMonitor.historyCapacity
 
         renderBackground(size: size)
 
+        let hadScale = scaleLower != nil && scaleUpper != nil
+        let previousLower = scaleLower
+        let previousUpper = scaleUpper
         let samples = normalized(currentValues)
+        let scaleChanged = hadScale
+            && (scaleLower != previousLower || scaleUpper != previousUpper)
         let lower = scaleLower ?? 0
         let upper = scaleUpper ?? 1
         let imageWidth = size.width + step
@@ -675,8 +679,7 @@ final class TrendHostView: NSView {
             color: currentColor,
             lower: lower,
             upper: upper,
-            viewportWidth: size.width,
-            isFull: isFull
+            viewportWidth: size.width
         )
         .frame(width: imageWidth, height: size.height)
         let renderer = ImageRenderer(content: content)
@@ -686,21 +689,21 @@ final class TrendHostView: NSView {
         guard let image = renderer.cgImage else { return }
 
         curveLayer.removeAnimation(forKey: "push")
+        let shouldAnimate = animate && !scaleChanged
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         curveLayer.contents = image
         curveLayer.contentsScale = scale
         curveLayer.frame = CGRect(x: 0, y: 0, width: imageWidth, height: size.height)
-        curveLayer.position = isFull && !animate
-            ? CGPoint(x: -step, y: 0)
-            : .zero
+        curveLayer.position = shouldAnimate
+            ? .zero
+            : CGPoint(x: -step, y: 0)
         renderedColor = currentColor
         renderedSpan = currentSpan
         CATransaction.commit()
 
-        guard animate else { return }
+        guard shouldAnimate else { return }
 
-        curveLayer.position = .zero
         let push = CABasicAnimation(keyPath: "position.x")
         push.fromValue = 0
         push.toValue = -step
@@ -774,7 +777,6 @@ private struct TrendCanvas: View {
     let lower: Double
     let upper: Double
     let viewportWidth: CGFloat
-    let isFull: Bool
 
     var body: some View {
         Canvas { canvas, size in
@@ -783,8 +785,7 @@ private struct TrendCanvas: View {
                 samples: samples,
                 step: step,
                 viewportWidth: viewportWidth,
-                height: size.height,
-                isFull: isFull
+                height: size.height
             )
             guard points.count > 1 else { return }
             canvas.fill(
@@ -805,14 +806,14 @@ private enum TrendLayout {
         samples: [Double],
         step: CGFloat,
         viewportWidth: CGFloat,
-        height: CGFloat,
-        isFull: Bool
+        height: CGFloat
     ) -> [CGPoint] {
         guard !samples.isEmpty, step > 0, viewportWidth > 0 else { return [] }
         let count = samples.count
-        let startX = isFull
-            ? 0
-            : viewportWidth - CGFloat(max(count - 1, 1)) * step
+        // Always anchor the newest sample one slot past the right edge. The host
+        // keeps the layer at -step so it sits on the edge; animating 0 → -step
+        // lets the next sample enter from the right during warmup and steady state.
+        let startX = viewportWidth + step - CGFloat(max(count - 1, 0)) * step
         return samples.enumerated().map { index, value in
             CGPoint(
                 x: startX + CGFloat(index) * step,
