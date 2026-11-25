@@ -13,7 +13,7 @@ extension Notification.Name {
 final class MenuBarStatsController {
     private var statusItem: NSStatusItem!
     private let menu = NSMenu()
-    private let monitor = SystemLoadMonitor()
+    private let monitor = SystemLoadMonitor.shared
     private var cancellable: AnyCancellable?
 
     private let cpuMenuItem = NSMenuItem(title: L("CPU"), action: nil, keyEquivalent: "")
@@ -33,11 +33,9 @@ final class MenuBarStatsController {
             .sink { [weak self] snapshot in
                 self?.apply(snapshot)
             }
-        monitor.start(isDemo: false, includeApps: false)
     }
 
     func stop() {
-        monitor.stop()
         cancellable?.cancel()
         cancellable = nil
     }

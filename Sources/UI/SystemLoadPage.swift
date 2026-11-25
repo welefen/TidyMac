@@ -3,7 +3,7 @@ import AppKit
 
 struct SystemLoadPage: View {
     @EnvironmentObject private var app: AppState
-    @StateObject private var monitor = SystemLoadMonitor()
+    @ObservedObject private var monitor = SystemLoadMonitor.shared
     @State private var sort: LoadSort = .cpu
     @State private var expanded: Set<String> = []
     @State private var hoveredAppID: String?
@@ -51,8 +51,11 @@ struct SystemLoadPage: View {
             .padding(.bottom, 40)
             .frame(maxWidth: 1100)
         }
-        .onAppear { monitor.start(isDemo: app.isDemo) }
-        .onDisappear { monitor.stop() }
+        .onAppear {
+            monitor.start(isDemo: app.isDemo, includeApps: false)
+            monitor.setAppSamplingEnabled(true)
+        }
+        .onDisappear { monitor.setAppSamplingEnabled(false) }
         .onChange(of: monitor.snapshot) { _ in
             updateDisplayedApps()
         }

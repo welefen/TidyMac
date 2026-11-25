@@ -53,6 +53,8 @@ struct SystemLoadSnapshot: Equatable, Sendable {
 /// Samples CPU, memory and per-app usage using Mach and libproc APIs.
 /// All work happens on a utility queue; published values are delivered on main.
 final class SystemLoadMonitor: ObservableObject {
+    static let shared = SystemLoadMonitor()
+
     @Published private(set) var snapshot: SystemLoadSnapshot?
     @Published private(set) var isSampling = false
     @Published private(set) var cpuHistory: [Double] = []
@@ -74,6 +76,7 @@ final class SystemLoadMonitor: ObservableObject {
     private let timebaseNumer: Double
     private let timebaseDenom: Double
     private var isDemo = false
+    private var hasStarted = false
 
     init() {
         var timebase = mach_timebase_info_data_t()
@@ -84,7 +87,8 @@ final class SystemLoadMonitor: ObservableObject {
 
     func start(isDemo: Bool, includeApps: Bool = true) {
         queue.async { [weak self] in
-            guard let self, self.timer == nil else { return }
+            guard let self, !self.hasStarted else { return }
+            self.hasStarted = true
             self.isDemo = isDemo
             self.includeApps = includeApps
             self.previousHostCPU = nil
@@ -125,6 +129,17 @@ final class SystemLoadMonitor: ObservableObject {
         }
     }
 
+    /// Enables or pauses per-app scanning. The host CPU/memory history keeps
+    /// recording either way, so the System Load page always opens with data.
+    func setAppSamplingEnabled(_ enabled: Bool) {
+        queue.async { [weak self] in
+            guard let self, self.includeApps != enabled else { return }
+            self.includeApps = enabled
+            // A long pause would make the next delta look artificially large.
+            self.previousPidCPU = [:]
+        }
+    }
+
     /// Requests an immediate sample (used after terminating an app).
     func refreshNow() {
         queue.async { [weak self] in
@@ -138,6 +153,7 @@ final class SystemLoadMonitor: ObservableObject {
             guard let self else { return }
             self.timer?.cancel()
             self.timer = nil
+            self.hasStarted = false
             self.previousHostCPU = nil
             self.previousPidCPU = [:]
             self.previousSampleNanos = 0

@@ -87,6 +87,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
 
+        // Start host CPU/memory history at launch so System Load already has a
+        // chart when the user opens it. Per-app scanning stays off until then.
+        let environment = ProcessInfo.processInfo.environment
+        let isDemo = environment["TIDYMAC_DEMO"] == "1"
+            || CommandLine.arguments.contains("--demo")
+        SystemLoadMonitor.shared.start(isDemo: isDemo, includeApps: false)
+
         settingsCancellable = AppSettings.shared.$menuBarCPU
             .receive(on: DispatchQueue.main)
             .sink { [weak self] enabled in
