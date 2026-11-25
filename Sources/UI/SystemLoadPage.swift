@@ -674,6 +674,8 @@ final class TrendHostView: NSView {
     private var currentSpan: Double = 0.06
     private var currentInterval: TimeInterval = 1
     private var renderedSize: CGSize = .zero
+    private var renderedColor: Color = .clear
+    private var renderedSpan: Double = 0
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -687,14 +689,19 @@ final class TrendHostView: NSView {
     required init?(coder: NSCoder) { nil }
 
     func apply(values: [Double], color: Color, minimumSpan: Double, interval: TimeInterval) {
+        let valuesChanged = values != currentValues
+        let styleChanged = color != renderedColor || minimumSpan != renderedSpan
         currentValues = values
         currentColor = color
         currentSpan = minimumSpan
         currentInterval = interval
+
         if bounds.size != renderedSize {
             render(animate: false)
-        } else {
+        } else if valuesChanged {
             render(animate: true)
+        } else if styleChanged {
+            render(animate: false)
         }
     }
 
@@ -724,6 +731,8 @@ final class TrendHostView: NSView {
         contentLayer.contentsScale = scale
         contentLayer.frame = CGRect(origin: .zero, size: size)
         contentLayer.position = .zero
+        renderedColor = currentColor
+        renderedSpan = currentSpan
         CATransaction.commit()
 
         contentLayer.removeAnimation(forKey: "push")
