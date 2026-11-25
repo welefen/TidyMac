@@ -562,9 +562,7 @@ private enum AppIconStore {
 
 /// A quiet two-minute sparkline: a hairline trend and a barely-there area wash
 /// on a neutral strip. No axes, no glow — the big figure next to it carries the value.
-/// Crossfades the previous digits out while the new value is already in place.
-/// The outgoing label is a rasterized bitmap, so the fade runs as a layer
-/// opacity animation instead of re-laying out the page every frame.
+/// Numbers roll between values with SwiftUI's numeric content transition.
 private struct FadingNumber: View {
     let text: String
     let font: Font
@@ -599,6 +597,8 @@ private struct TrendLayerView: NSViewRepresentable {
 /// invalidate the whole System Load page every frame and burn CPU.
 final class TrendHostView: NSView {
     private let contentLayer = CALayer()
+    private let outgoingLayer = CALayer()
+    private var isTransitioning = false
     private var currentValues: [Double] = []
     private var currentColor: Color = Theme.accent
     private var currentSpan: Double = 0.06
@@ -613,6 +613,12 @@ final class TrendHostView: NSView {
         layer?.masksToBounds = true
         contentLayer.anchorPoint = .zero
         contentLayer.position = .zero
+
+        outgoingLayer.anchorPoint = .zero
+        outgoingLayer.position = .zero
+        outgoingLayer.isHidden = true
+
+        layer?.addSublayer(outgoingLayer)
         layer?.addSublayer(contentLayer)
     }
 
@@ -655,6 +661,15 @@ final class TrendHostView: NSView {
         renderer.scale = scale
         guard let image = renderer.cgImage else { return }
 
+        if isTransitioning {
+            contentLayer.removeAnimation(forKey: "push")
+            outgoingLayer.removeAnimation(forKey: "push")
+            contentLayer.position = .zero
+            outgoingLayer.isHidden = true
+            isTransitioning = false
+        }
+
+        let oldContents = contentLayer.contents
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         contentLayer.contents = image
@@ -666,16 +681,40 @@ final class TrendHostView: NSView {
         CATransaction.commit()
 
         contentLayer.removeAnimation(forKey: "push")
-        guard animate else { return }
+        guard animate, let oldContents else { return }
 
         let capacity = SystemLoadMonitor.historyCapacity
         let step = size.width / CGFloat(max(capacity - 1, 1))
-        let animation = CABasicAnimation(keyPath: "position.x")
-        animation.fromValue = step
-        animation.toValue = 0
-        animation.duration = currentInterval * 0.9
-        animation.timingFunction = CAMediaTimingFunction(name: .linear)
-        contentLayer.add(animation, forKey: "push")
+
+        outgoingLayer.contents = oldContents
+        outgoingLayer.contentsScale = scale
+        outgoingLayer.frame = CGRect(origin: .zero, size: size)
+        outgoingLayer.opacity = 1
+        outgoingLayer.isHidden = false
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        contentLayer.position = CGPoint(x: step, y: 0)
+        outgoingLayer.position = .zero
+        CATransaction.commit()
+
+        let push = CABasicAnimation(keyPath: "position.x")
+        push.fromValue = step
+        push.toValue = 0
+        push.duration = currentInterval * 0.9
+        push.timingFunction = CAMediaTimingFunction(name: .linear)
+
+        isTransitioning = true
+        CATransaction.begin()
+        CATransaction.setCompletionBlock { [weak self] in
+            guard let self else { return }
+            self.contentLayer.position = .zero
+            self.outgoingLayer.isHidden = true
+            self.outgoingLayer.removeAnimation(forKey: "push")
+            self.isTransitioning = false
+        }
+        contentLayer.add(push, forKey: "push")
+        CATransaction.commit()
     }
 
     private func normalized(_ values: [Double]) -> [Double] {
@@ -694,6 +733,7 @@ private struct TrendCanvas: View {
     var body: some View {
         Canvas { canvas, size in
             let rect = CGRect(origin: .zero, size: size)
+            canvas.fill(Path(rect), with: .color(Theme.card))
             canvas.fill(
                 Path(roundedRect: rect, cornerRadius: 5),
                 with: .color(Theme.subtleFill)
@@ -723,8 +763,9 @@ private struct TrendCanvas: View {
 }
 
 /// Newest samples sit at the right edge; older samples march left one slot
-/// per second. Offsetting the whole curve by +1 slot and animating it back to
-/// zero turns each new sample into a smooth right-to-left push.
+/// per second. Each refresh draws the new curve shifted right by one slot and
+/// slides it left over the previous frame, so the chart advances without any
+/// backward jump.
 private enum TrendLayout {
     static func points(samples: [Double], step: CGFloat, size: CGSize) -> [CGPoint] {
         guard !samples.isEmpty, step > 0, size.height > 0 else { return [] }
