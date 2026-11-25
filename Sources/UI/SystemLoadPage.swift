@@ -30,7 +30,6 @@ struct SystemLoadPage: View {
                 PageHeader(title: "系统负载", subtitle: "查看整机与各 App 的 CPU、GPU、内存占用")
 
                 overallCard
-                gpuCard
                 appsCard
 
                 HStack(spacing: 6) {
@@ -49,9 +48,9 @@ struct SystemLoadPage: View {
                 }
             }
             .padding(.horizontal, Theme.pagePadding)
-            .padding(.top, 30)
-            .padding(.bottom, 40)
-            .frame(maxWidth: 1100)
+            .padding(.top, 28)
+            .padding(.bottom, 32)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .onAppear {
             monitor.start(isDemo: app.isDemo, includeApps: false)
@@ -72,14 +71,23 @@ struct SystemLoadPage: View {
         HStack(alignment: .top, spacing: 0) {
             cpuColumn
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.trailing, 28)
+                .padding(.trailing, 24)
 
             Rectangle()
                 .fill(Theme.stroke)
                 .frame(width: 1, height: 134)
-                .padding(.trailing, 28)
+                .padding(.trailing, 24)
 
             memoryColumn
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.trailing, 24)
+
+            Rectangle()
+                .fill(Theme.stroke)
+                .frame(width: 1, height: 134)
+                .padding(.trailing, 24)
+
+            gpuColumn
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .qyPanel(padding: 22)
@@ -204,10 +212,8 @@ struct SystemLoadPage: View {
         }
     }
 
-    // MARK: - GPU
-
-    private var gpuCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+    private var gpuColumn: some View {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("GPU")
                     .font(.system(size: 11))
@@ -215,110 +221,49 @@ struct SystemLoadPage: View {
                 Spacer(minLength: 8)
                 if let gpu = monitor.snapshot?.gpu {
                     Text(gpu.model)
-                        .font(.system(size: 11))
+                        .font(.system(size: 10.5))
                         .foregroundStyle(Theme.textSecondary)
+                        .lineLimit(1)
                     if gpu.coreCount > 0 {
                         Text(L("%@ 核", "\(gpu.coreCount)"))
-                            .font(Theme.monoFont(10.5))
+                            .font(Theme.monoFont(9.5))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
             }
 
             if let gpu = monitor.snapshot?.gpu {
-                HStack(alignment: .top, spacing: 0) {
-                    gpuUtilizationColumn(gpu)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.trailing, 28)
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    FadingNumber(
+                        text: percent(gpu.utilizationFraction),
+                        font: Theme.monoFont(40, weight: .medium),
+                        color: Theme.textPrimary
+                    )
+                    Text(L("利用率"))
+                        .font(Theme.monoFont(11))
+                        .foregroundStyle(Theme.textTertiary)
+                }
 
-                    Rectangle()
-                        .fill(Theme.stroke)
-                        .frame(width: 1, height: 134)
-                        .padding(.trailing, 28)
+                TrendLayerView(values: gpuHistory, color: Theme.accent, minimumSpan: 0.08)
+                    .frame(height: 32)
+                    .padding(.top, 2)
 
-                    gpuMemoryColumn(gpu)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 8) {
+                    Text(L("所有 GPU 任务"))
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textSecondary)
+                    Spacer(minLength: 8)
+                    Text(trendWindowLabel(monitor.gpuHistory.count))
+                        .font(Theme.monoFont(9.5))
+                        .foregroundStyle(Theme.textTertiary)
                 }
             } else {
+                Text("—")
+                    .font(Theme.monoFont(40, weight: .medium))
+                    .foregroundStyle(Theme.textTertiary)
                 Text(L("无法读取此设备的 GPU 统计"))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textSecondary)
-                    .padding(.vertical, 8)
-            }
-        }
-        .qyPanel(padding: 22)
-    }
-
-    private func gpuUtilizationColumn(_ gpu: GPUMetrics) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                let text = percent(gpu.utilizationFraction)
-                FadingNumber(
-                    text: text,
-                    font: Theme.monoFont(40, weight: .medium),
-                    color: Theme.textPrimary
-                )
-                Text(L("利用率"))
-                    .font(Theme.monoFont(11))
-                    .foregroundStyle(Theme.textTertiary)
-            }
-
-            TrendLayerView(values: gpuHistory, color: Theme.accent, minimumSpan: 0.08)
-                .frame(height: 32)
-                .padding(.top, 2)
-
-            HStack(spacing: 8) {
-                Text(L("所有 GPU 任务"))
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.textSecondary)
-                Spacer(minLength: 8)
-                Text(trendWindowLabel(monitor.gpuHistory.count))
-                    .font(Theme.monoFont(9.5))
-                    .foregroundStyle(Theme.textTertiary)
-            }
-        }
-    }
-
-    private func gpuMemoryColumn(_ gpu: GPUMetrics) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(L("GPU 内存"))
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textTertiary)
-
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                let parts = Format.bytesParts(gpu.inUseBytes)
-                Text(parts.number)
-                    .font(Theme.monoFont(40, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                    .id(parts.number)
-                    .transition(.opacity)
-                    .animation(.easeOut(duration: 0.18), value: parts.number)
-                if !parts.unit.isEmpty {
-                    Text(parts.unit)
-                        .font(Theme.monoFont(14, weight: .medium))
-                        .foregroundStyle(Theme.textSecondary)
-                        .id(parts.unit)
-                        .transition(.opacity)
-                        .animation(.easeOut(duration: 0.18), value: parts.unit)
-                }
-            }
-
-            CapacityRuler(
-                fraction: gpu.allocatedBytes > 0
-                    ? min(Double(gpu.inUseBytes) / Double(gpu.allocatedBytes), 1)
-                    : 0,
-                height: 6
-            )
-            .padding(.top, 2)
-
-            HStack(spacing: 8) {
-                Text(L("统一内存"))
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.textSecondary)
-                Spacer(minLength: 8)
-                Text(L("已分配 %@", Format.bytes(gpu.allocatedBytes)))
-                    .font(Theme.monoFont(9.5))
-                    .foregroundStyle(Theme.textTertiary)
             }
         }
     }

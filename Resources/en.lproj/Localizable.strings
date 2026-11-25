@@ -598,9 +598,6 @@ Uninstalling this App Store app requires an administrator password.";
 
 /* GPU */
 "GPU 利用率" = "GPU utilization";
-"GPU 内存" = "GPU memory";
 "所有 GPU 任务" = "All GPU work";
-"统一内存" = "Unified memory";
-"已分配 %@" = "%@ allocated";
 "无法读取此设备的 GPU 统计" = "GPU stats unavailable on this device";
 "利用率" = "utilization";
