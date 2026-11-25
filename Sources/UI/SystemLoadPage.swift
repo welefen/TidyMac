@@ -34,7 +34,7 @@ struct SystemLoadPage: View {
                 HStack(spacing: 6) {
                     Image(systemName: "info.circle")
                         .font(.system(size: 10))
-                    Text(L("仅统计当前用户可读进程；系统守护进程可能未显示。"))
+                    Text(L("仅统计当前用户可读进程；CPU 为整机占比，系统守护进程可能未显示。"))
                 }
                 .font(.system(size: 10.5))
                 .foregroundStyle(Theme.textTertiary)

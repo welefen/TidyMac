@@ -331,7 +331,10 @@ final class SystemLoadMonitor: ObservableObject {
             if let previous = previousPidCPU[pid], elapsed > 0 {
                 let delta = Double(cpuUnits &- previous)
                 let seconds = delta * timebaseNumer / timebaseDenom / 1_000_000_000
-                fraction = max(0, seconds / elapsed)
+                // Normalize to the whole machine so per-app values share the
+                // same 0–100% scale as the overall CPU figure above.
+                let cores = Double(ProcessInfo.processInfo.activeProcessorCount)
+                fraction = max(0, seconds / elapsed / max(cores, 1))
             }
 
             nameBuffer.withUnsafeMutableBufferPointer { buffer in
@@ -415,33 +418,33 @@ final class SystemLoadMonitor: ObservableObject {
 
         let apps: [AppUsage] = [
             AppUsage(name: "Google Chrome", bundlePath: chromePath,
-                     cpuFraction: 0.184, memoryBytes: 2_310_000_000,
+                     cpuFraction: 0.084, memoryBytes: 2_310_000_000,
                      processes: [
-                        process("Google Chrome", 0.121, 1_020_000_000, pid: 1201),
-                        process("Google Chrome Helper (Renderer)", 0.046, 780_000_000, pid: 1202),
-                        process("Google Chrome Helper (GPU)", 0.017, 510_000_000, pid: 1203)
+                        process("Google Chrome", 0.055, 1_020_000_000, pid: 1201),
+                        process("Google Chrome Helper (Renderer)", 0.021, 780_000_000, pid: 1202),
+                        process("Google Chrome Helper (GPU)", 0.008, 510_000_000, pid: 1203)
                      ]),
             AppUsage(name: "Visual Studio Code", bundlePath: xcodePath,
-                     cpuFraction: 0.072, memoryBytes: 1_820_000_000,
+                     cpuFraction: 0.032, memoryBytes: 1_820_000_000,
                      processes: [
-                        process("Code Helper (Renderer)", 0.058, 1_120_000_000, pid: 1301),
-                        process("SourceKitService", 0.014, 700_000_000, pid: 1302)
+                        process("Code Helper (Renderer)", 0.026, 1_120_000_000, pid: 1301),
+                        process("SourceKitService", 0.006, 700_000_000, pid: 1302)
                      ]),
             AppUsage(name: "Docker", bundlePath: dockerPath,
-                     cpuFraction: 0.041, memoryBytes: 1_240_000_000,
-                     processes: [process("com.docker.backend", 0.041, 1_240_000_000, pid: 1401)]),
+                     cpuFraction: 0.018, memoryBytes: 1_240_000_000,
+                     processes: [process("com.docker.backend", 0.018, 1_240_000_000, pid: 1401)]),
             AppUsage(name: "WeChat", bundlePath: wechatPath,
-                     cpuFraction: 0.022, memoryBytes: 890_000_000,
-                     processes: [process("WeChat", 0.022, 890_000_000, pid: 1501)]),
+                     cpuFraction: 0.010, memoryBytes: 890_000_000,
+                     processes: [process("WeChat", 0.010, 890_000_000, pid: 1501)]),
             AppUsage(name: "Safari", bundlePath: safariPath,
-                     cpuFraction: 0.013, memoryBytes: 640_000_000,
+                     cpuFraction: 0.006, memoryBytes: 640_000_000,
                      processes: [
-                        process("Safari", 0.009, 420_000_000, pid: 1601),
-                        process("com.apple.WebKit.WebContent", 0.004, 220_000_000, pid: 1602)
+                        process("Safari", 0.004, 420_000_000, pid: 1601),
+                        process("com.apple.WebKit.WebContent", 0.002, 220_000_000, pid: 1602)
                      ]),
             AppUsage(name: "ChatGPT", bundlePath: spotifyPath,
-                     cpuFraction: 0.006, memoryBytes: 410_000_000,
-                     processes: [process("ChatGPT", 0.006, 410_000_000, pid: 1701)])
+                     cpuFraction: 0.003, memoryBytes: 410_000_000,
+                     processes: [process("ChatGPT", 0.003, 410_000_000, pid: 1701)])
         ]
 
         return SystemLoadSnapshot(

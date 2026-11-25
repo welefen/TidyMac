@@ -525,6 +525,7 @@ Uninstalling this App Store app requires an administrator password.";
 "正在读取…" = "Reading…";
 "暂无可读取的 App 进程" = "No readable app processes";
 "仅统计当前用户可读进程；系统守护进程可能未显示。" = "Only processes readable by the current user are counted; system daemons may be hidden.";
+"仅统计当前用户可读进程；CPU 为整机占比，系统守护进程可能未显示。" = "Only processes readable by the current user are counted; CPU is a share of the whole machine, and system daemons may be hidden.";
 "上次采样 %@" = "Last sample %@";
 "结束「%@」" = "End “%@”";
 
