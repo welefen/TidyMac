@@ -43,6 +43,7 @@ struct SystemLoadSnapshot: Equatable, Sendable {
     let memoryTotalBytes: Int64
     let memoryPressure: MemoryPressureLevel
     let swapUsedBytes: Int64
+    let gpu: GPUMetrics?
     let appUsages: [AppUsage]
     let readableProcessCount: Int
     let sampledAt: Date
@@ -59,6 +60,7 @@ final class SystemLoadMonitor: ObservableObject {
     @Published private(set) var isSampling = false
     @Published private(set) var cpuHistory: [Double] = []
     @Published private(set) var memoryHistory: [Double] = []
+    @Published private(set) var gpuHistory: [Double] = []
 
     /// One-second cadence × 120 samples = a two-minute trend.
     static let refreshInterval: TimeInterval = 1
@@ -107,7 +109,14 @@ final class SystemLoadMonitor: ObservableObject {
                     self.memoryHistory = Self.demoHistory(
                         base: Double(demo.memoryUsedBytes) / Double(max(demo.memoryTotalBytes, 1)),
                         amplitude: 0.007,
-                        noiseScale: 0.25
+                        noiseScale: 0.25,
+                        seed: 0x5DEE_CE66_D1F1_3A55
+                    )
+                    self.gpuHistory = Self.demoHistory(
+                        base: demo.gpu?.utilizationFraction ?? 0.36,
+                        amplitude: 0.030,
+                        noiseScale: 0.55,
+                        seed: 0xC0FF_EE00_1234_5678
                     )
                     self.isSampling = true
                 }
@@ -124,6 +133,7 @@ final class SystemLoadMonitor: ObservableObject {
             DispatchQueue.main.async {
                 self.cpuHistory = []
                 self.memoryHistory = []
+                self.gpuHistory = []
                 self.isSampling = true
             }
         }
@@ -171,6 +181,7 @@ final class SystemLoadMonitor: ObservableObject {
 
         let cpu = sampleHostCPU()
         let memory = sampleMemory()
+        let gpu = GPUProbe.sample()
         let apps: (usages: [AppUsage], readable: Int) = includeApps
             ? sampleApps(elapsed: elapsed)
             : ([], 0)
@@ -184,6 +195,7 @@ final class SystemLoadMonitor: ObservableObject {
             memoryTotalBytes: memory.total,
             memoryPressure: memory.pressure,
             swapUsedBytes: memory.swapUsed,
+            gpu: gpu,
             appUsages: apps.usages,
             readableProcessCount: apps.readable,
             sampledAt: Date()
@@ -196,11 +208,15 @@ final class SystemLoadMonitor: ObservableObject {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.snapshot = snapshot
-            self.appendHistory(cpu: snapshot.cpuFraction, memory: memoryFraction)
+            self.appendHistory(
+                cpu: snapshot.cpuFraction,
+                memory: memoryFraction,
+                gpu: snapshot.gpu?.utilizationFraction
+            )
         }
     }
 
-    private func appendHistory(cpu: Double, memory: Double) {
+    private func appendHistory(cpu: Double, memory: Double, gpu: Double?) {
         cpuHistory.append(min(max(cpu, 0), 1))
         if cpuHistory.count > Self.historyCapacity {
             cpuHistory.removeFirst(cpuHistory.count - Self.historyCapacity)
@@ -209,14 +225,21 @@ final class SystemLoadMonitor: ObservableObject {
         if memoryHistory.count > Self.historyCapacity {
             memoryHistory.removeFirst(memoryHistory.count - Self.historyCapacity)
         }
+        if let gpu {
+            gpuHistory.append(min(max(gpu, 0), 1))
+            if gpuHistory.count > Self.historyCapacity {
+                gpuHistory.removeFirst(gpuHistory.count - Self.historyCapacity)
+            }
+        }
     }
 
     private static func demoHistory(
         base: Double,
         amplitude: Double,
-        noiseScale: Double
+        noiseScale: Double,
+        seed: UInt64 = 0x9E37_79B9_7F4A_7C15
     ) -> [Double] {
-        var seed: UInt64 = 0x9E37_79B9_7F4A_7C15
+        var seed = seed
         var value = base
         return (0..<Self.historyCapacity).map { index in
             seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
@@ -470,6 +493,13 @@ final class SystemLoadMonitor: ObservableObject {
             memoryTotalBytes: 18_000_000_000,
             memoryPressure: .normal,
             swapUsedBytes: 0,
+            gpu: GPUMetrics(
+                utilizationFraction: 0.36,
+                allocatedBytes: 2_400_000_000,
+                inUseBytes: 860_000_000,
+                coreCount: 10,
+                model: "Apple M5"
+            ),
             appUsages: apps,
             readableProcessCount: 11,
             sampledAt: Date()

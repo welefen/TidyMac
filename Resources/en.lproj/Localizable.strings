@@ -510,6 +510,7 @@ Uninstalling this App Store app requires an administrator password.";
 "其他管理空间的方式" = "Other ways to manage space";
 "系统负载" = "System Load";
 "查看整机与各 App 的 CPU、内存占用" = "See CPU and memory use across the Mac and every app";
+"查看整机与各 App 的 CPU、GPU、内存占用" = "See CPU, GPU and memory use across the Mac and every app";
 "内存" = "Memory";
 "%@ 核" = "%@ cores";
 "所有进程合计" = "All processes combined";
@@ -594,3 +595,12 @@ Uninstalling this App Store app requires an administrator password.";
 /* System Load trend caption */
 "最近 2 分钟" = "Last 2 min";
 "最近 %d 秒" = "Last %d s";
+
+/* GPU */
+"GPU 利用率" = "GPU utilization";
+"GPU 内存" = "GPU memory";
+"所有 GPU 任务" = "All GPU work";
+"统一内存" = "Unified memory";
+"已分配 %@" = "%@ allocated";
+"无法读取此设备的 GPU 统计" = "GPU stats unavailable on this device";
+"利用率" = "utilization";

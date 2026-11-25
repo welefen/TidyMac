@@ -42,7 +42,7 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 - Re-analyze any folder you choose
 
 ### System Load
-- Live CPU and memory overview: current usage, last-2-minute trend recorded from app launch, memory pressure and swap
+- Live CPU, GPU and memory overview: whole-machine usage, last-2-minute trend recorded from app launch, memory pressure and swap; GPU shows utilization, unified-memory use and core count
 - Per-app CPU and memory, aggregated across helper processes, with expandable process details
 - One-second refresh; only processes readable by the current user are counted
 - Row order stays fixed while the pointer is over the list, so the end-app button keeps its place
