@@ -14,6 +14,9 @@ struct TidyMacApp: App {
                 .environmentObject(appState)
                 .environmentObject(settings)
                 .environmentObject(updater)
+                .onReceive(NotificationCenter.default.publisher(for: .tidymacOpenSystemLoad)) { _ in
+                    appState.navigate(to: .systemLoad)
+                }
                 .frame(minWidth: Theme.windowMinWidth, minHeight: Theme.windowMinHeight)
         }
         .windowStyle(.hiddenTitleBar)
@@ -76,10 +79,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var configuredWindows = Set<ObjectIdentifier>()
     private var keyWindowObserver: NSObjectProtocol?
     private var zoomMonitor: Any?
+    private var menuBarStats: MenuBarStatsController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+
+        if menuBarStats == nil, ProcessInfo.processInfo.environment["TIDYMAC_DISABLE_MENUBAR"] == nil {
+            menuBarStats = MenuBarStatsController()
+        }
 
         // Style the SwiftUI window from the outside instead of placing an
         // NSViewRepresentable inside the view tree. A representable used as a
@@ -136,6 +144,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSEvent.removeMonitor(zoomMonitor)
             self.zoomMonitor = nil
         }
+        menuBarStats?.stop()
+        menuBarStats = nil
+
         MainActor.assumeIsolated {
             Analytics.shared.track(.appEnd, [
                 "duration_ms": .int(Analytics.shared.sessionDurationMilliseconds)

@@ -59,6 +59,7 @@ final class SystemLoadMonitor: ObservableObject {
     private let queue = DispatchQueue(label: "com.tidymac.systemload", qos: .utility)
     private var timer: DispatchSourceTimer?
     private let interval: TimeInterval = 2
+    private var includeApps = true
 
     private var previousHostCPU: host_cpu_load_info_data_t?
     private var previousPidCPU: [Int32: UInt64] = [:]
@@ -75,10 +76,11 @@ final class SystemLoadMonitor: ObservableObject {
         timebaseDenom = Double(timebase.denom)
     }
 
-    func start(isDemo: Bool) {
+    func start(isDemo: Bool, includeApps: Bool = true) {
         queue.async { [weak self] in
             guard let self, self.timer == nil else { return }
             self.isDemo = isDemo
+            self.includeApps = includeApps
             self.previousHostCPU = nil
             self.previousPidCPU = [:]
             self.previousSampleNanos = 0
@@ -133,7 +135,9 @@ final class SystemLoadMonitor: ObservableObject {
 
         let cpu = sampleHostCPU()
         let memory = sampleMemory()
-        let apps = sampleApps(elapsed: elapsed)
+        let apps: (usages: [AppUsage], readable: Int) = includeApps
+            ? sampleApps(elapsed: elapsed)
+            : ([], 0)
 
         previousSampleNanos = now
 
