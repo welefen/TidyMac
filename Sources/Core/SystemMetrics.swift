@@ -62,9 +62,11 @@ final class SystemLoadMonitor: ObservableObject {
     @Published private(set) var memoryHistory: [Double] = []
     @Published private(set) var gpuHistory: [Double] = []
 
-    /// One-second cadence × 120 samples = a two-minute trend.
+    /// One-second cadence; 60 visible seconds plus one offscreen neighbour on
+    /// each side of the sixty-second marquee window.
     static let refreshInterval: TimeInterval = 1
-    static let historyCapacity = 60
+    static let displayCapacity = 60
+    static let historyCapacity = 62
 
     private let queue = DispatchQueue(label: "com.tidymac.systemload", qos: .utility)
     private var timer: DispatchSourceTimer?

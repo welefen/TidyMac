@@ -184,11 +184,11 @@ struct SystemLoadPage: View {
         history.count > 1 ? history : [current, current]
     }
 
-    /// Until the two-minute window fills, name the window we actually have.
+    /// Until the one-minute window fills, name the window we actually have.
     private func trendWindowLabel(_ count: Int) -> String {
-        guard count < SystemLoadMonitor.historyCapacity else { return L("最近 1 分钟") }
-        let seconds = max(Int(Double(count) * SystemLoadMonitor.refreshInterval), 1)
-        return L("最近 %d 秒", seconds)
+        let visible = min(SystemLoadMonitor.displayCapacity, max(count - 1, 1))
+        guard visible < SystemLoadMonitor.displayCapacity else { return L("最近 1 分钟") }
+        return L("最近 %d 秒", visible)
     }
 
     private var memoryFraction: Double {
@@ -592,10 +592,8 @@ private struct TrendLayerView: NSViewRepresentable {
 /// Animation transform on a rasterized curve. A SwiftUI offset animation would
 /// invalidate the whole System Load page every frame and burn CPU.
 final class TrendHostView: NSView {
-    private let contentLayer = CALayer()
-    private let outgoingLayer = CALayer()
-    private let edgeMask = CAGradientLayer()
-    private var isTransitioning = false
+    private let backgroundLayer = CALayer()
+    private let curveLayer = CALayer()
     private var currentValues: [Double] = []
     private var currentColor: Color = Theme.accent
     private var currentSpan: Double = 0.06
@@ -612,24 +610,30 @@ final class TrendHostView: NSView {
         wantsLayer = true
         layer?.masksToBounds = true
         layer?.cornerRadius = 5
-        contentLayer.anchorPoint = .zero
-        contentLayer.position = .zero
 
-        outgoingLayer.anchorPoint = .zero
-        outgoingLayer.position = .zero
-        outgoingLayer.isHidden = true
+        backgroundLayer.anchorPoint = .zero
+        backgroundLayer.position = .zero
 
-        layer?.addSublayer(outgoingLayer)
-        layer?.addSublayer(contentLayer)
+        curveLayer.anchorPoint = .zero
+        curveLayer.position = .zero
 
-        edgeMask.colors = [NSColor.clear.cgColor, NSColor.black.cgColor]
-        edgeMask.locations = [0, 0.05]
-        edgeMask.startPoint = CGPoint(x: 0, y: 0.5)
-        edgeMask.endPoint = CGPoint(x: 1, y: 0.5)
-        layer?.mask = edgeMask
+        layer?.addSublayer(backgroundLayer)
+        layer?.addSublayer(curveLayer)
     }
 
     required init?(coder: NSCoder) { nil }
+
+    override func layout() {
+        super.layout()
+        if bounds.size != renderedSize {
+            render(animate: false)
+        }
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        render(animate: false)
+    }
 
     func apply(values: [Double], color: Color, minimumSpan: Double, interval: TimeInterval) {
         let valuesChanged = values != currentValues
@@ -652,88 +656,74 @@ final class TrendHostView: NSView {
         }
     }
 
-    override func layout() {
-        super.layout()
-        edgeMask.frame = bounds
-        if bounds.size != renderedSize {
-            render(animate: false)
-        }
-    }
-
     private func render(animate: Bool) {
         let size = bounds.size
         guard size.width > 1, size.height > 1 else { return }
         renderedSize = size
 
+        let step = size.width / CGFloat(SystemLoadMonitor.displayCapacity)
+        let isFull = currentValues.count >= SystemLoadMonitor.historyCapacity
+
+        renderBackground(size: size)
+
         let samples = normalized(currentValues)
         let lower = scaleLower ?? 0
         let upper = scaleUpper ?? 1
-        let content = TrendCanvas(samples: samples, color: currentColor, lower: lower, upper: upper)
-            .frame(width: size.width, height: size.height)
+        let imageWidth = size.width + step
+        let content = TrendCanvas(
+            samples: samples,
+            color: currentColor,
+            lower: lower,
+            upper: upper,
+            viewportWidth: size.width,
+            isFull: isFull
+        )
+        .frame(width: imageWidth, height: size.height)
         let renderer = ImageRenderer(content: content)
+        renderer.isOpaque = false
         let scale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
         renderer.scale = scale
         guard let image = renderer.cgImage else { return }
 
-        if isTransitioning {
-            contentLayer.removeAnimation(forKey: "push")
-            outgoingLayer.removeAnimation(forKey: "push")
-            contentLayer.position = .zero
-            outgoingLayer.isHidden = true
-            isTransitioning = false
-        }
-
-        let oldContents = contentLayer.contents
+        curveLayer.removeAnimation(forKey: "push")
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        contentLayer.contents = image
-        contentLayer.contentsScale = scale
-        contentLayer.frame = CGRect(origin: .zero, size: size)
-        contentLayer.position = .zero
+        curveLayer.contents = image
+        curveLayer.contentsScale = scale
+        curveLayer.frame = CGRect(x: 0, y: 0, width: imageWidth, height: size.height)
+        curveLayer.position = isFull && !animate
+            ? CGPoint(x: -step, y: 0)
+            : .zero
         renderedColor = currentColor
         renderedSpan = currentSpan
         CATransaction.commit()
 
-        contentLayer.removeAnimation(forKey: "push")
-        guard animate, let oldContents else { return }
+        guard animate else { return }
 
-        let step = size.width / CGFloat(max(SystemLoadMonitor.historyCapacity - 1, 1))
-
-        outgoingLayer.contents = oldContents
-        outgoingLayer.contentsScale = scale
-        outgoingLayer.frame = CGRect(origin: .zero, size: size)
-        outgoingLayer.opacity = 1
-        outgoingLayer.isHidden = false
+        curveLayer.position = .zero
+        let push = CABasicAnimation(keyPath: "position.x")
+        push.fromValue = 0
+        push.toValue = -step
+        push.duration = currentInterval * 0.9
+        push.timingFunction = CAMediaTimingFunction(name: .linear)
+        curveLayer.add(push, forKey: "push")
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        contentLayer.position = CGPoint(x: step, y: 0)
-        outgoingLayer.position = .zero
+        curveLayer.position = CGPoint(x: -step, y: 0)
         CATransaction.commit()
+    }
 
-        let push = CABasicAnimation(keyPath: "position.x")
-        push.fromValue = step
-        push.toValue = 0
-        push.duration = currentInterval * 0.9
-        push.timingFunction = CAMediaTimingFunction(name: .linear)
-
-        let exit = CABasicAnimation(keyPath: "position.x")
-        exit.fromValue = 0
-        exit.toValue = -step
-        exit.duration = currentInterval * 0.9
-        exit.timingFunction = CAMediaTimingFunction(name: .linear)
-
-        isTransitioning = true
+    private func renderBackground(size: CGSize) {
+        let renderer = ImageRenderer(content: TrendBackground().frame(width: size.width, height: size.height))
+        let scale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
+        renderer.scale = scale
+        guard let image = renderer.cgImage else { return }
         CATransaction.begin()
-        CATransaction.setCompletionBlock { [weak self] in
-            guard let self else { return }
-            self.contentLayer.position = .zero
-            self.outgoingLayer.isHidden = true
-            self.outgoingLayer.removeAnimation(forKey: "push")
-            self.isTransitioning = false
-        }
-        contentLayer.add(push, forKey: "push")
-        outgoingLayer.add(exit, forKey: "push")
+        CATransaction.setDisableActions(true)
+        backgroundLayer.contents = image
+        backgroundLayer.contentsScale = scale
+        backgroundLayer.frame = CGRect(origin: .zero, size: size)
         CATransaction.commit()
     }
 
@@ -748,9 +738,6 @@ final class TrendHostView: NSView {
             upper = mid + currentSpan / 2
         }
 
-        // Keep a stable vertical scale once it covers the data. A per-frame
-        // autoscale would make the curve breathe up and down every second,
-        // which reads as vertical jitter and breaks the horizontal push.
         if let existingLower = scaleLower, let existingUpper = scaleUpper,
            lower >= existingLower, upper <= existingUpper {
             lower = existingLower
@@ -765,35 +752,14 @@ final class TrendHostView: NSView {
     }
 }
 
-private struct TrendCanvas: View {
-    let samples: [Double]
-    let color: Color
-    let lower: Double
-    let upper: Double
-
+private struct TrendBackground: View {
     var body: some View {
         Canvas { canvas, size in
             let rect = CGRect(origin: .zero, size: size)
-            canvas.fill(Path(rect), with: .color(Theme.card))
             canvas.fill(
                 Path(roundedRect: rect, cornerRadius: 5),
                 with: .color(Theme.subtleFill)
             )
-
-            let step = size.width / CGFloat(max(SystemLoadMonitor.historyCapacity - 1, 1))
-            let points = TrendLayout.points(samples: samples, step: step, size: size)
-            if points.count > 1 {
-                canvas.fill(
-                    TrendLayout.areaPath(points, in: size),
-                    with: .color(color.opacity(0.08))
-                )
-                canvas.stroke(
-                    TrendLayout.smoothPath(points),
-                    with: .color(color),
-                    style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
-                )
-            }
-
             var hairline = Path()
             hairline.move(to: CGPoint(x: 0, y: size.height - 0.5))
             hairline.addLine(to: CGPoint(x: size.width, y: size.height - 0.5))
@@ -802,19 +768,55 @@ private struct TrendCanvas: View {
     }
 }
 
-/// Newest samples sit at the right edge; older samples march left one slot
-/// per second. Each refresh draws the new curve shifted right by one slot and
-/// slides it left over the previous frame, so the chart advances without any
-/// backward jump.
+private struct TrendCanvas: View {
+    let samples: [Double]
+    let color: Color
+    let lower: Double
+    let upper: Double
+    let viewportWidth: CGFloat
+    let isFull: Bool
+
+    var body: some View {
+        Canvas { canvas, size in
+            let step = viewportWidth / CGFloat(SystemLoadMonitor.displayCapacity)
+            let points = TrendLayout.points(
+                samples: samples,
+                step: step,
+                viewportWidth: viewportWidth,
+                height: size.height,
+                isFull: isFull
+            )
+            guard points.count > 1 else { return }
+            canvas.fill(
+                TrendLayout.areaPath(points, in: size),
+                with: .color(color.opacity(0.08))
+            )
+            canvas.stroke(
+                TrendLayout.smoothPath(points),
+                with: .color(color),
+                style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
+            )
+        }
+    }
+}
+
 private enum TrendLayout {
-    static func points(samples: [Double], step: CGFloat, size: CGSize) -> [CGPoint] {
-        guard !samples.isEmpty, step > 0, size.height > 0 else { return [] }
+    static func points(
+        samples: [Double],
+        step: CGFloat,
+        viewportWidth: CGFloat,
+        height: CGFloat,
+        isFull: Bool
+    ) -> [CGPoint] {
+        guard !samples.isEmpty, step > 0, viewportWidth > 0 else { return [] }
         let count = samples.count
+        let startX = isFull
+            ? 0
+            : viewportWidth - CGFloat(max(count - 1, 1)) * step
         return samples.enumerated().map { index, value in
-            let age = CGFloat(count - 1 - index)
-            return CGPoint(
-                x: size.width - age * step,
-                y: size.height * (1 - CGFloat(value))
+            CGPoint(
+                x: startX + CGFloat(index) * step,
+                y: height * (1 - CGFloat(value))
             )
         }
     }
