@@ -11,7 +11,9 @@ enum UninstallerEngine {
 
     private static let userApplicationRoots: [URL] = [
         URL(fileURLWithPath: "/Applications", isDirectory: true),
-        HomePaths.url("Applications")
+        HomePaths.url("Applications"),
+        URL(fileURLWithPath: "/Library/Input Methods", isDirectory: true),
+        HomePaths.url("Library/Input Methods")
     ]
     private static let systemApplicationRoot = URL(fileURLWithPath: "/System/Applications",
                                                    isDirectory: true)
@@ -119,8 +121,13 @@ enum UninstallerEngine {
         }
 
         let bundleID = trimmed(info["CFBundleIdentifier"] as? String)
-        let displayName = trimmed(info["CFBundleDisplayName"] as? String)
-        let bundleName = trimmed(info["CFBundleName"] as? String)
+        // Localized bundles (input methods, pkg-installed apps) keep their
+        // human name in InfoPlist.strings rather than the base Info.plist.
+        let bundle = Bundle(url: url)
+        let displayName = trimmed(bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
+            ?? trimmed(info["CFBundleDisplayName"] as? String)
+        let bundleName = trimmed(bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String)
+            ?? trimmed(info["CFBundleName"] as? String)
         let name = displayName ?? bundleName ?? url.deletingPathExtension().lastPathComponent
         let version = trimmed(info["CFBundleShortVersionString"] as? String)
             ?? trimmed(info["CFBundleVersion"] as? String)

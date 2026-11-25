@@ -87,6 +87,9 @@ enum ToolsSupport {
         let path = standardizedPath(url)
         if SafetyPolicy.isSystemBackgroundItemPath(path) { return true }
         guard pathExtensionIsApp(path) else { return false }
+        // /Library/Input Methods is writable only by an administrator even when
+        // the .app bundle itself is owned by the current user.
+        if path.hasPrefix("/Library/Input Methods/") { return true }
         guard path.hasPrefix("/Applications/")
                 || path.hasPrefix(home.appendingPathComponent("Applications").path + "/") else {
             return false

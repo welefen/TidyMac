@@ -25,8 +25,10 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 - Cleaned files are moved to the Trash by default and can be restored; permanent deletion can be enabled in Settings
 
 ### Uninstaller
-- Scans `/Applications` and `~/Applications`, showing size and last-used time
+- Scans `/Applications`, `~/Applications` and both Input Methods folders, showing size and last-used time
+- Uses localized bundle names (e.g. 百度输入法, 微信输入法) instead of raw bundle names
 - Finds leftovers in Application Support, caches, preferences, saved state and logs
+- Recognizes background services: LaunchAgents, LaunchDaemons and Privileged Helper Tools; stops them before removal and requests administrator approval for system-level items
 - Search, sort, per-item leftover selection, confirmation before uninstalling, and clear failure reasons
 
 ### Large Files
