@@ -190,33 +190,27 @@ private final class MenuBarTrendsView: NSView {
 
         let width = bounds.width - insetX * 2
         guard width > 1 else { return }
-        let stripColor = NSColor.labelColor.withAlphaComponent(0.06)
         let rowHeight = textHeight + chartHeight + rowGap
 
         for index in 0..<3 {
             let top = insetY + CGFloat(index) * rowHeight
             drawText(label: label(for: index), value: value(for: index), x: insetX, y: top)
-
-            let strip = NSRect(x: insetX, y: top + textHeight, width: width, height: chartHeight)
-            stripColor.setFill()
-            NSBezierPath(roundedRect: strip, xRadius: 4, yRadius: 4).fill()
         }
     }
 
     private func updateCharts() {
         let width = bounds.width - insetX * 2
         guard width > 1 else { return }
-        let accent = accentNSColor
         charts[0].apply(values: Array(cpuHistory.suffix(SystemLoadMonitor.displayCapacity)),
-                        nsColor: accent,
+                        color: Theme.accent,
                         minimumSpan: 0.06,
                         interval: SystemLoadMonitor.refreshInterval)
         charts[1].apply(values: Array(memoryHistory.suffix(SystemLoadMonitor.displayCapacity)),
-                        nsColor: accent,
+                        color: Theme.accent,
                         minimumSpan: 0.025,
                         interval: SystemLoadMonitor.refreshInterval)
         charts[2].apply(values: Array(gpuHistory.suffix(SystemLoadMonitor.displayCapacity)),
-                        nsColor: accent,
+                        color: Theme.accent,
                         minimumSpan: 0.08,
                         interval: SystemLoadMonitor.refreshInterval)
     }
@@ -268,12 +262,5 @@ private final class MenuBarTrendsView: NSView {
 
     private func percent(_ fraction: Double) -> String {
         String(format: "%.0f%%", (max(0, fraction) * 100).rounded())
-    }
-
-    private var accentNSColor: NSColor {
-        if effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-            return NSColor(calibratedRed: 0.435, green: 0.827, blue: 0.698, alpha: 1)
-        }
-        return NSColor(calibratedRed: 0.078, green: 0.420, blue: 0.337, alpha: 1)
     }
 }
