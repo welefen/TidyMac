@@ -55,6 +55,11 @@ struct SystemLoadSnapshot: Equatable, Sendable {
 final class SystemLoadMonitor: ObservableObject {
     @Published private(set) var snapshot: SystemLoadSnapshot?
     @Published private(set) var isSampling = false
+    @Published private(set) var cpuHistory: [Double] = []
+    @Published private(set) var memoryHistory: [Double] = []
+
+    /// 2s cadence × 60 samples = a two-minute trend.
+    private let historyCapacity = 60
 
     private let queue = DispatchQueue(label: "com.tidymac.systemload", qos: .utility)
     private var timer: DispatchSourceTimer?
@@ -89,6 +94,16 @@ final class SystemLoadMonitor: ObservableObject {
                 let demo = self.makeDemoSnapshot()
                 DispatchQueue.main.async {
                     self.snapshot = demo
+                    self.cpuHistory = Self.demoHistory(
+                        base: demo.cpuFraction,
+                        amplitude: 0.022,
+                        noiseScale: 0.65
+                    )
+                    self.memoryHistory = Self.demoHistory(
+                        base: Double(demo.memoryUsedBytes) / Double(max(demo.memoryTotalBytes, 1)),
+                        amplitude: 0.007,
+                        noiseScale: 0.25
+                    )
                     self.isSampling = true
                 }
                 return
@@ -101,7 +116,11 @@ final class SystemLoadMonitor: ObservableObject {
             }
             self.timer = timer
             timer.resume()
-            DispatchQueue.main.async { self.isSampling = true }
+            DispatchQueue.main.async {
+                self.cpuHistory = []
+                self.memoryHistory = []
+                self.isSampling = true
+            }
         }
     }
 
@@ -153,8 +172,42 @@ final class SystemLoadMonitor: ObservableObject {
             sampledAt: Date()
         )
 
+        let memoryFraction = snapshot.memoryTotalBytes > 0
+            ? Double(snapshot.memoryUsedBytes) / Double(snapshot.memoryTotalBytes)
+            : 0
+
         DispatchQueue.main.async { [weak self] in
-            self?.snapshot = snapshot
+            guard let self else { return }
+            self.snapshot = snapshot
+            self.appendHistory(cpu: snapshot.cpuFraction, memory: memoryFraction)
+        }
+    }
+
+    private func appendHistory(cpu: Double, memory: Double) {
+        cpuHistory.append(min(max(cpu, 0), 1))
+        if cpuHistory.count > historyCapacity {
+            cpuHistory.removeFirst(cpuHistory.count - historyCapacity)
+        }
+        memoryHistory.append(min(max(memory, 0), 1))
+        if memoryHistory.count > historyCapacity {
+            memoryHistory.removeFirst(memoryHistory.count - historyCapacity)
+        }
+    }
+
+    private static func demoHistory(
+        base: Double,
+        amplitude: Double,
+        noiseScale: Double
+    ) -> [Double] {
+        var seed: UInt64 = 0x9E37_79B9_7F4A_7C15
+        var value = base
+        return (0..<60).map { index in
+            seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+            let noise = (Double((seed >> 33) & 0x7FFF_FFFF) / Double(0x7FFF_FFFF) * 2 - 1)
+            let drift = sin(Double(index) * 0.11) * amplitude * 0.35
+            let target = base + drift + noise * amplitude * noiseScale
+            value = value * 0.68 + target * 0.32
+            return min(max(value, 0.01), 0.99)
         }
     }
 

@@ -75,7 +75,7 @@ struct SystemLoadPage: View {
 
             Rectangle()
                 .fill(Theme.stroke)
-                .frame(width: 1, height: 120)
+                .frame(width: 1, height: 134)
                 .padding(.trailing, 28)
 
             memoryColumn
@@ -99,12 +99,19 @@ struct SystemLoadPage: View {
                     .foregroundStyle(Theme.textTertiary)
             }
 
-            CapacityRuler(fraction: monitor.snapshot?.cpuFraction ?? 0, height: 6)
+            LoadTrendChart(values: cpuHistory, color: Theme.accent, minimumSpan: 0.06)
+                .frame(height: 32)
                 .padding(.top, 2)
 
-            Text(L("所有进程合计"))
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textSecondary)
+            HStack(spacing: 8) {
+                Text(L("所有进程合计"))
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSecondary)
+                Spacer(minLength: 8)
+                Text(trendWindowLabel(monitor.cpuHistory.count))
+                    .font(Theme.monoFont(9.5))
+                    .foregroundStyle(Theme.textTertiary)
+            }
         }
     }
 
@@ -132,7 +139,8 @@ struct SystemLoadPage: View {
                 }
             }
 
-            CapacityRuler(fraction: memoryFraction, height: 6)
+            LoadTrendChart(values: memoryHistory, color: Theme.accent.opacity(0.78), minimumSpan: 0.025)
+                .frame(height: 32)
                 .padding(.top, 2)
 
             HStack(spacing: 10) {
@@ -144,8 +152,30 @@ struct SystemLoadPage: View {
                         .font(Theme.monoFont(10.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
+                Spacer(minLength: 8)
+                Text(trendWindowLabel(monitor.memoryHistory.count))
+                    .font(Theme.monoFont(9.5))
+                    .foregroundStyle(Theme.textTertiary)
             }
         }
+    }
+
+    private var cpuHistory: [Double] {
+        trend(monitor.cpuHistory, current: monitor.snapshot?.cpuFraction ?? 0)
+    }
+
+    private var memoryHistory: [Double] {
+        trend(monitor.memoryHistory, current: memoryFraction)
+    }
+
+    private func trend(_ history: [Double], current: Double) -> [Double] {
+        history.count > 1 ? history : [current, current]
+    }
+
+    /// Until the two-minute window fills, name the window we actually have.
+    private func trendWindowLabel(_ count: Int) -> String {
+        guard count < 60 else { return L("最近 2 分钟") }
+        return L("最近 %d 秒", max(count * 2, 2))
     }
 
     private var memoryFraction: Double {
@@ -450,5 +480,83 @@ private enum AppIconStore {
         let image = NSWorkspace.shared.icon(forFile: path)
         cache[path] = image
         return image
+    }
+}
+
+/// A quiet two-minute sparkline: a hairline trend and a barely-there area wash
+/// on a neutral strip. No axes, no glow — the big figure next to it carries the value.
+private struct LoadTrendChart: View {
+    let values: [Double]
+    let color: Color
+    var minimumSpan: Double = 0.06
+
+    var body: some View {
+        Canvas { context, size in
+            let points = normalizedPoints(in: size)
+            guard points.count > 1 else { return }
+
+            guard let first = points.first, let lastX = points.last?.x else { return }
+
+            var area = Path()
+            area.move(to: CGPoint(x: first.x, y: size.height))
+            for point in points {
+                area.addLine(to: point)
+            }
+            area.addLine(to: CGPoint(x: lastX, y: size.height))
+            area.closeSubpath()
+            context.fill(area, with: .color(color.opacity(0.08)))
+
+            var line = Path()
+            line.addLines(points)
+            context.stroke(
+                line,
+                with: .color(color),
+                style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
+            )
+
+            if let last = points.last {
+                let radius: CGFloat = 2
+                context.fill(
+                    Path(ellipseIn: CGRect(
+                        x: last.x - radius,
+                        y: last.y - radius,
+                        width: radius * 2,
+                        height: radius * 2
+                    )),
+                    with: .color(color)
+                )
+            }
+        }
+        .background(RoundedRectangle(cornerRadius: 5).fill(Theme.subtleFill))
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Theme.stroke)
+                .frame(height: 1)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 5))
+        .accessibilityHidden(true)
+    }
+
+    private func normalizedPoints(in size: CGSize) -> [CGPoint] {
+        let samples = values.isEmpty ? [0] : values
+        guard size.width > 0, !samples.isEmpty else { return [] }
+
+        let lower = (samples.min() ?? 0) - 0.012
+        let upper = (samples.max() ?? 1) + 0.012
+        let span = max(upper - lower, minimumSpan)
+
+        func y(for value: Double) -> CGFloat {
+            let fraction = CGFloat((value - lower) / span)
+            return min(max(size.height - fraction * size.height, 1), size.height - 1)
+        }
+
+        guard samples.count > 1 else {
+            return [CGPoint(x: size.width, y: y(for: samples[0]))]
+        }
+
+        let step = size.width / CGFloat(max(samples.count - 1, 1))
+        return samples.enumerated().map { index, value in
+            CGPoint(x: CGFloat(index) * step, y: y(for: value))
+        }
     }
 }

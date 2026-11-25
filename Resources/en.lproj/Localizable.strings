@@ -590,3 +590,7 @@ Uninstalling this App Store app requires an administrator password.";
 "打开系统负载…" = "Open System Load…";
 "打开 TidyMac" = "Open TidyMac";
 "退出 TidyMac" = "Quit TidyMac";
+
+/* System Load trend caption */
+"最近 2 分钟" = "Last 2 min";
+"最近 %d 秒" = "Last %d s";
