@@ -17,6 +17,7 @@ struct SettingsPage: View {
                 languageSection
                 updatesSection
                 behaviorSection
+                menuBarSection
                 exclusionSection
                 securitySection
                 statisticsSection
@@ -199,6 +200,14 @@ struct SettingsPage: View {
                 .toggleStyle(.switch)
                 .tint(Theme.accent)
                 .controlSize(.small)
+        }
+    }
+
+    private var menuBarSection: some View {
+        settingsCard(title: "菜单栏") {
+            toggleRow("在菜单栏显示 CPU",
+                      "实时显示 CPU 使用率；默认关闭。macOS 26 需要在「系统设置 → 菜单栏 → 允许在菜单栏显示」中允许 TidyMac。",
+                      isOn: $settings.menuBarCPU)
         }
     }
 

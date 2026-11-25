@@ -47,7 +47,7 @@ final class MenuBarStatsController {
         if let button = item.button {
             button.setAccessibilityIdentifier("com.tidymac.clean.statusItemButton")
             button.setAccessibilityTitle("TidyMac")
-            button.setAccessibilityLabel("TidyMac CPU 与内存")
+            button.setAccessibilityLabel("TidyMac CPU")
 
             let symbol = NSImage(systemSymbolName: "gauge.medium", accessibilityDescription: L("系统负载"))
             symbol?.isTemplate = true
@@ -55,7 +55,7 @@ final class MenuBarStatsController {
             button.imagePosition = .imageLeading
             button.font = .monospacedDigitSystemFont(ofSize: 10.5, weight: .medium)
             button.title = "—"
-            button.toolTip = L("CPU 与内存使用情况")
+            button.toolTip = L("CPU 使用率")
         }
         item.menu = menu
         statusItem = item
@@ -95,23 +95,13 @@ final class MenuBarStatsController {
         }
 
         let cpu = Int((snapshot.cpuFraction * 100).rounded())
-        let memory = Self.compactMemory(snapshot.memoryUsedBytes)
-        statusItem.button?.title = "\(cpu)% \(memory)"
-        statusItem.button?.toolTip = L("CPU %@ · 内存 %@",
-                                       "\(cpu)%",
-                                       Format.bytes(snapshot.memoryUsedBytes))
-
+        statusItem.button?.title = "\(cpu)%"
+        statusItem.button?.toolTip = L("CPU %@", "\(cpu)%")
         cpuMenuItem.title = L("CPU %@ · %@ 核", "\(cpu)%", "\(snapshot.coreCount)")
         memoryMenuItem.title = L("内存 %@ / %@ · %@",
                                  Format.bytes(snapshot.memoryUsedBytes),
                                  Format.bytes(snapshot.memoryTotalBytes),
                                  snapshot.memoryPressure.title)
-    }
-
-    private static func compactMemory(_ bytes: Int64) -> String {
-        let gib = Double(bytes) / 1_073_741_824
-        if gib >= 1 { return String(format: "%.1fG", gib) }
-        return "\(max(1, Int((Double(bytes) / 1_048_576).rounded())))M"
     }
 
     @objc private func openSystemLoad() {

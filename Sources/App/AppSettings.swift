@@ -33,6 +33,7 @@ final class AppSettings: ObservableObject {
         static let reduceMotion = "settings.reduceMotion"
         static let appearance = "settings.appearance"
         static let language = "settings.language"
+        static let menuBarCPU = "settings.menuBarCPU"
     }
 
     @Published var moveToTrash: Bool {
@@ -41,6 +42,12 @@ final class AppSettings: ObservableObject {
 
     @Published var confirmBeforeClean: Bool {
         didSet { defaults.set(confirmBeforeClean, forKey: Keys.confirmBeforeClean) }
+    }
+
+    /// Shows a live CPU readout in the macOS menu bar. Off by default; macOS 26
+    /// additionally requires the app to be allowed under System Settings → Menu Bar.
+    @Published var menuBarCPU: Bool {
+        didSet { defaults.set(menuBarCPU, forKey: Keys.menuBarCPU) }
     }
 
     @Published var excludedPaths: [String] {
@@ -110,7 +117,8 @@ final class AppSettings: ObservableObject {
             Keys.showSystemApps: false,
             Keys.reduceMotion: false,
             Keys.appearance: AppAppearance.system.rawValue,
-            Keys.language: AppLanguage.system.rawValue
+            Keys.language: AppLanguage.system.rawValue,
+            Keys.menuBarCPU: false
         ])
         moveToTrash = defaults.bool(forKey: Keys.moveToTrash)
         confirmBeforeClean = defaults.bool(forKey: Keys.confirmBeforeClean)
@@ -122,6 +130,7 @@ final class AppSettings: ObservableObject {
         reduceMotion = defaults.bool(forKey: Keys.reduceMotion)
         appearance = AppAppearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         language = AppLanguage(rawValue: defaults.string(forKey: Keys.language) ?? "") ?? .system
+        menuBarCPU = defaults.bool(forKey: Keys.menuBarCPU)
         if let data = defaults.data(forKey: Keys.history),
            let decoded = try? JSONDecoder().decode([CleanHistoryEntry].self, from: data) {
             history = decoded

@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import Combine
 
 @main
 struct TidyMacApp: App {
@@ -80,14 +81,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var keyWindowObserver: NSObjectProtocol?
     private var zoomMonitor: Any?
     private var menuBarStats: MenuBarStatsController?
+    private var settingsCancellable: AnyCancellable?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
 
-        if menuBarStats == nil, ProcessInfo.processInfo.environment["TIDYMAC_DISABLE_MENUBAR"] == nil {
-            menuBarStats = MenuBarStatsController()
-        }
+        settingsCancellable = AppSettings.shared.$menuBarCPU
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] enabled in
+                self?.updateMenuBar(enabled)
+            }
+        updateMenuBar(AppSettings.shared.menuBarCPU)
 
         // Style the SwiftUI window from the outside instead of placing an
         // NSViewRepresentable inside the view tree. A representable used as a
@@ -144,6 +149,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSEvent.removeMonitor(zoomMonitor)
             self.zoomMonitor = nil
         }
+        settingsCancellable?.cancel()
+        settingsCancellable = nil
         menuBarStats?.stop()
         menuBarStats = nil
 
@@ -154,6 +161,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Best effort: anything still queued is persisted and retried on the
             // next launch, so quitting never blocks for long.
             Analytics.shared.flush(timeout: 1.5)
+        }
+    }
+
+    private func updateMenuBar(_ enabled: Bool) {
+        guard ProcessInfo.processInfo.environment["TIDYMAC_DISABLE_MENUBAR"] == nil else { return }
+        if enabled {
+            if menuBarStats == nil {
+                menuBarStats = MenuBarStatsController()
+            }
+        } else {
+            menuBarStats?.stop()
+            menuBarStats = nil
         }
     }
 
