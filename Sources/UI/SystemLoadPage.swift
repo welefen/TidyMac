@@ -132,26 +132,18 @@ struct SystemLoadPage: View {
                 .font(.system(size: 11))
                 .foregroundStyle(Theme.textTertiary)
 
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                let parts = monitor.snapshot.map { Format.bytesParts($0.memoryUsedBytes) }
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
                 FadingNumber(
-                    text: parts?.number ?? "—",
+                    text: percent(memoryFraction),
                     font: Theme.monoFont(40, weight: .medium),
                     color: Theme.textPrimary
                 )
-                if let unit = parts?.unit, !unit.isEmpty {
-                    Text(unit)
-                        .font(Theme.monoFont(14, weight: .medium))
-                        .foregroundStyle(Theme.textSecondary)
-                        .id(unit)
-                        .transition(.opacity)
-                        .animation(.easeOut(duration: 0.18), value: unit)
-                }
                 if let snapshot = monitor.snapshot {
-                    Text("/ " + Format.bytes(snapshot.memoryTotalBytes))
+                    Text("\(Format.bytes(snapshot.memoryUsedBytes)) / \(Format.bytes(snapshot.memoryTotalBytes))")
                         .font(Theme.monoFont(11))
                         .foregroundStyle(Theme.textTertiary)
-                        .padding(.leading, 4)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
             }
 
