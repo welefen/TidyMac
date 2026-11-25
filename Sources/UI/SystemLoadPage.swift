@@ -573,7 +573,7 @@ private struct FadingNumber: View {
     }
 }
 
-private struct TrendLayerView: NSViewRepresentable {
+struct TrendLayerView: NSViewRepresentable {
     let values: [Double]
     let color: Color
     var minimumSpan: Double = 0.06
@@ -604,6 +604,7 @@ final class TrendHostView: NSView {
     private var scaleLower: Double?
     private var scaleUpper: Double?
     private var previousSampleCount = 0
+    var drawsBackground = true
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -633,6 +634,10 @@ final class TrendHostView: NSView {
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         render(animate: false)
+    }
+
+    func apply(values: [Double], nsColor: NSColor, minimumSpan: Double, interval: TimeInterval) {
+        apply(values: values, color: Color(nsColor: nsColor), minimumSpan: minimumSpan, interval: interval)
     }
 
     func apply(values: [Double], color: Color, minimumSpan: Double, interval: TimeInterval) {
@@ -718,6 +723,14 @@ final class TrendHostView: NSView {
     }
 
     private func renderBackground(size: CGSize) {
+        guard drawsBackground else {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            backgroundLayer.contents = nil
+            backgroundLayer.frame = CGRect(origin: .zero, size: size)
+            CATransaction.commit()
+            return
+        }
         let renderer = ImageRenderer(content: TrendBackground().frame(width: size.width, height: size.height))
         let scale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
         renderer.scale = scale
