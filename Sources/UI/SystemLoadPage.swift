@@ -497,72 +497,139 @@ private struct LoadTrendChart: View {
     var minimumSpan: Double = 0.06
 
     var body: some View {
-        Canvas { context, size in
-            let points = normalizedPoints(in: size)
-            guard points.count > 1 else { return }
+        GeometryReader { geometry in
+            let plot = normalizedPlot
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(Theme.subtleFill)
 
-            guard let first = points.first, let lastX = points.last?.x else { return }
+                TrendAreaShape(plot: plot)
+                    .fill(color.opacity(0.08))
 
-            var area = Path()
-            area.move(to: CGPoint(x: first.x, y: size.height))
-            for point in points {
-                area.addLine(to: point)
+                TrendLineShape(plot: plot)
+                    .stroke(
+                        color,
+                        style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
+                    )
             }
-            area.addLine(to: CGPoint(x: lastX, y: size.height))
-            area.closeSubpath()
-            context.fill(area, with: .color(color.opacity(0.08)))
-
-            var line = Path()
-            line.addLines(points)
-            context.stroke(
-                line,
-                with: .color(color),
-                style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
-            )
-
-            if let last = points.last {
-                let radius: CGFloat = 2
-                context.fill(
-                    Path(ellipseIn: CGRect(
-                        x: last.x - radius,
-                        y: last.y - radius,
-                        width: radius * 2,
-                        height: radius * 2
-                    )),
-                    with: .color(color)
-                )
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .fill(Theme.stroke)
+                    .frame(height: 1)
             }
+            .clipShape(RoundedRectangle(cornerRadius: 5))
+            .animation(.easeOut(duration: 0.35), value: values)
+            .frame(width: geometry.size.width, height: geometry.size.height)
         }
-        .background(RoundedRectangle(cornerRadius: 5).fill(Theme.subtleFill))
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Theme.stroke)
-                .frame(height: 1)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 5))
-        .accessibilityHidden(true)
     }
 
-    private func normalizedPoints(in size: CGSize) -> [CGPoint] {
+    private var normalizedPlot: TrendPlot {
         let samples = values.isEmpty ? [0] : values
-        guard size.width > 0, !samples.isEmpty else { return [] }
+        guard !samples.isEmpty else { return TrendPlot(values: []) }
 
         let lower = (samples.min() ?? 0) - 0.012
         let upper = (samples.max() ?? 1) + 0.012
         let span = max(upper - lower, minimumSpan)
 
-        func y(for value: Double) -> CGFloat {
-            let fraction = CGFloat((value - lower) / span)
-            return min(max(size.height - fraction * size.height, 1), size.height - 1)
-        }
+        return TrendPlot(values: samples.map { value in
+            min(max((value - lower) / span, 0), 1)
+        })
+    }
+}
 
-        guard samples.count > 1 else {
-            return [CGPoint(x: size.width, y: y(for: samples[0]))]
-        }
+/// Fixed-length y values (0 lowest, 1 highest) that SwiftUI can interpolate
+/// between updates, so the sparkline glides instead of jumping each sample.
+private struct TrendPlot: VectorArithmetic, Equatable {
+    var values: [Double]
 
-        let step = size.width / CGFloat(max(samples.count - 1, 1))
-        return samples.enumerated().map { index, value in
-            CGPoint(x: CGFloat(index) * step, y: y(for: value))
+    static var zero: TrendPlot { TrendPlot(values: []) }
+
+    static func + (lhs: TrendPlot, rhs: TrendPlot) -> TrendPlot {
+        combine(lhs, rhs, +)
+    }
+
+    static func - (lhs: TrendPlot, rhs: TrendPlot) -> TrendPlot {
+        combine(lhs, rhs, -)
+    }
+
+    static func += (lhs: inout TrendPlot, rhs: TrendPlot) {
+        lhs = lhs + rhs
+    }
+
+    static func -= (lhs: inout TrendPlot, rhs: TrendPlot) {
+        lhs = lhs - rhs
+    }
+
+    mutating func scale(by rhs: Double) {
+        for index in values.indices {
+            values[index] *= rhs
         }
+    }
+
+    var magnitudeSquared: Double {
+        values.reduce(0) { $0 + $1 * $1 }
+    }
+
+    private static func combine(
+        _ lhs: TrendPlot,
+        _ rhs: TrendPlot,
+        _ operation: (Double, Double) -> Double
+    ) -> TrendPlot {
+        let count = max(lhs.values.count, rhs.values.count)
+        let values = (0..<count).map { index in
+            let left = index < lhs.values.count ? lhs.values[index] : 0
+            let right = index < rhs.values.count ? rhs.values[index] : 0
+            return operation(left, right)
+        }
+        return TrendPlot(values: values)
+    }
+}
+
+private struct TrendLineShape: Shape {
+    var plot: TrendPlot
+
+    var animatableData: TrendPlot {
+        get { plot }
+        set { plot = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard plot.values.count > 1 else { return path }
+
+        for (index, value) in plot.values.enumerated() {
+            let x = rect.width * CGFloat(index) / CGFloat(plot.values.count - 1)
+            let y = rect.height * (1 - CGFloat(value))
+            if index == 0 {
+                path.move(to: CGPoint(x: x, y: y))
+            } else {
+                path.addLine(to: CGPoint(x: x, y: y))
+            }
+        }
+        return path
+    }
+}
+
+private struct TrendAreaShape: Shape {
+    var plot: TrendPlot
+
+    var animatableData: TrendPlot {
+        get { plot }
+        set { plot = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard plot.values.count > 1 else { return path }
+
+        path.move(to: CGPoint(x: 0, y: rect.height))
+        for (index, value) in plot.values.enumerated() {
+            let x = rect.width * CGFloat(index) / CGFloat(plot.values.count - 1)
+            let y = rect.height * (1 - CGFloat(value))
+            path.addLine(to: CGPoint(x: x, y: y))
+        }
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        path.closeSubpath()
+        return path
     }
 }
