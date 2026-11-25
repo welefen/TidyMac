@@ -90,6 +90,11 @@ struct SystemLoadPage: View {
                 Text(monitor.snapshot.map { percent($0.cpuFraction) } ?? "—")
                     .font(Theme.monoFont(40, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
+                    .contentTransition(.numericText())
+                    .animation(
+                        .easeOut(duration: 0.28),
+                        value: monitor.snapshot.map { percent($0.cpuFraction) } ?? "—"
+                    )
                 Text(L("%@ 核", "\(monitor.snapshot?.coreCount ?? ProcessInfo.processInfo.activeProcessorCount)"))
                     .font(Theme.monoFont(11))
                     .foregroundStyle(Theme.textTertiary)
@@ -122,10 +127,14 @@ struct SystemLoadPage: View {
                 Text(parts?.number ?? "—")
                     .font(Theme.monoFont(40, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
+                    .contentTransition(.numericText())
+                    .animation(.easeOut(duration: 0.28), value: parts?.number ?? "—")
                 if let unit = parts?.unit, !unit.isEmpty {
                     Text(unit)
                         .font(Theme.monoFont(14, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
+                        .contentTransition(.numericText())
+                        .animation(.easeOut(duration: 0.28), value: unit)
                 }
                 if let snapshot = monitor.snapshot {
                     Text("/ " + Format.bytes(snapshot.memoryTotalBytes))
