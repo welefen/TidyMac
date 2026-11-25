@@ -201,15 +201,15 @@ private final class MenuBarTrendsView: NSView {
     private func updateCharts() {
         let width = bounds.width - insetX * 2
         guard width > 1 else { return }
-        charts[0].apply(values: Array(cpuHistory.suffix(SystemLoadMonitor.displayCapacity + 1)),
+        charts[0].apply(values: cpuHistory,
                         color: Theme.accent,
                         minimumSpan: 0.06,
                         interval: SystemLoadMonitor.refreshInterval)
-        charts[1].apply(values: Array(memoryHistory.suffix(SystemLoadMonitor.displayCapacity + 1)),
+        charts[1].apply(values: memoryHistory,
                         color: Theme.accent,
                         minimumSpan: 0.025,
                         interval: SystemLoadMonitor.refreshInterval)
-        charts[2].apply(values: Array(gpuHistory.suffix(SystemLoadMonitor.displayCapacity + 1)),
+        charts[2].apply(values: gpuHistory,
                         color: Theme.accent,
                         minimumSpan: 0.08,
                         interval: SystemLoadMonitor.refreshInterval)
