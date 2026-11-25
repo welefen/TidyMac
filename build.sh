@@ -42,7 +42,14 @@ SWIFT_MODULE_CACHE_PATH="$CACHE" CLANG_MODULE_CACHE_PATH="$CACHE" TMPDIR="$TMP" 
     -o "$APP/Contents/MacOS/TidyMac" \
     "${APP_SOURCES[@]}"
 
-codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
+# Use a stable local signing identity when available so macOS keeps the app's
+# menu bar (StatusKit) registration across rebuilds. Fall back to ad-hoc signing.
+SIGN_IDENTITY="${TIDYMAC_SIGN_IDENTITY:-TidyMac Dev}"
+if security find-identity -v -p codesigning 2>/dev/null | grep -q "\"$SIGN_IDENTITY\""; then
+  codesign --force --deep --sign "$SIGN_IDENTITY" "$APP" >/dev/null 2>&1 || true
+else
+  codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
+fi
 echo "▸ Built $APP"
 
 # Headless CLI for scanning, diagnostics and self-tests.
