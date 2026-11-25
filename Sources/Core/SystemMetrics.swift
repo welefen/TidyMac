@@ -58,12 +58,13 @@ final class SystemLoadMonitor: ObservableObject {
     @Published private(set) var cpuHistory: [Double] = []
     @Published private(set) var memoryHistory: [Double] = []
 
-    /// 2s cadence × 60 samples = a two-minute trend.
-    private let historyCapacity = 60
+    /// One-second cadence × 120 samples = a two-minute trend.
+    static let refreshInterval: TimeInterval = 1
+    static let historyCapacity = 120
 
     private let queue = DispatchQueue(label: "com.tidymac.systemload", qos: .utility)
     private var timer: DispatchSourceTimer?
-    private let interval: TimeInterval = 2
+    private let interval = SystemLoadMonitor.refreshInterval
     private var includeApps = true
 
     private var previousHostCPU: host_cpu_load_info_data_t?
@@ -185,12 +186,12 @@ final class SystemLoadMonitor: ObservableObject {
 
     private func appendHistory(cpu: Double, memory: Double) {
         cpuHistory.append(min(max(cpu, 0), 1))
-        if cpuHistory.count > historyCapacity {
-            cpuHistory.removeFirst(cpuHistory.count - historyCapacity)
+        if cpuHistory.count > Self.historyCapacity {
+            cpuHistory.removeFirst(cpuHistory.count - Self.historyCapacity)
         }
         memoryHistory.append(min(max(memory, 0), 1))
-        if memoryHistory.count > historyCapacity {
-            memoryHistory.removeFirst(memoryHistory.count - historyCapacity)
+        if memoryHistory.count > Self.historyCapacity {
+            memoryHistory.removeFirst(memoryHistory.count - Self.historyCapacity)
         }
     }
 
@@ -201,7 +202,7 @@ final class SystemLoadMonitor: ObservableObject {
     ) -> [Double] {
         var seed: UInt64 = 0x9E37_79B9_7F4A_7C15
         var value = base
-        return (0..<60).map { index in
+        return (0..<Self.historyCapacity).map { index in
             seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
             let noise = (Double((seed >> 33) & 0x7FFF_FFFF) / Double(0x7FFF_FFFF) * 2 - 1)
             let drift = sin(Double(index) * 0.11) * amplitude * 0.35

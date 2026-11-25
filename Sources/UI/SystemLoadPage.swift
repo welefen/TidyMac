@@ -26,11 +26,7 @@ struct SystemLoadPage: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
-                PageHeader(title: "系统负载", subtitle: "查看整机与各 App 的 CPU、内存占用") {
-                    Text(L("每 2 秒刷新"))
-                        .font(Theme.monoFont(10))
-                        .foregroundStyle(Theme.textTertiary)
-                }
+                PageHeader(title: "系统负载", subtitle: "查看整机与各 App 的 CPU、内存占用")
 
                 overallCard
                 appsCard
@@ -174,8 +170,9 @@ struct SystemLoadPage: View {
 
     /// Until the two-minute window fills, name the window we actually have.
     private func trendWindowLabel(_ count: Int) -> String {
-        guard count < 60 else { return L("最近 2 分钟") }
-        return L("最近 %d 秒", max(count * 2, 2))
+        guard count < SystemLoadMonitor.historyCapacity else { return L("最近 2 分钟") }
+        let seconds = max(Int(Double(count) * SystemLoadMonitor.refreshInterval), 1)
+        return L("最近 %d 秒", seconds)
     }
 
     private var memoryFraction: Double {

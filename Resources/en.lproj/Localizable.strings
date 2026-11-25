@@ -510,7 +510,6 @@ Uninstalling this App Store app requires an administrator password.";
 "其他管理空间的方式" = "Other ways to manage space";
 "系统负载" = "System Load";
 "查看整机与各 App 的 CPU、内存占用" = "See CPU and memory use across the Mac and every app";
-"每 2 秒刷新" = "Updates every 2 s";
 "内存" = "Memory";
 "%@ 核" = "%@ cores";
 "所有进程合计" = "All processes combined";
