@@ -51,6 +51,10 @@ else
 fi
 PID=$!
 sleep 3.4
+# A direct binary launch can create its window on a non-active Space; bring it
+# forward so CGWindowList can see the window for screenshot capture.
+open -a "$APP" 2>/dev/null || true
+sleep 1.2
 
 if ! kill -0 "$PID" 2>/dev/null; then
   echo "TidyMac exited during startup; see .build/shoot.err.log" >&2
