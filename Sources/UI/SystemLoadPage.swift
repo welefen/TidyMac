@@ -101,7 +101,7 @@ struct SystemLoadPage: View {
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 FadingNumber(
-                    text: monitor.snapshot.map { percent($0.cpuFraction) } ?? "—",
+                    text: monitor.snapshot.map { summaryPercent($0.cpuFraction) } ?? "—",
                     font: Theme.monoFont(40, weight: .medium),
                     color: Theme.textPrimary
                 )
@@ -134,7 +134,7 @@ struct SystemLoadPage: View {
 
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 FadingNumber(
-                    text: percent(memoryFraction),
+                    text: summaryPercent(memoryFraction),
                     font: Theme.monoFont(40, weight: .medium),
                     color: Theme.textPrimary
                 )
@@ -227,7 +227,7 @@ struct SystemLoadPage: View {
             if let gpu = monitor.snapshot?.gpu {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     FadingNumber(
-                        text: percent(gpu.utilizationFraction),
+                        text: summaryPercent(gpu.utilizationFraction),
                         font: Theme.monoFont(40, weight: .medium),
                         color: Theme.textPrimary
                     )
@@ -504,6 +504,10 @@ struct SystemLoadPage: View {
     }
 
     // MARK: - Formatting
+
+    private func summaryPercent(_ fraction: Double) -> String {
+        String(format: "%.0f%%", (max(0, fraction) * 100).rounded())
+    }
 
     private func percent(_ fraction: Double) -> String {
         let value = max(0, fraction) * 100
