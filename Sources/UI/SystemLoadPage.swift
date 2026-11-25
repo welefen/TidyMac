@@ -602,6 +602,9 @@ final class TrendHostView: NSView {
     private var renderedSize: CGSize = .zero
     private var renderedColor: Color = .clear
     private var renderedSpan: Double = 0
+    private var scaleLower: Double?
+    private var scaleUpper: Double?
+    private var previousSampleCount = 0
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -628,10 +631,14 @@ final class TrendHostView: NSView {
         currentSpan = minimumSpan
         currentInterval = interval
 
+        let wasFull = previousSampleCount >= SystemLoadMonitor.historyCapacity
+        let isFull = values.count >= SystemLoadMonitor.historyCapacity
+        previousSampleCount = values.count
+
         if bounds.size != renderedSize {
             render(animate: false)
         } else if valuesChanged {
-            render(animate: true)
+            render(animate: wasFull && isFull)
         } else if styleChanged {
             render(animate: false)
         }
@@ -650,7 +657,9 @@ final class TrendHostView: NSView {
         renderedSize = size
 
         let samples = normalized(currentValues)
-        let content = TrendCanvas(samples: samples, color: currentColor)
+        let lower = scaleLower ?? 0
+        let upper = scaleUpper ?? 1
+        let content = TrendCanvas(samples: samples, color: currentColor, lower: lower, upper: upper)
             .frame(width: size.width, height: size.height)
         let renderer = ImageRenderer(content: content)
         let scale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
@@ -679,8 +688,7 @@ final class TrendHostView: NSView {
         contentLayer.removeAnimation(forKey: "push")
         guard animate, let oldContents else { return }
 
-        let capacity = SystemLoadMonitor.historyCapacity
-        let step = size.width / CGFloat(max(capacity - 1, 1))
+        let step = size.width / CGFloat(max(SystemLoadMonitor.historyCapacity - 1, 1))
 
         outgoingLayer.contents = oldContents
         outgoingLayer.contentsScale = scale
@@ -700,6 +708,12 @@ final class TrendHostView: NSView {
         push.duration = currentInterval * 0.9
         push.timingFunction = CAMediaTimingFunction(name: .linear)
 
+        let exit = CABasicAnimation(keyPath: "position.x")
+        exit.fromValue = 0
+        exit.toValue = -step
+        exit.duration = currentInterval * 0.9
+        exit.timingFunction = CAMediaTimingFunction(name: .linear)
+
         isTransitioning = true
         CATransaction.begin()
         CATransaction.setCompletionBlock { [weak self] in
@@ -710,14 +724,34 @@ final class TrendHostView: NSView {
             self.isTransitioning = false
         }
         contentLayer.add(push, forKey: "push")
+        outgoingLayer.add(exit, forKey: "push")
         CATransaction.commit()
     }
 
     private func normalized(_ values: [Double]) -> [Double] {
         let samples = values.isEmpty ? [0] : values
-        let lower = (samples.min() ?? 0) - 0.012
-        let upper = (samples.max() ?? 1) + 0.012
-        let span = max(upper - lower, currentSpan)
+        var lower = (samples.min() ?? 0) - 0.012
+        var upper = (samples.max() ?? 1) + 0.012
+        let rawSpan = upper - lower
+        if rawSpan < currentSpan {
+            let mid = (lower + upper) / 2
+            lower = mid - currentSpan / 2
+            upper = mid + currentSpan / 2
+        }
+
+        // Keep a stable vertical scale once it covers the data. A per-frame
+        // autoscale would make the curve breathe up and down every second,
+        // which reads as vertical jitter and breaks the horizontal push.
+        if let existingLower = scaleLower, let existingUpper = scaleUpper,
+           lower >= existingLower, upper <= existingUpper {
+            lower = existingLower
+            upper = existingUpper
+        } else {
+            scaleLower = lower
+            scaleUpper = upper
+        }
+
+        let span = max(upper - lower, 0.0001)
         return samples.map { min(max(($0 - lower) / span, 0), 1) }
     }
 }
@@ -725,6 +759,8 @@ final class TrendHostView: NSView {
 private struct TrendCanvas: View {
     let samples: [Double]
     let color: Color
+    let lower: Double
+    let upper: Double
 
     var body: some View {
         Canvas { canvas, size in
@@ -735,8 +771,7 @@ private struct TrendCanvas: View {
                 with: .color(Theme.subtleFill)
             )
 
-            let capacity = SystemLoadMonitor.historyCapacity
-            let step = size.width / CGFloat(max(capacity - 1, 1))
+            let step = size.width / CGFloat(max(SystemLoadMonitor.historyCapacity - 1, 1))
             let points = TrendLayout.points(samples: samples, step: step, size: size)
             if points.count > 1 {
                 canvas.fill(
