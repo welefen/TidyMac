@@ -95,13 +95,28 @@ final class MenuBarStatsController {
         }
 
         let cpu = Int((snapshot.cpuFraction * 100).rounded())
-        statusItem.button?.title = "\(cpu)%"
+        statusItem.button?.attributedTitle = cpuTitle(for: cpu)
         statusItem.button?.toolTip = L("CPU %@", "\(cpu)%")
         cpuMenuItem.title = L("CPU %@ · %@ 核", "\(cpu)%", "\(snapshot.coreCount)")
         memoryMenuItem.title = L("内存 %@ / %@ · %@",
                                  Format.bytes(snapshot.memoryUsedBytes),
                                  Format.bytes(snapshot.memoryTotalBytes),
                                  snapshot.memoryPressure.title)
+    }
+
+    private func cpuTitle(for cpu: Int) -> NSAttributedString {
+        let color: NSColor
+        if cpu >= 85 {
+            color = .systemRed
+        } else if cpu >= 60 {
+            color = .systemOrange
+        } else {
+            color = .labelColor
+        }
+        return NSAttributedString(string: "\(cpu)%", attributes: [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium),
+            .foregroundColor: color
+        ])
     }
 
     @objc private func openSystemLoad() {
