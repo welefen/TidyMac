@@ -594,6 +594,7 @@ private struct TrendLayerView: NSViewRepresentable {
 final class TrendHostView: NSView {
     private let contentLayer = CALayer()
     private let outgoingLayer = CALayer()
+    private let edgeMask = CAGradientLayer()
     private var isTransitioning = false
     private var currentValues: [Double] = []
     private var currentColor: Color = Theme.accent
@@ -610,6 +611,7 @@ final class TrendHostView: NSView {
         super.init(frame: frameRect)
         wantsLayer = true
         layer?.masksToBounds = true
+        layer?.cornerRadius = 5
         contentLayer.anchorPoint = .zero
         contentLayer.position = .zero
 
@@ -619,6 +621,12 @@ final class TrendHostView: NSView {
 
         layer?.addSublayer(outgoingLayer)
         layer?.addSublayer(contentLayer)
+
+        edgeMask.colors = [NSColor.clear.cgColor, NSColor.black.cgColor]
+        edgeMask.locations = [0, 0.05]
+        edgeMask.startPoint = CGPoint(x: 0, y: 0.5)
+        edgeMask.endPoint = CGPoint(x: 1, y: 0.5)
+        layer?.mask = edgeMask
     }
 
     required init?(coder: NSCoder) { nil }
@@ -646,6 +654,7 @@ final class TrendHostView: NSView {
 
     override func layout() {
         super.layout()
+        edgeMask.frame = bounds
         if bounds.size != renderedSize {
             render(animate: false)
         }
