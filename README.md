@@ -23,7 +23,7 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 - Results grouped by category, selectable per item, with safety level and path; a confirmation dialog appears before cleaning
 - Hover a result to exclude its folder from future scans and cleanups; the exclusion can be undone right from the results page
 - Cleaned files are moved to the Trash by default and can be restored; permanent deletion can be enabled in Settings
-- Optional live CPU readout in the menu bar (off by default, enable in Settings); the percentage turns orange under high load and red when very high, and its menu also shows memory usage and links to System Load (macOS 26 requires allowing TidyMac under System Settings → Menu Bar)
+- Optional live CPU readout in the menu bar (off by default, enable in Settings); the percentage turns orange under high load and red when very high, and its menu also shows the last-minute CPU, memory and GPU trends plus links to System Load (macOS 26 requires allowing TidyMac under System Settings → Menu Bar)
 
 ### Uninstaller
 - Scans `/Applications`, `~/Applications` and both Input Methods folders, showing size and last-used time
