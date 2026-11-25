@@ -570,27 +570,12 @@ private struct FadingNumber: View {
     let font: Font
     let color: Color
 
-    @State private var previousText: String = ""
-    @State private var fade: Double = 0
-
     var body: some View {
         Text(text)
             .font(font)
             .foregroundStyle(color)
-            .overlay(alignment: .leading) {
-                Text(previousText)
-                    .font(font)
-                    .foregroundStyle(color)
-                    .opacity(fade)
-                    .allowsHitTesting(false)
-            }
-            .onChange(of: text) { oldValue, _ in
-                previousText = oldValue
-                fade = 1
-                withAnimation(.easeOut(duration: 0.16)) {
-                    fade = 0
-                }
-            }
+            .contentTransition(.numericText())
+            .animation(.easeOut(duration: 0.28), value: text)
     }
 }
 
