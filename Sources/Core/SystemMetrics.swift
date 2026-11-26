@@ -15,6 +15,15 @@ enum MemoryPressureLevel: String, Sendable, Equatable {
         case .critical: return L("内存压力严重")
         }
     }
+
+    /// Compact label for the tight menu-bar cards.
+    var shortTitle: String {
+        switch self {
+        case .normal: return L("正常")
+        case .warning: return L("偏高")
+        case .critical: return L("严重")
+        }
+    }
 }
 
 struct AppProcessUsage: Identifiable, Equatable, Sendable {

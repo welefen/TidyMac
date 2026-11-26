@@ -241,7 +241,7 @@ private final class MenuBarTrendsView: NSView {
         drawCard(rects[1],
                  title: L("内存"),
                  value: percent(memoryFraction(snapshot)),
-                 detail: snapshot.memoryPressure.title,
+                 detail: snapshot.memoryPressure.shortTitle,
                  primary: primary,
                  secondary: secondary)
         drawCard(rects[2],

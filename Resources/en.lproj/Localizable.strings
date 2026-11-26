@@ -618,3 +618,7 @@ Uninstalling this App Store app requires an administrator password.";
 
 "可用" = "available";
 "查看每个文件夹的占用" = "See space used by each folder";
+
+"正常" = "Normal";
+"偏高" = "High";
+"严重" = "Critical";
