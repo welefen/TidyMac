@@ -827,10 +827,12 @@ private enum TrendLayout {
         // keeps the layer at -step so it sits on the edge; animating 0 → -step
         // lets the next sample enter from the right during warmup and steady state.
         let startX = viewportWidth + step - CGFloat(max(count - 1, 0)) * step
+        let verticalInset = min(2, height * 0.12)
+        let plotHeight = max(height - verticalInset * 2, 1)
         return samples.enumerated().map { index, value in
             CGPoint(
                 x: startX + CGFloat(index) * step,
-                y: height * (1 - CGFloat(value))
+                y: verticalInset + plotHeight * (1 - CGFloat(value))
             )
         }
     }
