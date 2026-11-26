@@ -61,17 +61,35 @@ if ! kill -0 "$PID" 2>/dev/null; then
   exit 1
 fi
 
-WID="$("$ROOT/.build/windowid" "$PID" || true)"
-if [[ -z "$WID" ]]; then
-  sleep 1.2
-  WID="$("$ROOT/.build/windowid" "$PID" || true)"
-fi
-if [[ -z "$WID" ]]; then
-  echo "Could not find TidyMac window; capturing full screen instead." >&2
-  screencapture -x "$OUT_DIR/$NAME.png"
+# Capture the full screen and crop to the window. Capturing a window directly
+# can return a stale surface after rebuilds, so this path is used first.
+FULL="$ROOT/.build/shoot-full.png"
+screencapture -x "$FULL"
+BOUNDS="$(osascript -e 'tell application "System Events" to tell process "TidyMac" to get {position, size} of window 1' 2>/dev/null | tr -d ' ' || true)"
+if [[ -n "$BOUNDS" ]]; then
+  read -r X Y W H < <(printf '%s\n' "$BOUNDS" | tr ',' ' ')
+  PIX_W="$(sips -g pixelWidth "$FULL" 2>/dev/null | awk '/pixelWidth/ { print $2; exit }')"
+  SCREEN_W="$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null | awk -F', ' '{ print $3 }')"
+  if [[ -n "$PIX_W" && -n "$SCREEN_W" && "$SCREEN_W" -gt 0 ]]; then
+    SCALE=$((PIX_W / SCREEN_W))
+    X2=$((X * SCALE)); Y2=$((Y * SCALE)); W2=$((W * SCALE)); H2=$((H * SCALE))
+    if sips -c "$H2" "$W2" --cropOffset "$Y2" "$X2" "$FULL" --out "$OUT_DIR/$NAME.png" >/dev/null 2>&1; then
+      :
+    else
+      cp "$FULL" "$OUT_DIR/$NAME.png"
+    fi
+  else
+    cp "$FULL" "$OUT_DIR/$NAME.png"
+  fi
 else
-  screencapture -l "$WID" -o -x "$OUT_DIR/$NAME.png"
+  WID="$("$ROOT/.build/windowid" "$PID" || true)"
+  if [[ -n "$WID" ]]; then
+    screencapture -l "$WID" -o -x "$OUT_DIR/$NAME.png"
+  else
+    cp "$FULL" "$OUT_DIR/$NAME.png"
+  fi
 fi
+rm -f "$FULL"
 
 kill "$PID" 2>/dev/null || true
 echo "$OUT_DIR/$NAME.png"

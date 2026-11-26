@@ -611,3 +611,7 @@ Uninstalling this App Store app requires an administrator password.";
 "实时" = "Live";
 
 "查看整机与各 App 的 CPU、GPU、内存与网络占用" = "See CPU, GPU, memory and network use across the Mac and every app";
+
+"菜单栏" = "Menu bar";
+"在菜单栏显示 CPU" = "Show CPU in menu bar";
+"实时显示 CPU 使用率；默认关闭。macOS 26 需要在「系统设置 → 菜单栏 → 允许在菜单栏显示」中允许 TidyMac。" = "Show live CPU usage in the menu bar. Off by default. On macOS 26, allow TidyMac in System Settings → Menu Bar → Allow in the Menu Bar.";
