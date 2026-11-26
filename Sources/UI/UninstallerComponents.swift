@@ -316,9 +316,24 @@ struct RunningAppWarning: View {
 struct UninstallResultBanner: View {
     let report: CleanReport
     let appName: String
+    let appPath: String
     var dismiss: () -> Void
 
     private var hasFailure: Bool { !report.failures.isEmpty }
+
+    private var revealPath: String {
+        appPath.isEmpty ? (report.failures.first?.path ?? "") : appPath
+    }
+
+    private func revealInFinder() {
+        guard !revealPath.isEmpty else { return }
+        let url = URL(fileURLWithPath: revealPath)
+        if FileManager.default.fileExists(atPath: revealPath) {
+            NSWorkspace.shared.activateFileViewerSelecting([url])
+        } else {
+            NSWorkspace.shared.open(url.deletingLastPathComponent())
+        }
+    }
 
     private var message: String {
         if hasFailure {
@@ -330,19 +345,25 @@ struct UninstallResultBanner: View {
 
     var body: some View {
         HStack(spacing: 11) {
-            Image(systemName: hasFailure ? "exclamationmark.triangle" : "checkmark.circle")
+            Image(systemName: hasFailure ? "exclamationmark.triangle.fill" : "checkmark.circle")
                 .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(hasFailure ? Theme.caution : Theme.accent)
             VStack(alignment: .leading, spacing: 2) {
-                Text(hasFailure ? "部分项目未能移除" : L("已卸载 \(appName)"))
-                    .font(.system(size: 12.5, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
+                Text(L(hasFailure ? "部分项目未能移除" : "已卸载 \(appName)"))
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(hasFailure ? Theme.caution : Theme.textPrimary)
                 Text(L(message))
                     .font(.system(size: 11))
-                    .foregroundStyle(Theme.textSecondary)
+                    .foregroundStyle(hasFailure ? Theme.textPrimary.opacity(0.85) : Theme.textSecondary)
                     .lineLimit(2)
             }
             Spacer(minLength: 8)
+            if hasFailure {
+                Button(action: revealInFinder) {
+                    Label(L("打开所在文件夹"), systemImage: "folder")
+                }
+                .buttonStyle(SecondaryButtonStyle(compact: true))
+            }
             Button(action: dismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .medium))
@@ -356,11 +377,11 @@ struct UninstallResultBanner: View {
         .padding(.vertical, 9)
         .background(
             RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
-                .fill(Theme.card)
+                .fill(hasFailure ? Theme.caution.opacity(0.10) : Theme.card)
         )
         .overlay(
             RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
-                .strokeBorder(Theme.stroke, lineWidth: 1)
+                .strokeBorder(hasFailure ? Theme.caution.opacity(0.38) : Theme.stroke, lineWidth: 1)
         )
     }
 }

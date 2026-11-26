@@ -24,6 +24,7 @@ final class UninstallerViewModel: ObservableObject {
     @Published var showConfirm = false
     @Published var report: CleanReport?
     @Published var finishedAppName = ""
+    @Published var finishedAppPath = ""
 
     private var demoMode = false
     private var uninstallMovedToTrash = true
@@ -187,6 +188,7 @@ final class UninstallerViewModel: ObservableObject {
     func confirmUninstall(isDemo: Bool, moveToTrash: Bool) {
         guard let app = selectedApp, !isUninstalling, !app.isSystem else { return }
         finishedAppName = app.name
+        finishedAppPath = app.url.path
         isUninstalling = true
         uninstallProgress = 0.03
         uninstallStatus = "正在准备移除…"
@@ -305,6 +307,7 @@ struct UninstallerPage: View {
             if let report = model.report {
                 UninstallResultBanner(report: report,
                                       appName: model.finishedAppName,
+                                      appPath: model.finishedAppPath,
                                       dismiss: { model.dismissReport() })
                     .transition(.opacity)
             }

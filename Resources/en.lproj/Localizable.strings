@@ -400,6 +400,7 @@ A smart cleaner and space manager for macOS.";
 "部分文件未能移入废纸篓" = "Some files could not be moved to Trash";
 "部分邮件附件与备份需要授权。列表中若没有 TidyMac，点击 + 添加。" = "Mail attachments and backups need permission. If TidyMac isn't listed, click + to add it.";
 "部分项目未能移除" = "Some items could not be removed";
+"打开所在文件夹" = "Open Containing Folder";
 "重新扫描" = "Rescan";
 "重置" = "Reset";
 "重置使用统计？" = "Reset usage statistics?";
