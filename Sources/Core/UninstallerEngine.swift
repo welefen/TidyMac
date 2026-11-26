@@ -182,7 +182,9 @@ enum UninstallerEngine {
             let url = candidate.url
             guard HomePaths.exists(url) else { continue }
             // Never surface a path the safety gate would refuse to delete.
-            guard !SafetyPolicy.isProtected(url) else { continue }
+            let isAllowedSystemBackgroundItem = candidate.kind == .backgroundItem
+                && SafetyPolicy.isSystemBackgroundItemPath(url.path)
+            guard !SafetyPolicy.isProtected(url) || isAllowedSystemBackgroundItem else { continue }
 
             let size = FileMeasure.allocatedSize(ofItemAt: url)
             items.append(LeftoverItem(name: libraryRelativeName(for: url),
