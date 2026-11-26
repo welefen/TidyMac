@@ -603,3 +603,10 @@ Uninstalling this App Store app requires an administrator password.";
 "所有 GPU 任务" = "All GPU work";
 "无法读取此设备的 GPU 统计" = "GPU stats unavailable on this device";
 "利用率" = "utilization";
+
+/* Network card */
+"下载速率" = "Download";
+"上传速率" = "Upload";
+"实时" = "Live";
+
+"查看整机与各 App 的 CPU、GPU、内存与网络占用" = "See CPU, GPU, memory and network use across the Mac and every app";

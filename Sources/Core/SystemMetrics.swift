@@ -36,6 +36,11 @@ struct AppUsage: Identifiable, Equatable, Sendable {
     var processCount: Int { processes.count }
 }
 
+struct NetworkMetrics: Equatable, Sendable {
+    let downloadBytesPerSecond: Double
+    let uploadBytesPerSecond: Double
+}
+
 struct SystemLoadSnapshot: Equatable, Sendable {
     let cpuFraction: Double
     let coreCount: Int
@@ -44,6 +49,7 @@ struct SystemLoadSnapshot: Equatable, Sendable {
     let memoryPressure: MemoryPressureLevel
     let swapUsedBytes: Int64
     let gpu: GPUMetrics?
+    let network: NetworkMetrics?
     let appUsages: [AppUsage]
     let readableProcessCount: Int
     let sampledAt: Date
@@ -61,6 +67,8 @@ final class SystemLoadMonitor: ObservableObject {
     @Published private(set) var cpuHistory: [Double] = []
     @Published private(set) var memoryHistory: [Double] = []
     @Published private(set) var gpuHistory: [Double] = []
+    @Published private(set) var downloadHistory: [Double] = []
+    @Published private(set) var uploadHistory: [Double] = []
 
     /// One-second cadence; 60 visible seconds plus one offscreen neighbour on
     /// each side of the sixty-second marquee window.
@@ -75,6 +83,7 @@ final class SystemLoadMonitor: ObservableObject {
 
     private var previousHostCPU: host_cpu_load_info_data_t?
     private var previousPidCPU: [Int32: UInt64] = [:]
+    private var previousNetworkCounters: (received: UInt64, sent: UInt64, timestamp: UInt64)?
     private var previousSampleNanos: UInt64 = 0
     private var nameCache: [String: String] = [:]
     private let timebaseNumer: Double
@@ -97,6 +106,7 @@ final class SystemLoadMonitor: ObservableObject {
             self.includeApps = includeApps
             self.previousHostCPU = nil
             self.previousPidCPU = [:]
+            self.previousNetworkCounters = nil
             self.previousSampleNanos = 0
 
             if isDemo {
@@ -120,6 +130,16 @@ final class SystemLoadMonitor: ObservableObject {
                         noiseScale: 0.55,
                         seed: 0xC0FF_EE00_1234_5678
                     )
+                    self.downloadHistory = Self.demoRateHistory(
+                        base: demo.network?.downloadBytesPerSecond ?? 84_000,
+                        amplitude: 260_000,
+                        seed: 0xD0AD_0BEE_F00D_1234
+                    )
+                    self.uploadHistory = Self.demoRateHistory(
+                        base: demo.network?.uploadBytesPerSecond ?? 12_000,
+                        amplitude: 48_000,
+                        seed: 0xFEED_FACE_CAFE_5678
+                    )
                     self.isSampling = true
                 }
                 return
@@ -136,6 +156,8 @@ final class SystemLoadMonitor: ObservableObject {
                 self.cpuHistory = []
                 self.memoryHistory = []
                 self.gpuHistory = []
+                self.downloadHistory = []
+                self.uploadHistory = []
                 self.isSampling = true
             }
         }
@@ -168,6 +190,7 @@ final class SystemLoadMonitor: ObservableObject {
             self.hasStarted = false
             self.previousHostCPU = nil
             self.previousPidCPU = [:]
+            self.previousNetworkCounters = nil
             self.previousSampleNanos = 0
             DispatchQueue.main.async { self.isSampling = false }
         }
@@ -184,6 +207,7 @@ final class SystemLoadMonitor: ObservableObject {
         let cpu = sampleHostCPU()
         let memory = sampleMemory()
         let gpu = GPUProbe.sample()
+        let network = sampleNetwork(now: now)
         let apps: (usages: [AppUsage], readable: Int) = includeApps
             ? sampleApps(elapsed: elapsed)
             : ([], 0)
@@ -198,6 +222,7 @@ final class SystemLoadMonitor: ObservableObject {
             memoryPressure: memory.pressure,
             swapUsedBytes: memory.swapUsed,
             gpu: gpu,
+            network: network,
             appUsages: apps.usages,
             readableProcessCount: apps.readable,
             sampledAt: Date()
@@ -213,12 +238,14 @@ final class SystemLoadMonitor: ObservableObject {
             self.appendHistory(
                 cpu: snapshot.cpuFraction,
                 memory: memoryFraction,
-                gpu: snapshot.gpu?.utilizationFraction
+                gpu: snapshot.gpu?.utilizationFraction,
+                download: snapshot.network?.downloadBytesPerSecond,
+                upload: snapshot.network?.uploadBytesPerSecond
             )
         }
     }
 
-    private func appendHistory(cpu: Double, memory: Double, gpu: Double?) {
+    private func appendHistory(cpu: Double, memory: Double, gpu: Double?, download: Double?, upload: Double?) {
         cpuHistory.append(min(max(cpu, 0), 1))
         if cpuHistory.count > Self.historyCapacity {
             cpuHistory.removeFirst(cpuHistory.count - Self.historyCapacity)
@@ -232,6 +259,71 @@ final class SystemLoadMonitor: ObservableObject {
             if gpuHistory.count > Self.historyCapacity {
                 gpuHistory.removeFirst(gpuHistory.count - Self.historyCapacity)
             }
+        }
+        if let download {
+            downloadHistory.append(max(download, 0))
+            if downloadHistory.count > Self.historyCapacity {
+                downloadHistory.removeFirst(downloadHistory.count - Self.historyCapacity)
+            }
+        }
+        if let upload {
+            uploadHistory.append(max(upload, 0))
+            if uploadHistory.count > Self.historyCapacity {
+                uploadHistory.removeFirst(uploadHistory.count - Self.historyCapacity)
+            }
+        }
+    }
+
+    private func sampleNetwork(now: UInt64) -> NetworkMetrics? {
+        var addressList: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&addressList) == 0, let first = addressList else { return nil }
+        defer { freeifaddrs(addressList) }
+
+        var received: UInt64 = 0
+        var sent: UInt64 = 0
+        var pointer: UnsafeMutablePointer<ifaddrs>? = first
+        while let current = pointer {
+            let interface = current.pointee
+            let flags = UInt32(interface.ifa_flags)
+            if let address = interface.ifa_addr,
+               address.pointee.sa_family == UInt8(AF_LINK),
+               flags & UInt32(IFF_LOOPBACK) == 0,
+               flags & UInt32(IFF_UP) != 0,
+               let data = interface.ifa_data {
+                let stats = data.assumingMemoryBound(to: if_data.self).pointee
+                received &+= UInt64(stats.ifi_ibytes)
+                sent &+= UInt64(stats.ifi_obytes)
+            }
+            pointer = interface.ifa_next
+        }
+
+        let previous = previousNetworkCounters
+        previousNetworkCounters = (received, sent, now)
+        guard let previous else { return nil }
+        let seconds = Double(now - previous.timestamp) / 1_000_000_000
+        guard seconds > 0 else { return nil }
+        let receivedDelta = received >= previous.received ? received - previous.received : 0
+        let sentDelta = sent >= previous.sent ? sent - previous.sent : 0
+        return NetworkMetrics(
+            downloadBytesPerSecond: Double(receivedDelta) / seconds,
+            uploadBytesPerSecond: Double(sentDelta) / seconds
+        )
+    }
+
+    private static func demoRateHistory(
+        base: Double,
+        amplitude: Double,
+        seed: UInt64
+    ) -> [Double] {
+        var seed = seed
+        var value = base
+        return (0..<Self.historyCapacity).map { index in
+            seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+            let noise = (Double((seed >> 33) & 0x7FFF_FFFF) / Double(0x7FFF_FFFF) * 2 - 1)
+            let drift = sin(Double(index) * 0.13) * amplitude * 0.25
+            let target = base + drift + noise * amplitude * 0.55
+            value = value * 0.62 + target * 0.38
+            return max(value, 0)
         }
     }
 
@@ -501,6 +593,10 @@ final class SystemLoadMonitor: ObservableObject {
                 inUseBytes: 860_000_000,
                 coreCount: 10,
                 model: "Apple M5"
+            ),
+            network: NetworkMetrics(
+                downloadBytesPerSecond: 84_000,
+                uploadBytesPerSecond: 12_000
             ),
             appUsages: apps,
             readableProcessCount: 11,

@@ -6,7 +6,7 @@
 
 <img src="Resources/AppIcon.png" width="96" alt="TidyMac App Icon">
 
-TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk, uninstalls apps together with leftovers, finds large files, shows where your disk space went with Space Lens, and monitors CPU and memory use by app. It supports light/dark appearance and follows the system by default. All file analysis happens locally; the only network telemetry is anonymous usage events (see [Anonymous Analytics](#anonymous-analytics)). Cleaned items are **moved to the Trash by default**, and sensitive locations such as system folders, Keychains, and the Photos library are hard-protected.
+TidyMac is a native SwiftUI macOS app: it scans system caches and developer junk, uninstalls apps together with leftovers, finds large files, shows where your disk space went with Space Lens, and monitors CPU, GPU, memory and network use by app. It supports light/dark appearance and follows the system by default. All file analysis happens locally; the only network telemetry is anonymous usage events (see [Anonymous Analytics](#anonymous-analytics)). Cleaned items are **moved to the Trash by default**, and sensitive locations such as system folders, Keychains, and the Photos library are hard-protected.
 
 [![Download TidyMac](https://img.shields.io/badge/Download-TidyMac%201.3.0%20for%20macOS-2ea44f?style=flat&logo=apple&logoColor=white)](https://github.com/welefen/TidyMac/raw/main/updates/TidyMac-1.3.0.zip)
 
@@ -42,7 +42,7 @@ Also available as a [DMG disk image](https://github.com/welefen/TidyMac/raw/main
 - Re-analyze any folder you choose
 
 ### System Load
-- Live CPU, GPU and memory overview: whole-machine usage, last-1-minute trend recorded from app launch, memory pressure and swap; GPU shows utilization and core count
+- Live CPU, GPU, memory and network overview: whole-machine usage, last-1-minute trends recorded from app launch, memory pressure and swap; GPU shows utilization and core count, network shows download/upload throughput
 - Per-app CPU and memory, aggregated across helper processes, with expandable process details
 - One-second refresh; only processes readable by the current user are counted
 - Row order stays fixed while the pointer is over the list, so the end-app button keeps its place

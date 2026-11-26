@@ -27,9 +27,10 @@ struct SystemLoadPage: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
-                PageHeader(title: "系统负载", subtitle: "查看整机与各 App 的 CPU、GPU、内存占用")
+                PageHeader(title: "系统负载", subtitle: L("查看整机与各 App 的 CPU、GPU、内存与网络占用"))
 
                 overallCard
+                networkCard
                 appsCard
 
                 HStack(spacing: 6) {
@@ -91,6 +92,88 @@ struct SystemLoadPage: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .qyPanel(padding: 22)
+    }
+
+    private var networkCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(L("网络"))
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
+                Spacer()
+                Text(L("实时"))
+                    .font(Theme.monoFont(9.5))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+
+            HStack(alignment: .top, spacing: 0) {
+                networkColumn(
+                    title: L("下载速率"),
+                    symbol: "arrow.down",
+                    rate: monitor.snapshot?.network?.downloadBytesPerSecond,
+                    history: monitor.downloadHistory,
+                    color: Theme.accent
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.trailing, 24)
+
+                Rectangle()
+                    .fill(Theme.stroke)
+                    .frame(width: 1, height: 86)
+                    .padding(.trailing, 24)
+
+                networkColumn(
+                    title: L("上传速率"),
+                    symbol: "arrow.up",
+                    rate: monitor.snapshot?.network?.uploadBytesPerSecond,
+                    history: monitor.uploadHistory,
+                    color: Theme.accent.opacity(0.78)
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .qyPanel(padding: 22)
+    }
+
+    private func networkColumn(
+        title: String,
+        symbol: String,
+        rate: Double?,
+        history: [Double],
+        color: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 5) {
+                Image(systemName: symbol)
+                    .font(.system(size: 10, weight: .semibold))
+                Text(title)
+                    .font(.system(size: 11))
+            }
+            .foregroundStyle(Theme.textTertiary)
+
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(networkRate(rate))
+                    .font(Theme.monoFont(30, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer(minLength: 0)
+                Text(trendWindowLabel(history.count))
+                    .font(Theme.monoFont(9.5))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+
+            TrendLayerView(
+                values: history,
+                color: color,
+                minimumSpan: 128 * 1024
+            )
+            .frame(height: 30)
+        }
+    }
+
+    private func networkRate(_ bytesPerSecond: Double?) -> String {
+        guard let bytesPerSecond else { return "—" }
+        let value = Int64(max(0, bytesPerSecond.rounded()))
+        return "\(Format.bytes(value))/s"
     }
 
     private var cpuColumn: some View {
