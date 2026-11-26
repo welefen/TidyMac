@@ -296,11 +296,6 @@ struct SystemLoadPage: View {
                     .font(Theme.monoFont(10.5))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
-                ForEach(LoadSort.allCases, id: \.self) { option in
-                    FilterPill(title: option.title, isSelected: sort == option) {
-                        sort = option
-                    }
-                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 13)
@@ -335,10 +330,8 @@ struct SystemLoadPage: View {
         HStack(spacing: 10) {
             Text(L("应用"))
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Text("CPU")
-                .frame(width: 64, alignment: .trailing)
-            Text(L("内存"))
-                .frame(width: 84, alignment: .trailing)
+            sortHeader("CPU", option: .cpu, width: 64)
+            sortHeader(L("内存"), option: .memory, width: 84)
             Text(L("进程"))
                 .frame(width: 64, alignment: .trailing)
             Color.clear.frame(width: 14)
@@ -348,6 +341,29 @@ struct SystemLoadPage: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 7)
         .background(Theme.field.opacity(0.55))
+    }
+
+
+    private func sortHeader(_ title: String, option: LoadSort, width: CGFloat) -> some View {
+        let selected = sort == option
+        return Button {
+            sort = option
+        } label: {
+            HStack(spacing: 3) {
+                Text(title)
+                    .font(.system(size: 10.5, weight: selected ? .semibold : .regular))
+                    .foregroundStyle(selected ? Theme.textPrimary : Theme.textTertiary)
+                if selected {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 7, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                }
+            }
+            .frame(width: width, alignment: .trailing)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(option.title)
     }
 
     private func appRow(_ usage: AppUsage) -> some View {
