@@ -84,7 +84,7 @@ struct DashboardPage: View {
                 DividerLine()
                 DashboardToolRow(page: .spaceLens,
                                  title: "空间透镜",
-                                 subtitle: "查看每个文件夹的占用",
+                                 subtitle: L("查看每个文件夹的占用"),
                                  symbol: "circle.hexagongrid")
             }
             .background(
