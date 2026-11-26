@@ -79,6 +79,11 @@ enum Theme {
     static let accent = Color.adaptive(light: 0x146B56, dark: 0x6FD3B2)
     static let accentHover = Color.adaptive(light: 0x0F5745, dark: 0x86E1C3)
 
+    // Data-series accents used only for trend lines.
+    static let chartCPU = accent
+    static let chartMemory = Color.adaptive(light: 0x2F6F91, dark: 0x7FC0E3)
+    static let chartGPU = Color.adaptive(light: 0x8A621E, dark: 0xD8A25A)
+
     // Semantic
     static let positive = Color.adaptive(light: 0x1F7A5F, dark: 0x5CC9A7)
     static let caution = Color.adaptive(light: 0x8A621E, dark: 0xD8A25A)

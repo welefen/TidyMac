@@ -127,7 +127,7 @@ struct SystemLoadPage: View {
                     symbol: "arrow.up",
                     rate: monitor.snapshot?.network?.uploadBytesPerSecond,
                     history: monitor.uploadHistory,
-                    color: Theme.accent.opacity(0.78)
+                    color: Theme.chartMemory
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -230,7 +230,7 @@ struct SystemLoadPage: View {
                 }
             }
 
-            TrendLayerView(values: memoryHistory, color: Theme.accent.opacity(0.78), minimumSpan: 0.025)
+            TrendLayerView(values: memoryHistory, color: Theme.chartMemory, minimumSpan: 0.025)
                 .frame(height: 32)
                 .padding(.top, 2)
 
@@ -319,7 +319,7 @@ struct SystemLoadPage: View {
                         .foregroundStyle(Theme.textTertiary)
                 }
 
-                TrendLayerView(values: gpuHistory, color: Theme.accent, minimumSpan: 0.08)
+                TrendLayerView(values: gpuHistory, color: Theme.chartGPU, minimumSpan: 0.08)
                     .frame(height: 32)
                     .padding(.top, 2)
 

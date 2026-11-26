@@ -206,11 +206,11 @@ private final class MenuBarTrendsView: NSView {
                         minimumSpan: 0.06,
                         interval: SystemLoadMonitor.refreshInterval)
         charts[1].apply(values: memoryHistory,
-                        color: Theme.accent,
+                        color: Theme.chartMemory,
                         minimumSpan: 0.025,
                         interval: SystemLoadMonitor.refreshInterval)
         charts[2].apply(values: gpuHistory,
-                        color: Theme.accent,
+                        color: Theme.chartGPU,
                         minimumSpan: 0.08,
                         interval: SystemLoadMonitor.refreshInterval)
     }
