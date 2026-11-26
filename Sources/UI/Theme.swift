@@ -83,6 +83,7 @@ enum Theme {
     static let chartCPU = accent
     static let chartMemory = Color.adaptive(light: 0x2F6F91, dark: 0x7FC0E3)
     static let chartGPU = Color.adaptive(light: 0x8A621E, dark: 0xD8A25A)
+    static let chartNetworkUpload = Color.adaptive(light: 0x2456B8, dark: 0x8FB6FF)
 
     // Semantic
     static let positive = Color.adaptive(light: 0x1F7A5F, dark: 0x5CC9A7)

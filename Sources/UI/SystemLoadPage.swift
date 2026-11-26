@@ -127,7 +127,7 @@ struct SystemLoadPage: View {
                     symbol: "arrow.up",
                     rate: monitor.snapshot?.network?.uploadBytesPerSecond,
                     history: monitor.uploadHistory,
-                    color: Theme.chartMemory
+                    color: Theme.chartNetworkUpload
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
             }

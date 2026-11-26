@@ -298,7 +298,7 @@ private final class MenuBarTrendsView: NSView {
         let networkSpan: Double = 128 * 1024
         charts[3].apply(values: downloadHistory, color: Theme.accent,
                         minimumSpan: networkSpan, interval: SystemLoadMonitor.refreshInterval)
-        charts[4].apply(values: uploadHistory, color: Theme.chartMemory,
+        charts[4].apply(values: uploadHistory, color: Theme.chartNetworkUpload,
                         minimumSpan: networkSpan, interval: SystemLoadMonitor.refreshInterval)
     }
 
