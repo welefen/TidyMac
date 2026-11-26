@@ -52,7 +52,7 @@ final class MenuBarStatsController {
 
     private func buildMenu() {
         menu.autoenablesItems = false
-        trendsView.frame = NSRect(x: 0, y: 0, width: 340, height: 124)
+        trendsView.frame = NSRect(origin: .zero, size: MenuBarTrendsView.panelSize)
         trendsItem.view = trendsView
         trendsItem.isEnabled = true
         menu.addItem(trendsItem)
@@ -80,7 +80,7 @@ final class MenuBarStatsController {
     private func apply(_ snapshot: SystemLoadSnapshot?) {
         guard let snapshot else {
             statusItem.button?.title = "—"
-            trendsView.update(snapshot: nil, cpuHistory: [], memoryHistory: [], gpuHistory: [])
+            trendsView.update(snapshot: nil, cpuHistory: [], memoryHistory: [], gpuHistory: [], downloadHistory: [], uploadHistory: [])
             return
         }
 
@@ -91,7 +91,9 @@ final class MenuBarStatsController {
             snapshot: snapshot,
             cpuHistory: monitor.cpuHistory,
             memoryHistory: monitor.memoryHistory,
-            gpuHistory: monitor.gpuHistory
+            gpuHistory: monitor.gpuHistory,
+            downloadHistory: monitor.downloadHistory,
+            uploadHistory: monitor.uploadHistory
         )
     }
 
@@ -124,17 +126,20 @@ final class MenuBarStatsController {
 }
 
 private final class MenuBarTrendsView: NSView {
+    static let panelSize = NSSize(width: 360, height: 236)
+
     private var snapshot: SystemLoadSnapshot?
     private var cpuHistory: [Double] = []
     private var memoryHistory: [Double] = []
     private var gpuHistory: [Double] = []
+    private var downloadHistory: [Double] = []
+    private var uploadHistory: [Double] = []
 
-    private let insetX: CGFloat = 12
-    private let insetY: CGFloat = 7
-    private let textHeight: CGFloat = 15
-    private let chartHeight: CGFloat = 18
-    private let rowGap: CGFloat = 6
-    private let charts: [TrendHostView] = (0..<3).map { _ in
+    private let inset: CGFloat = 10
+    private let gap: CGFloat = 10
+    private let chartHeight: CGFloat = 26
+
+    private let charts: [TrendHostView] = (0..<5).map { _ in
         let chart = TrendHostView()
         chart.drawsBackground = false
         chart.wantsLayer = true
@@ -147,6 +152,7 @@ private final class MenuBarTrendsView: NSView {
         super.init(frame: frameRect)
         wantsLayer = true
         charts.forEach(addSubview)
+        charts[4].showsArea = false
     }
 
     required init?(coder: NSCoder) { nil }
@@ -154,26 +160,58 @@ private final class MenuBarTrendsView: NSView {
     func update(snapshot: SystemLoadSnapshot?,
                 cpuHistory: [Double],
                 memoryHistory: [Double],
-                gpuHistory: [Double]) {
+                gpuHistory: [Double],
+                downloadHistory: [Double],
+                uploadHistory: [Double]) {
         self.snapshot = snapshot
         self.cpuHistory = cpuHistory
         self.memoryHistory = memoryHistory
         self.gpuHistory = gpuHistory
+        self.downloadHistory = downloadHistory
+        self.uploadHistory = uploadHistory
         needsLayout = true
         needsDisplay = true
         layoutSubtreeIfNeeded()
         updateCharts()
     }
 
+    private var cardWidth: CGFloat {
+        max(1, (bounds.width - inset * 2 - gap) / 2)
+    }
+
+    private var cardHeight: CGFloat {
+        max(1, (bounds.height - inset * 2 - gap) / 2)
+    }
+
+    private func cardRects() -> [NSRect] {
+        let width = cardWidth
+        let height = cardHeight
+        return [
+            NSRect(x: inset, y: inset, width: width, height: height),
+            NSRect(x: inset + width + gap, y: inset, width: width, height: height),
+            NSRect(x: inset, y: inset + height + gap, width: width, height: height),
+            NSRect(x: inset + width + gap, y: inset + height + gap, width: width, height: height)
+        ]
+    }
+
     override func layout() {
         super.layout()
-        let width = bounds.width - insetX * 2
-        guard width > 1 else { return }
-        let rowHeight = textHeight + chartHeight + rowGap
-        for (index, chart) in charts.enumerated() {
-            let top = insetY + CGFloat(index) * rowHeight + textHeight
-            chart.frame = NSRect(x: insetX, y: top, width: width, height: chartHeight)
+        let rects = cardRects()
+        guard cardWidth > 20, cardHeight > 30 else { return }
+        for index in 0..<3 {
+            let card = rects[index]
+            charts[index].frame = NSRect(x: card.minX + 10,
+                                         y: card.maxY - chartHeight - 9,
+                                         width: card.width - 20,
+                                         height: chartHeight)
         }
+        let network = rects[3]
+        let networkChart = NSRect(x: network.minX + 10,
+                                  y: network.maxY - chartHeight - 9,
+                                  width: network.width - 20,
+                                  height: chartHeight)
+        charts[3].frame = networkChart
+        charts[4].frame = networkChart
         updateCharts()
     }
 
@@ -181,83 +219,97 @@ private final class MenuBarTrendsView: NSView {
         super.draw(dirtyRect)
 
         NSColor.windowBackgroundColor.setFill()
-        NSBezierPath(roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5), xRadius: 6, yRadius: 6).fill()
+        NSBezierPath(roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5), xRadius: 8, yRadius: 8).fill()
 
-        guard snapshot != nil else {
-            drawText(label: L("系统负载"), value: "—", x: insetX, y: insetY)
+        guard let snapshot else {
+            drawString(L("系统负载"), at: CGPoint(x: inset, y: inset), font: .systemFont(ofSize: 11), color: .secondaryLabelColor)
             return
         }
 
-        let width = bounds.width - insetX * 2
-        guard width > 1 else { return }
-        let rowHeight = textHeight + chartHeight + rowGap
-
-        for index in 0..<3 {
-            let top = insetY + CGFloat(index) * rowHeight
-            drawText(label: label(for: index), value: value(for: index), x: insetX, y: top)
-        }
-    }
-
-    private func updateCharts() {
-        let width = bounds.width - insetX * 2
-        guard width > 1 else { return }
-        charts[0].apply(values: cpuHistory,
-                        color: Theme.accent,
-                        minimumSpan: 0.06,
-                        interval: SystemLoadMonitor.refreshInterval)
-        charts[1].apply(values: memoryHistory,
-                        color: Theme.chartMemory,
-                        minimumSpan: 0.025,
-                        interval: SystemLoadMonitor.refreshInterval)
-        charts[2].apply(values: gpuHistory,
-                        color: Theme.chartGPU,
-                        minimumSpan: 0.08,
-                        interval: SystemLoadMonitor.refreshInterval)
-    }
-
-    private func label(for index: Int) -> String {
-        switch index {
-        case 0: return "CPU"
-        case 1: return L("内存")
-        default: return "GPU"
-        }
-    }
-
-    private func value(for index: Int) -> String {
-        guard let snapshot else { return "—" }
-        switch index {
-        case 0:
-            return L("%@ · %@ 核", percent(snapshot.cpuFraction), "\(snapshot.coreCount)")
-        case 1:
-            return L("%@ / %@ · %@",
-                     Format.bytes(snapshot.memoryUsedBytes),
-                     Format.bytes(snapshot.memoryTotalBytes),
-                     snapshot.memoryPressure.title)
-        default:
-            if let gpu = snapshot.gpu {
-                return L("%@ · %@", percent(gpu.utilizationFraction), L("利用率"))
-            }
-            return L("不可用")
-        }
-    }
-
-    private func drawText(label: String, value: String, x: CGFloat, y: CGFloat) {
+        let rects = cardRects()
         let primary = NSColor(name: nil) { appearance in
             appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? .white : .black
         }
-        let labelAttributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular),
-            .foregroundColor: primary.withAlphaComponent(0.62)
+        let secondary = primary.withAlphaComponent(0.58)
+
+        drawCard(rects[0],
+                 title: "CPU",
+                 value: percent(snapshot.cpuFraction),
+                 detail: L("%@ 核", "\(snapshot.coreCount)"),
+                 primary: primary,
+                 secondary: secondary)
+        drawCard(rects[1],
+                 title: L("内存"),
+                 value: percent(memoryFraction(snapshot)),
+                 detail: snapshot.memoryPressure.title,
+                 primary: primary,
+                 secondary: secondary)
+        drawCard(rects[2],
+                 title: "GPU",
+                 value: snapshot.gpu.map { percent($0.utilizationFraction) } ?? "—",
+                 detail: snapshot.gpu == nil ? L("不可用") : L("利用率"),
+                 primary: primary,
+                 secondary: secondary)
+        drawCard(rects[3],
+                 title: L("网络"),
+                 value: snapshot.network.map { rate($0.downloadBytesPerSecond) } ?? "—",
+                 detail: snapshot.network.map { "↑ " + rate($0.uploadBytesPerSecond) } ?? "",
+                 primary: primary,
+                 secondary: secondary)
+    }
+
+    private func drawCard(_ rect: NSRect,
+                          title: String,
+                          value: String,
+                          detail: String,
+                          primary: NSColor,
+                          secondary: NSColor) {
+        NSColor.labelColor.withAlphaComponent(0.045).setFill()
+        NSBezierPath(roundedRect: rect, xRadius: 10, yRadius: 10).fill()
+
+        drawString(title, at: CGPoint(x: rect.minX + 10, y: rect.minY + 8),
+                   font: .systemFont(ofSize: 10.5), color: secondary)
+        drawString(value, at: CGPoint(x: rect.minX + 10, y: rect.minY + 22),
+                   font: .monospacedDigitSystemFont(ofSize: 20, weight: .medium), color: primary)
+
+        let detailAttrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 9.5, weight: .regular),
+            .foregroundColor: secondary
         ]
-        let valueAttributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular),
-            .foregroundColor: primary
-        ]
-        let labelText = label as NSString
-        labelText.draw(at: NSPoint(x: x, y: y + 1), withAttributes: labelAttributes)
-        let labelWidth = labelText.size(withAttributes: labelAttributes).width
-        (value as NSString).draw(at: NSPoint(x: x + labelWidth + 4, y: y + 1),
-                                 withAttributes: valueAttributes)
+        let detailSize = (detail as NSString).size(withAttributes: detailAttrs)
+        (detail as NSString).draw(at: NSPoint(x: rect.maxX - 10 - detailSize.width, y: rect.minY + 9),
+                                  withAttributes: detailAttrs)
+    }
+
+    private func drawString(_ text: String, at point: CGPoint, font: NSFont, color: NSColor) {
+        (text as NSString).draw(at: point, withAttributes: [
+            .font: font,
+            .foregroundColor: color
+        ])
+    }
+
+    private func updateCharts() {
+        charts[0].apply(values: cpuHistory, color: Theme.chartCPU,
+                        minimumSpan: 0.06, interval: SystemLoadMonitor.refreshInterval)
+        charts[1].apply(values: memoryHistory, color: Theme.chartMemory,
+                        minimumSpan: 0.025, interval: SystemLoadMonitor.refreshInterval)
+        charts[2].apply(values: gpuHistory, color: Theme.chartGPU,
+                        minimumSpan: 0.08, interval: SystemLoadMonitor.refreshInterval)
+        let networkSpan: Double = 128 * 1024
+        charts[3].apply(values: downloadHistory, color: Theme.accent,
+                        minimumSpan: networkSpan, interval: SystemLoadMonitor.refreshInterval)
+        charts[4].apply(values: uploadHistory, color: Theme.chartMemory,
+                        minimumSpan: networkSpan, interval: SystemLoadMonitor.refreshInterval)
+    }
+
+    private func memoryFraction(_ snapshot: SystemLoadSnapshot) -> Double {
+        guard snapshot.memoryTotalBytes > 0 else { return 0 }
+        return Double(snapshot.memoryUsedBytes) / Double(snapshot.memoryTotalBytes)
+    }
+
+    private func rate(_ bytesPerSecond: Double) -> String {
+        let clamped = max(0, bytesPerSecond)
+        return Format.bytes(Int64(clamped.rounded())) + "/s"
     }
 
     private func percent(_ fraction: Double) -> String {

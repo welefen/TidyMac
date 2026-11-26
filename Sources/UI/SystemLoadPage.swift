@@ -703,7 +703,9 @@ final class TrendHostView: NSView {
     private var scaleLower: Double?
     private var scaleUpper: Double?
     private var previousSampleCount = 0
+    private var renderedShowsArea = true
     var drawsBackground = true
+    var showsArea = true
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -741,7 +743,7 @@ final class TrendHostView: NSView {
 
     func apply(values: [Double], color: Color, minimumSpan: Double, interval: TimeInterval) {
         let valuesChanged = values != currentValues
-        let styleChanged = color != renderedColor || minimumSpan != renderedSpan
+        let styleChanged = color != renderedColor || minimumSpan != renderedSpan || showsArea != renderedShowsArea
         currentValues = values
         currentColor = color
         currentSpan = minimumSpan
@@ -783,7 +785,8 @@ final class TrendHostView: NSView {
             color: currentColor,
             lower: lower,
             upper: upper,
-            viewportWidth: size.width
+            viewportWidth: size.width,
+            showsArea: showsArea
         )
         .frame(width: imageWidth, height: size.height)
         let renderer = ImageRenderer(content: content)
@@ -804,6 +807,7 @@ final class TrendHostView: NSView {
             : CGPoint(x: -step, y: 0)
         renderedColor = currentColor
         renderedSpan = currentSpan
+        renderedShowsArea = showsArea
         CATransaction.commit()
 
         guard shouldAnimate else { return }
@@ -889,6 +893,7 @@ private struct TrendCanvas: View {
     let lower: Double
     let upper: Double
     let viewportWidth: CGFloat
+    var showsArea: Bool = true
 
     var body: some View {
         Canvas { canvas, size in
@@ -900,10 +905,12 @@ private struct TrendCanvas: View {
                 height: size.height
             )
             guard points.count > 1 else { return }
-            canvas.fill(
-                TrendLayout.areaPath(points, in: size),
-                with: .color(color.opacity(0.08))
-            )
+            if showsArea {
+                canvas.fill(
+                    TrendLayout.areaPath(points, in: size),
+                    with: .color(color.opacity(0.08))
+                )
+            }
             canvas.stroke(
                 TrendLayout.smoothPath(points),
                 with: .color(color),
