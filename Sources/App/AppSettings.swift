@@ -170,6 +170,7 @@ final class AppSettings: ObservableObject {
         } else {
             defaults.removeObject(forKey: "AppleLanguages")
         }
+        defaults.synchronize()
     }
 
     func recordClean(_ report: CleanReport) {

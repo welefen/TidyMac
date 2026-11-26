@@ -73,7 +73,7 @@ struct SettingsPage: View {
                                    isSelected: settings.language == option) {
                             guard settings.language != option else { return }
                             settings.applyLanguage(option)
-                            restartForLanguageChange()
+                            restartForLanguageChange(option)
                         }
                     }
                     Spacer(minLength: 12)
@@ -90,11 +90,12 @@ struct SettingsPage: View {
         }
     }
 
-    private func restartForLanguageChange() {
+    private func restartForLanguageChange(_ language: AppLanguage) {
         let appPath = Bundle.main.bundlePath
+        let languageArgs = language.appleLanguage.map { " --args -AppleLanguages '(\($0))'" } ?? ""
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/bin/sh")
-        task.arguments = ["-c", "sleep 0.7; /usr/bin/open -n '\(appPath)'"]
+        task.arguments = ["-c", "sleep 0.7; /usr/bin/open -n '\(appPath)'\(languageArgs)"]
         try? task.run()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             NSApp.terminate(nil)
