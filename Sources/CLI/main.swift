@@ -214,6 +214,10 @@ struct TidyMacCLI {
               "允许清理用户缓存")
         check(!(throwsSafety { try SafetyPolicy.validate(URL(fileURLWithPath: "/Applications/SomeApp.app"), context: .appUninstall) }),
               "允许卸载应用包")
+        check(!(throwsSafety { try SafetyPolicy.validate(URL(fileURLWithPath: "/Library/Input Methods/BaiduIM.app"), context: .appUninstall) }),
+              "允许卸载输入法应用包")
+        check(throwsSafety { try SafetyPolicy.validate(URL(fileURLWithPath: "/Library/Input Methods/notes.txt"), context: .appUninstall) },
+              "仅允许输入法目录中的应用包")
 
         // Temp workspace
         let fm = FileManager.default

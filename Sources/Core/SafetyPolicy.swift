@@ -162,8 +162,11 @@ enum SafetyPolicy {
         guard path != normalized(home.path) else { throw SafetyError.rootPath }
 
         let isApplicationsBundle = isDescendant(path, of: "/Applications") && path.hasSuffix(".app")
+        let isInputMethodBundle = isDescendant(path, of: "/Library/Input Methods") && path.hasSuffix(".app")
         let isSystemBackgroundItem = context == .leftover && isSystemBackgroundItemPath(path)
-        if isProtected(path) && !(context == .appUninstall && isApplicationsBundle) && !isSystemBackgroundItem {
+        if isProtected(path)
+            && !(context == .appUninstall && (isApplicationsBundle || isInputMethodBundle))
+            && !isSystemBackgroundItem {
             throw SafetyError.protectedPath(path)
         }
 
@@ -186,7 +189,8 @@ enum SafetyPolicy {
         case .appUninstall:
             let insideApplications = isDescendant(path, of: "/Applications")
                 || isDescendant(path, of: normalized(home.appendingPathComponent("Applications").path))
-            guard insideApplications, path.hasSuffix(".app") else {
+            let insideInputMethods = isDescendant(path, of: "/Library/Input Methods")
+            guard (insideApplications || insideInputMethods), path.hasSuffix(".app") else {
                 throw SafetyError.outsideAllowedScope(path)
             }
         }

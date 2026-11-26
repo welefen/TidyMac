@@ -180,7 +180,7 @@ final class UninstallerViewModel: ObservableObject {
             text += L("\n应用当前正在运行，建议先退出。")
         }
         if ToolsSupport.requiresAdministrator(for: app.url) {
-            text += L("\n卸载此 App Store 应用需要输入管理员密码。")
+            text += L("\n卸载此应用需要输入管理员密码。")
         }
         return text
     }
