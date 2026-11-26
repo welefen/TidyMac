@@ -50,6 +50,7 @@
 "上次清理" = "Last cleanup";
 "下次构建会自动重新生成" = "Next build will be regenerated automatically";
 "下载" = "Downloads";
+"上传" = "Upload";
 "不到 1 秒" = "Less than 1 second";
 "个" = "items";
 "个文件" = "files";

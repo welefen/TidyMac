@@ -29,8 +29,7 @@ struct SystemLoadPage: View {
             VStack(alignment: .leading, spacing: 20) {
                 PageHeader(title: "系统负载", subtitle: L("查看整机与各 App 的 CPU、GPU、内存与网络占用"))
 
-                overallCard
-                networkCard
+                summaryGrid
                 appsCard
 
                 HStack(spacing: 6) {
@@ -66,36 +65,33 @@ struct SystemLoadPage: View {
         }
     }
 
-    // MARK: - Overall
+    // MARK: - Summary
 
-    private var overallCard: some View {
-        HStack(alignment: .top, spacing: 0) {
-            cpuColumn
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.trailing, 24)
-
-            Rectangle()
-                .fill(Theme.stroke)
-                .frame(width: 1, height: 134)
-                .padding(.trailing, 24)
-
-            memoryColumn
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.trailing, 24)
-
-            Rectangle()
-                .fill(Theme.stroke)
-                .frame(width: 1, height: 134)
-                .padding(.trailing, 24)
-
-            gpuColumn
-                .frame(maxWidth: .infinity, alignment: .leading)
+    private var summaryGrid: some View {
+        VStack(spacing: 20) {
+            HStack(alignment: .top, spacing: 20) {
+                metricCard { cpuColumn }
+                metricCard { memoryColumn }
+            }
+            HStack(alignment: .top, spacing: 20) {
+                metricCard(minHeight: 160) { gpuColumn }
+                metricCard(minHeight: 160) { networkSummaryCard }
+            }
         }
-        .qyPanel(padding: 22)
     }
 
-    private var networkCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+    private func metricCard<Content: View>(
+        minHeight: CGFloat = 0,
+        @ViewBuilder _ content: () -> Content
+    ) -> some View {
+        content()
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .frame(height: minHeight > 0 ? minHeight : nil, alignment: .topLeading)
+            .qyPanel(padding: 22)
+    }
+
+    private var networkSummaryCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(L("网络"))
                     .font(.system(size: 11))
@@ -106,67 +102,88 @@ struct SystemLoadPage: View {
                     .foregroundStyle(Theme.textTertiary)
             }
 
-            HStack(alignment: .top, spacing: 0) {
-                networkColumn(
-                    title: L("下载速率"),
-                    symbol: "arrow.down",
-                    rate: monitor.snapshot?.network?.downloadBytesPerSecond,
-                    history: monitor.downloadHistory,
-                    color: Theme.accent
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.trailing, 24)
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "arrow.down")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(L("下载速率"))
+                            .font(.system(size: 11))
+                    }
+                    .foregroundStyle(Theme.textTertiary)
 
+                    Text(networkRate(monitor.snapshot?.network?.downloadBytesPerSecond))
+                        .font(Theme.monoFont(30, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+
+                Spacer(minLength: 8)
+
+                VStack(alignment: .trailing, spacing: 6) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(L("上传速率"))
+                            .font(.system(size: 11))
+                    }
+                    .foregroundStyle(Theme.textTertiary)
+
+                    Text(networkRate(monitor.snapshot?.network?.uploadBytesPerSecond))
+                        .font(Theme.monoFont(18, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(Theme.subtleFill)
+                TrendLayerView(
+                    values: monitor.downloadHistory,
+                    color: Theme.accent,
+                    minimumSpan: 128 * 1024,
+                    showsArea: true,
+                    drawsBackground: false
+                )
+                TrendLayerView(
+                    values: monitor.uploadHistory,
+                    color: Theme.chartNetworkUpload,
+                    minimumSpan: 128 * 1024,
+                    showsArea: false,
+                    drawsBackground: false
+                )
+            }
+            .overlay(alignment: .bottom) {
                 Rectangle()
                     .fill(Theme.stroke)
-                    .frame(width: 1, height: 86)
-                    .padding(.trailing, 24)
-
-                networkColumn(
-                    title: L("上传速率"),
-                    symbol: "arrow.up",
-                    rate: monitor.snapshot?.network?.uploadBytesPerSecond,
-                    history: monitor.uploadHistory,
-                    color: Theme.chartNetworkUpload
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(height: 1)
             }
-        }
-        .qyPanel(padding: 22)
-    }
+            .clipShape(RoundedRectangle(cornerRadius: 5))
+            .frame(height: 32)
+            .padding(.top, 2)
 
-    private func networkColumn(
-        title: String,
-        symbol: String,
-        rate: Double?,
-        history: [Double],
-        color: Color
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 5) {
-                Image(systemName: symbol)
-                    .font(.system(size: 10, weight: .semibold))
-                Text(title)
-                    .font(.system(size: 11))
-            }
-            .foregroundStyle(Theme.textTertiary)
-
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(networkRate(rate))
-                    .font(Theme.monoFont(30, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer(minLength: 0)
-                Text(trendWindowLabel(history.count))
+            HStack(spacing: 12) {
+                legend(color: Theme.accent, title: L("下载"))
+                legend(color: Theme.chartNetworkUpload, title: L("上传"))
+                Spacer(minLength: 8)
+                Text(trendWindowLabel(max(monitor.downloadHistory.count, monitor.uploadHistory.count)))
                     .font(Theme.monoFont(9.5))
                     .foregroundStyle(Theme.textTertiary)
             }
+        }
+    }
 
-            TrendLayerView(
-                values: history,
-                color: color,
-                minimumSpan: 128 * 1024
-            )
-            .frame(height: 30)
+    private func legend(color: Color, title: String) -> some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(color)
+                .frame(width: 5, height: 5)
+            Text(title)
+                .font(.system(size: 10.5))
+                .foregroundStyle(Theme.textSecondary)
         }
     }
 
@@ -677,12 +694,19 @@ struct TrendLayerView: NSViewRepresentable {
     let color: Color
     var minimumSpan: Double = 0.06
     var interval: TimeInterval = 1
+    var showsArea: Bool = true
+    var drawsBackground: Bool = true
 
     func makeNSView(context: Context) -> TrendHostView {
-        TrendHostView()
+        let view = TrendHostView()
+        view.showsArea = showsArea
+        view.drawsBackground = drawsBackground
+        return view
     }
 
     func updateNSView(_ view: TrendHostView, context: Context) {
+        view.showsArea = showsArea
+        view.drawsBackground = drawsBackground
         view.apply(values: values, color: color, minimumSpan: minimumSpan, interval: interval)
     }
 }
